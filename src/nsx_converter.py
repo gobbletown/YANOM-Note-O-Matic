@@ -56,7 +56,7 @@ class NotesConvertor:
     """
     A class to intialise and organise the conversion of notes files into alternative output formats
     """
-    @Timer(name="conversion", logger=root_logger.info)
+
     def __init__(self):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.info(f'{what_method_is_this()} - Program startup')
@@ -71,12 +71,8 @@ class NotesConvertor:
         self.evaluate_command_line_arguments()
         self.fetch_nsx_backups()
         self.process_nsx_files()
-        if not self.conversion_settings.silent:
-            print("Hello. I'm done")
-            print(f"{self._note_book_count} Note books")
-            print(f"{self._note_page_count} Note Pages")
-            print(f"{self._image_count} Images")
-            print(f"{self._attachment_count} Attachments")
+        self.output_results_if_not_silent_mode()
+        self.log_results()
         self.logger.info("Processing Completed - exiting normally")
 
     def fetch_nsx_backups(self):
@@ -93,13 +89,17 @@ class NotesConvertor:
                 print(f'No .nsx files found at {self.conversion_settings.source}')
             sys.exit(1)
 
+    @Timer(name="conversion", logger=root_logger.info)
     def process_nsx_files(self):
         for nsx_file in self.nsx_backups:
             nsx_file.process_nsx_file()
-            self._note_page_count += nsx_file.note_page_count
-            self._note_book_count += nsx_file.note_book_count
-            self._image_count += nsx_file.image_count
-            self._attachment_count += nsx_file.attachment_count
+            self.update_processing_stats(nsx_file)
+
+    def update_processing_stats(self, nsx_file):
+        self._note_page_count += nsx_file.note_page_count
+        self._note_book_count += nsx_file.note_book_count
+        self._image_count += nsx_file.image_count
+        self._attachment_count += nsx_file.attachment_count
 
     def generate_file_list_to_convert(self):
         if not self.conversion_settings.source.is_file():
@@ -168,6 +168,22 @@ class NotesConvertor:
         self.conversion_settings = quick_settings.please.provide(self.command_line.args['quickset'])
         self.add_file_paths_from_command_line_to_settings()
         self.config_data.conversion_settings = self.conversion_settings
+
+    def output_results_if_not_silent_mode(self):
+        if not self.conversion_settings.silent:
+            print("Hello. I'm done")
+            print(f"{self._note_book_count} Note books")
+            print(f"{self._note_page_count} Note Pages")
+            print(f"{self._image_count} Images")
+            print(f"{self._attachment_count} Attachments")
+
+    def log_results(self):
+        self.logger.info(f"{self._note_book_count} Note books")
+        self.logger.info(f"{self._note_page_count} Note Pages")
+        self.logger.info(f"{self._image_count} Images")
+        self.logger.info(f"{self._attachment_count} Attachments")
+
+
 
 
 if __name__ == '__main__':

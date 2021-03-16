@@ -22,19 +22,25 @@ def what_class_is_this(obj):
 
 
 class MetaDataGenerator(ABC):
-    pass
-
-
-class NSMetaDataGenerator(MetaDataGenerator):
     def __init__(self, note):
         self._note = note
         self._conversion_settings = note.conversion_settings
         self._metadata_html = ''
         self._metadata_yaml = ''
-        self._tags = self._note.json_data["tag"]
-        self.__generate_metadata()
+        self._tags = None
 
-    def __generate_metadata(self):
+    @abstractmethod
+    def generate_metadata(self):
+        pass
+
+
+class NSMetaDataGenerator(MetaDataGenerator):
+    def __init__(self, note):
+        super().__init__(note)
+        self._tags = self._note.json_data["tag"]
+        self.generate_metadata()
+
+    def generate_metadata(self):
         self.__add_title_if_required()
         self.__add_creation_time_if_required()
         self.__add_modified_time_if_required()
@@ -201,6 +207,12 @@ class PreProcessing(ABC):
 
 
 class NoteStationPreProcessing(PreProcessing):
+    """
+    Main driver for pre-processing of synology html note data.
+
+    Clean and format data for pandoc.  Also regenerate html checklists or put in place holders to aid adding checklists
+    back in markdown files after pandoc processing.
+    """
     def __init__(self, note):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
@@ -271,13 +283,7 @@ class NoteStationPreProcessing(PreProcessing):
         self._pre_processed_content = self._pre_processed_content.replace('</li><ul>', '<ul>')
         self._pre_processed_content = self._pre_processed_content.replace('</li></ul>', '</li></li></ul>')
 
-    def __replace_check_lists(self):
-        self.logger.info(f"Cleaning check lists")
-
-        raw_checklists_items = re.findall(
-            '<p[^>]*><input class=[^>]*syno-notestation-editor-checkbox[^>]*src=[^>]*type=[^>]*>[^<]*</p>',
-            self._pre_processed_content)
-
+    def __generate_dict_of_checklist_generators(self, raw_checklists_items):
         if self._note.conversion_settings.export_format == 'html':
             check_list_items = [GenerateHTMLCheckListItem(item) for item in raw_checklists_items]
         else:
@@ -285,18 +291,30 @@ class NoteStationPreProcessing(PreProcessing):
 
         self._check_list_items = {id(item): item for item in check_list_items}
 
+    def __add_checklists_to_pre_processed_content(self):
         if self._note.conversion_settings.export_format == 'html':
             for item in self._check_list_items.values():
-                # For html export replace synology html with ner generated html
+                # For html export replace synology html with newly generated html
                 self._pre_processed_content = self._pre_processed_content.replace(item.raw_item_html,
                                                                                   item.processed_item)
             return
 
         for item in self._check_list_items.values():
-            # Using 'check-list-id(item)' as a checklist item place holder as pandoc cannot cleanly convert checklists,
+            # Using 'check-list-id(item)' as a checklist item place holder as pandoc cannot convert checklists,
             # the unique id will be used to replace the id with good checklist items in post processing.
             self._pre_processed_content = self._pre_processed_content.replace(item.raw_item_html,
                                                                               f'<p>check-list-{str(id(item))}</p>')
+
+    def __replace_check_lists(self):
+        self.logger.info(f"Cleaning check lists")
+
+        raw_checklists_items = re.findall(
+            '<p[^>]*><input class=[^>]*syno-notestation-editor-checkbox[^>]*src=[^>]*type=[^>]*>[^<]*</p>',
+            self._pre_processed_content)
+
+        self.__generate_dict_of_checklist_generators(raw_checklists_items)
+
+        self.__add_checklists_to_pre_processed_content()
 
         # TODO in post processing the note page has the pre processing object use this
         # and inside that we can get the checklist items from the _check_list_items dict

@@ -73,8 +73,8 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
         if type(self._current_conversion_settings) is ManualConversionSettings:
             self.__ask_and_set_export_format()
-            include = self.__ask_and_set_include_metadata()
-            if include:
+            self.__ask_and_set_include_metadata()
+            if self._current_conversion_settings.include_meta_data:
                 self.__ask_and_set_metadata_details()
                 self.__ask_and_set_tag_prefix()
             self.__ask_and_set_table_details()
@@ -129,8 +129,6 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
         answer = prompt(questions, style=self.style)
         self._current_conversion_settings.include_meta_data = answer['include_meta_data']
-
-        return answer['include_meta_data']
 
     def __ask_and_set_metadata_details(self):
         questions = [

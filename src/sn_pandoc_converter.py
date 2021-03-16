@@ -52,7 +52,7 @@ class PandocConverter:
                 print("Exiting.")
             sys.exit(0)
 
-    def generate_pandoc_options(self):   # TODO perhaps change to more objects and probably a generator to allow for multiple option combinations for exmample md and pdf would be two diff objects for setting up pandoc
+    def generate_pandoc_options(self):
         self.logger.info(f"Pandoc configured for export format - '{self.pandoc_conversion_options[self.output_file_format]}'")
         self.pandoc_options = ['pandoc', '-f', 'html', '-s', '-t', self.pandoc_conversion_options[self.output_file_format]]
 
@@ -125,6 +125,7 @@ class PandocConverter:
         output_file = tempfile.NamedTemporaryFile(delete=False)
         input_file = tempfile.NamedTemporaryFile(delete=False)
         return output_file, input_file
+
 
 if __name__ == '__main__':
     pc = PandocConverter('md')

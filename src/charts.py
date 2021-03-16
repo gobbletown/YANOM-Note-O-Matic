@@ -81,6 +81,7 @@ class NSChart(Chart):
     def __init__(self, chart_html):
         super().__init__()
         self._chart_html = chart_html
+        self.clean_chart_html()
         self.select_chart_data()
         self.__select_chart_titles()
         self.__plot_chart()
@@ -98,20 +99,21 @@ class NSChart(Chart):
         self.__plot_line_chart()
 
     def __select_chart_titles(self):
-        raw_data = self._chart_html
-        raw_data = raw_data.replace('&quot;', "'")
-        raw_data = re.findall('{.*}', raw_data)[0]
-        raw_data = raw_data.replace('true', 'True')
-        raw_data = raw_data.replace('false', 'False')
+        raw_data = re.findall('{.*}', self._chart_html)[0]  # find the titles dict
         raw_data = ast.literal_eval(raw_data)
         self._chart_type = raw_data['chartType']
         self._title = raw_data['title']
         self._x_axis_title = raw_data['xAxisTitle']
         self._y_axis_title = raw_data['yAxisTitle']
+        pass
+
+    def clean_chart_html(self):
+        self._chart_html = self._chart_html.replace('&quot;', "'")
+        self._chart_html = self._chart_html.replace('true', 'True')
+        self._chart_html = self._chart_html.replace('false', 'False')
 
     def select_chart_data(self):
-        raw_data = re.findall('\[\[.*]]', self._chart_html)[0]
-        raw_data = raw_data.replace('&quot;', "'")
+        raw_data = re.findall('\[\[.*]]', self._chart_html)[0]  # find the table of data list of lists
         raw_data = ast.literal_eval(raw_data)
         self._x_category_labels = raw_data.pop(0)[1:]
         self._y_category_labels = [item.pop(0) for item in raw_data]
@@ -127,7 +129,6 @@ class NSChart(Chart):
         plot = df_transposed.plot(kind='bar', grid=True, ax=ax, rot=0, title=self._title)
         fig = plot.get_figure()
         self._png_img_buffer = fig_to_img_buf(fig)
-
 
     def __format_data_for_pie_chart(self):
         self._df["sum"] = self._df.sum(axis=1)

@@ -74,15 +74,33 @@ class ConfigData(ConfigParser):
 
         """
         if type(value) is str:
-            if value in self._conversion_settings.valid_quick_settings:
-                self.load_and_save_config_from_conversion_quick_setting_string(value)
-                return
-            self.logger.error(f"Passed invalid value - {value} - not a recognised quick setting string")
-            raise ValueError(f"Conversion setting parameter must be a valid quick setting string "
-                             f"{self._conversion_settings.valid_quick_settings} received '{value}'")
+            self.__generate_conversion_settings_using_quick_settings_string(value)
+            return
+
+        self.__generate_conversion_settings_using_quick_settings_object(value)
+
+        # if isinstance(value, ConversionSettings):
+        #     self.load_and_save_config_from_conversion_settings_obj(value)
+        #     return
+        #
+        # self.logger.error(f"Passed invalid value - {value}")
+        # raise TypeError(f"Conversion setting parameter must be a valid quick setting "
+        #                 f"{self._conversion_settings.valid_quick_settings} string or a ConversionSettings object")
+
+    def __generate_conversion_settings_using_quick_settings_string(self, value):
+        if value in self._conversion_settings.valid_quick_settings:
+            self.load_and_save_config_from_conversion_quick_setting_string(value)
+            return
+
+        self.logger.error(f"Passed invalid value - {value} - not a recognised quick setting string")
+        raise ValueError(f"Conversion setting parameter must be a valid quick setting string "
+                         f"{self._conversion_settings.valid_quick_settings} received '{value}'")
+
+    def __generate_conversion_settings_using_quick_settings_object(self, value):
         if isinstance(value, ConversionSettings):
             self.load_and_save_config_from_conversion_settings_obj(value)
             return
+
         self.logger.error(f"Passed invalid value - {value}")
         raise TypeError(f"Conversion setting parameter must be a valid quick setting "
                         f"{self._conversion_settings.valid_quick_settings} string or a ConversionSettings object")
