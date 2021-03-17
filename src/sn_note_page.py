@@ -52,8 +52,6 @@ class NotePage:
         self.logger.info(f"Processing note page '{self._title}' - {self._note_id}")
         self.create_attachments()
         self.process_attachments()
-        # self._note_writer.generate_output_path_and_set_note_file_name(self)
-        # self.update_paths_and_filenames()
         self.pre_process_content()
         self.convert_data()
         self._note_writer.store_file(self)
@@ -85,6 +83,9 @@ class NotePage:
         self._pre_processed_content = self._pre_processor.pre_processed_content
 
     def convert_data(self):
+        if self.conversion_settings.export_format == 'html':
+            self._converted_content = self._pre_processed_content
+            return
         self.logger.info(f"Converting content of '{self._title}' - {self._note_id}")
         self._converted_content = self._pandoc_converter.convert_using_strings(self._pre_processed_content, self._title)
 

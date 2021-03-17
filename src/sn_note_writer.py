@@ -36,6 +36,10 @@ class MDNoteWriter:
 
     def generate_output_path_and_set_note_file_name(self, note_page):
         dirty_filename = note_page.title + '.md'
+
+        if self.conversion_settings.export_format == 'html':
+            dirty_filename = note_page.title + '.html'
+
         self.output_file_name = (generate_clean_path(dirty_filename))
         n = 0
         target_path = Path(self.current_directory_path, self.output_folder,

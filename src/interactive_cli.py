@@ -73,15 +73,19 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
         if type(self._current_conversion_settings) is ManualConversionSettings:
             self.__ask_and_set_export_format()
-            self.__ask_and_set_include_metadata()
-            if self._current_conversion_settings.include_meta_data:
-                self.__ask_and_set_metadata_details()
-                self.__ask_and_set_tag_prefix()
+            if self._current_conversion_settings.export_format == 'html':
+                self.__set_meta_data_for_html()
+            else:
+                self.__ask_and_set_include_metadata()
+                if self._current_conversion_settings.include_meta_data:
+                    self.__ask_and_set_metadata_details()
+                    self.__ask_and_set_tag_prefix()
             self.__ask_and_set_table_details()
             self.__ask_and_set_export_folder_name()
             self.__ask_and_set_attachment_folder_name()
             self.__ask_and_set_creation_time_in_file_name()
-            self.__ask_and_set_image_link_formats()
+            if not self._current_conversion_settings.export_format == 'html':
+                self.__ask_and_set_image_link_formats()
             self.logger.info(f"Returning Manual settings of {self._current_conversion_settings}")
             return self._current_conversion_settings
 
@@ -116,6 +120,13 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         }
         answer = prompt(export_format_prompt, style=self.style)
         self._current_conversion_settings.export_format = answer['export_format']
+
+    def __set_meta_data_for_html(self):
+        self._current_conversion_settings.include_meta_data = True
+        self._current_conversion_settings.insert_title = True
+        self._current_conversion_settings.insert_creation_time = True
+        self._current_conversion_settings.insert_modified_time = True
+        self._current_conversion_settings.include_tags = True
 
     def __ask_and_set_include_metadata(self):
         questions = [

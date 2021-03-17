@@ -365,7 +365,7 @@ class NoteStationPreProcessing(PreProcessing):
         self.__clean_excessive_divs()
         self.__fix_ordered_list()
         self.__fix_unordered_list()
-        self.__replace_check_lists()
+        self.__fix_check_lists()
         self.__add_boarder_to_tables()
         if self._note.conversion_settings.first_row_as_header:
             self.__fix_table_headers()
@@ -428,7 +428,7 @@ class NoteStationPreProcessing(PreProcessing):
             self._pre_processed_content = self._pre_processed_content.replace(item.raw_item_html,
                                                                               f'<p>check-list-{str(id(item))}</p>')
 
-    def __replace_check_lists(self):
+    def __fix_check_lists(self):
         self.logger.info(f"Cleaning check lists")
 
         raw_checklists_items = re.findall(

@@ -113,7 +113,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'silent': ('True', 'False')
         },
         'quick_settings': {
-            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'pdf')
+            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'html')
         },
         'export_formats': {
             'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc markdown', 'commonmark', 'html')
@@ -457,15 +457,19 @@ class ObsidianConversionSettings(ConversionSettings):
         self.image_link_format = 'obsidian'
 
 
-class PdfConversionSettings(ConversionSettings):
+class HTMLConversionSettings(ConversionSettings):
     """
-    PDF conversion settings to convert input formats to pdf files plus attachments in a folder.
+    HTML conversion settings to convert input formats to HTML files plus attachments in a folder.
     """
 
     def set_settings(self):
-        self.logger.info("PDF conversion settings")
-        self.export_format = 'pdf'
-        self.include_meta_data = False
+        self.logger.info("HTML conversion settings")
+        self.export_format = 'html'
+        self.include_meta_data = True
+        self.insert_title = True
+        self.insert_creation_time = True
+        self.insert_modified_time = True
+        self.include_tags = True
 
 
 please = ConversionSettingProvider()
@@ -473,7 +477,7 @@ please.register_builder('manual', ManualConversionSettings)
 please.register_builder('q_own_notes', QOwnNotesConversionSettings)
 please.register_builder('gfm', GfmConversionSettings)
 please.register_builder('obsidian', ObsidianConversionSettings)
-please.register_builder('pdf', PdfConversionSettings)
+please.register_builder('html', HTMLConversionSettings)
 
 
 
