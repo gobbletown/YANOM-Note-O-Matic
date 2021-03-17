@@ -19,7 +19,7 @@ def what_class_is_this(obj):
 #  when add pdf and html etc this is likely to be inherited from an abstract note writer.
 
 
-class MDNoteWriter:
+class NoteWriter:
     def __init__(self, conversion_settings):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)

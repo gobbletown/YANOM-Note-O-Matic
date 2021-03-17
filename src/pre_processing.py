@@ -148,6 +148,7 @@ class MetaDataGenerator(ABC):
         self._conversion_settings = note.conversion_settings
         self._metadata_html = ''
         self._metadata_yaml = ''
+        self._metadata_text = ''
         self._tags = None
 
     @abstractmethod
@@ -167,7 +168,9 @@ class NSMetaDataGenerator(MetaDataGenerator):
         self.__add_modified_time_if_required()
         self.__remove_tag_spaces_if_required()
         self.__split_tags_if_required()
+        # TODO add spaces in tag processing
         self.__add_tags_if_required()
+        self._metadata_text = self._metadata_yaml
         self.__add_head_wrapper()
 
     def __add_title_if_required(self):
@@ -214,7 +217,7 @@ class NSMetaDataGenerator(MetaDataGenerator):
 
     def __add_head_wrapper(self):
         self._metadata_html = f"<head>{self._metadata_html}</head>"
-        self._metadata_yaml = f"---{self._metadata_yaml}---\n"
+        self._metadata_yaml = f"---\n{self._metadata_yaml}---\n"
 
     @property
     def metadata_html(self):
@@ -223,6 +226,10 @@ class NSMetaDataGenerator(MetaDataGenerator):
     @property
     def metadata_yaml(self):
         return self._metadata_yaml
+
+    @property
+    def metadata_text(self):
+        return self._metadata_text
 
 
 class CheckListItem(ABC):
@@ -263,7 +270,7 @@ class CheckListItem(ABC):
         matches = re.findall('[0-9]{2}', self._raw_item_html)
         if matches:
             indent = int(matches[0])
-            self._check_list_level = indent // 30 + 1
+            self._check_list_level = indent // 30
 
 
 class GenerateMarkdownCheckListItem(CheckListItem):
@@ -273,7 +280,7 @@ class GenerateMarkdownCheckListItem(CheckListItem):
         if self._item_checked:
             checked = 'x'
 
-        self._processed_item = f"<p>-{tabs}[{checked}] {self._item_text}</p>"
+        self._processed_item = f"{tabs}- [{checked}] {self._item_text}"
 
 
 class GenerateHTMLCheckListItem(CheckListItem):
@@ -347,12 +354,21 @@ class NoteStationPreProcessing(PreProcessing):
         self._image_ref_to_image_path = {}
         self._check_list_items = {}
         self._charts = []
+        self._header_generator = None
         self.pre_process_note_page()
         pass
 
     @property
     def pre_processed_content(self):
         return self._pre_processed_content
+
+    @property
+    def header_generator(self):
+        return self._header_generator
+
+    @property
+    def check_list_items(self):
+        return self._check_list_items
 
     @pre_processed_content.setter
     def pre_processed_content(self, content):
@@ -426,7 +442,7 @@ class NoteStationPreProcessing(PreProcessing):
             # Using 'check-list-id(item)' as a checklist item place holder as pandoc cannot convert checklists,
             # the unique id will be used to replace the id with good checklist items in post processing.
             self._pre_processed_content = self._pre_processed_content.replace(item.raw_item_html,
-                                                                              f'<p>check-list-{str(id(item))}</p>')
+                                                                              f'check-list-{str(id(item))}<br/>')
 
     def __fix_check_lists(self):
         self.logger.info(f"Cleaning check lists")
@@ -505,8 +521,8 @@ class NoteStationPreProcessing(PreProcessing):
 
     def __generate_metadata(self):
         self.logger.info(f"Generating meta-data")
-        header_generator = NSMetaDataGenerator(self._note)
-        self._pre_processed_content = f"{header_generator.metadata_html}{self._pre_processed_content}"
+        self._header_generator = NSMetaDataGenerator(self._note)
+        self._pre_processed_content = f"{self._header_generator.metadata_html}{self._pre_processed_content}"
 
     def __generate_links_to_other_note_pages(self):
         self.logger.info(f"Creating links between pages")

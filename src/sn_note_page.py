@@ -1,10 +1,11 @@
 import sn_attachment
 from helper_functions import generate_clean_path
-from sn_note_writer import MDNoteWriter
+from sn_note_writer import NoteWriter
 import logging
 from globals import APP_NAME
 import inspect
 from pre_processing import NoteStationPreProcessing
+from post_processing import NoteStationPostProcessing
 
 
 def what_module_is_this():
@@ -54,6 +55,8 @@ class NotePage:
         self.process_attachments()
         self.pre_process_content()
         self.convert_data()
+        if not self.conversion_settings.export_format == 'html':
+            self.post_process_content()
         self._note_writer.store_file(self)
         self.logger.info(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
 
@@ -90,11 +93,16 @@ class NotePage:
         self._converted_content = self._pandoc_converter.convert_using_strings(self._pre_processed_content, self._title)
 
     def create_file_writer(self):
-        self._note_writer = MDNoteWriter(self._conversion_settings)
+        self._note_writer = NoteWriter(self._conversion_settings)
 
     def update_paths_and_filenames(self):
         self._file_name = self._note_writer.get_output_file_name()
         self._full_path = self._note_writer.get_output_full_path()
+
+    def post_process_content(self):
+        self._post_processor = NoteStationPostProcessing(self)
+        self._converted_content = self._post_processor.post_processed_content
+
 
     @property
     def title(self):
@@ -171,3 +179,7 @@ class NotePage:
     @parent_notebook.setter
     def parent_notebook(self, value):
         self._parent_notebook = value
+
+    @property
+    def pre_processor(self):
+        return self._pre_processor
