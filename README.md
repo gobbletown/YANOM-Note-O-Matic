@@ -12,3 +12,5 @@ This main branch will only contain released versions.  The develop branch should
 Please see the [Issues list](https://github.com/kevindurston21/YANOM-Note-O-Matic/issues) or [v1 milestone](https://github.com/kevindurston21/YANOM-Note-O-Matic/milestone/1) or [project](https://github.com/kevindurston21/YANOM-Note-O-Matic/projects/1) for an idea of what is being worked on and completed so far.
 
 Any thoughts or suggestions or code contributions are welcome, feel free to use the [discussions](https://github.com/kevindurston21/YANOM-Note-O-Matic/discussions) or [Issues list](https://github.com/kevindurston21/YANOM-Note-O-Matic/issues).
+
+Also take a look at the [contributing page](https://github.com/kevindurston21/YANOM-Note-O-Matic/blob/main/docs/contributing.md) for more details on how you can help develop YANOM.
