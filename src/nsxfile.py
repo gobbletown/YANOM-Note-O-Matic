@@ -54,9 +54,17 @@ class NSXFile:
         self.create_folders()
         self.add_note_pages()
         self.add_note_pages_to_notebooks()
+        self.generate_note_page_filename_and_path()
         self.process_notebooks()
         self.create_attachments()
         self.logger.info(f"Processing of {self._nsx_file_name} complete.")
+
+    def generate_note_page_filename_and_path(self):
+        for note_page in self.note_pages.values():
+            # this has to happen before processing as the file name and path are needed for pre_processing content
+            # and all notes have to have these set before any of them are processed to allow links between notes
+            # to be created
+            note_page.generate_filenames_and_paths()
 
     def fetch_json_data(self, data_id):
         return self._zipfile_reader.read_json_data(data_id)
@@ -152,3 +160,7 @@ class NSXFile:
     @property
     def attachment_count(self):
         return self._attachment_count
+
+    @property
+    def note_pages(self):
+        return self._note_pages

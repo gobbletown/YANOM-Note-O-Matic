@@ -52,12 +52,16 @@ class NotePage:
         self.logger.info(f"Processing note page '{self._title}' - {self._note_id}")
         self.create_attachments()
         self.process_attachments()
+        # self._note_writer.generate_output_path_and_set_note_file_name(self)
+        # self.update_paths_and_filenames()
         self.pre_process_content()
         self.convert_data()
-        self._note_writer.generate_output_path_and_set_note_file_name(self)
-        self.update_paths_and_filenames()
         self._note_writer.store_file(self)
         self.logger.info(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
+
+    def generate_filenames_and_paths(self):
+        self._note_writer.generate_output_path_and_set_note_file_name(self)
+        self.update_paths_and_filenames()
 
     def get_parent_notebook_id(self):
         return self._parent_notebook
@@ -158,3 +162,11 @@ class NotePage:
     @property
     def conversion_settings(self):
         return self._conversion_settings
+
+    @property
+    def parent_notebook(self):
+        return self._parent_notebook
+
+    @parent_notebook.setter
+    def parent_notebook(self, value):
+        self._parent_notebook = value

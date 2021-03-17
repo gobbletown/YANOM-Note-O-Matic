@@ -48,6 +48,7 @@ class Notebook:
         self.logger.info(f"Adding note '{note_page.title}' - {note_page.note_id} "
                          f"to Notebook '{self.title}' - {self.notebook_id}")
         note_page.notebook_folder_name = self.folder_name
+        note_page.parent_notebook = self.notebook_id
         self.note_pages.append(note_page)
 
     def create_folder_name(self):
