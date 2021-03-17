@@ -73,7 +73,7 @@ To learn more about rebasing in Git, there are a lot of [good][git rebasing]
 
 ```sh
 git checkout feature/29-add-commonmark-support
-git pull --rebase upstream master
+git pull --rebase upstream develop
 git push --force-with-lease feature/29-add-commonmark-support
 ```
 
