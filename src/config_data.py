@@ -79,14 +79,6 @@ class ConfigData(ConfigParser):
 
         self.__generate_conversion_settings_using_quick_settings_object(value)
 
-        # if isinstance(value, ConversionSettings):
-        #     self.load_and_save_config_from_conversion_settings_obj(value)
-        #     return
-        #
-        # self.logger.error(f"Passed invalid value - {value}")
-        # raise TypeError(f"Conversion setting parameter must be a valid quick setting "
-        #                 f"{self._conversion_settings.valid_quick_settings} string or a ConversionSettings object")
-
     def __generate_conversion_settings_using_quick_settings_string(self, value):
         if value in self._conversion_settings.valid_quick_settings:
             self.load_and_save_config_from_conversion_quick_setting_string(value)
@@ -186,6 +178,7 @@ class ConfigData(ConfigParser):
         path = Path(self._config_file)
         if path.is_file():
             self.read(self._config_file)
+            self.logger.info(f'Data read from INI file is {self.__repr__()}')
         else:
             self.logger.info('config.ini missing, generating new file and settings set to default.')
             if not self.conversion_settings.silent:
@@ -291,6 +284,14 @@ class ConfigData(ConfigParser):
                 'image_link_format': self._conversion_settings.image_link_format
             }
         }
+
+    def __str__(self):
+        display_dict = str({section: dict(self[section]) for section in self.sections()})
+        return str(f'{self.__class__.__name__}{display_dict}')
+
+    def __repr__(self):
+        display_dict = str({section: dict(self[section]) for section in self.sections()})
+        return str(f'{self.__class__.__name__}{display_dict}')
 
 
 if __name__ == '__main__':

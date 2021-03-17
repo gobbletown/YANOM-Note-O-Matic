@@ -34,6 +34,8 @@ class SNLinksToOtherNotes:
 
     """
     def __init__(self, note_page, content, nsx_file):
+        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
+        self.logger.setLevel(logging.DEBUG)
         self._note_page = note_page
         self._content = content
         self._nsx_file = nsx_file
@@ -111,6 +113,7 @@ class SNLinksToOtherNotes:
         for raw_link in self._raw_note_links:
             new_replacement_links = {}
             if raw_link not in self._replacement_links.keys():  # then it is a renamed link
+                self.logger.info(f"Attempting to create links for renamed links")
                 # search already found replacement links for this links href value and if found give it a new link
                 for replacement_links in self._replacement_links.values():
                     if re.findall('<a href=\"(.*)\"', raw_link)[0] == replacement_links[0].href_link_value:
@@ -123,7 +126,6 @@ class SNLinksToOtherNotes:
     def __update_content(self):
         for raw_link, replacement_links in self._replacement_links.items():
             self._content = self._content.replace(raw_link, self.__generate_html_code_for_new_links(replacement_links))
-
 
     @staticmethod
     def __generate_html_code_for_new_links(links):
@@ -502,9 +504,11 @@ class NoteStationPreProcessing(PreProcessing):
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
     def __generate_metadata(self):
+        self.logger.info(f"Generating meta-data")
         header_generator = NSMetaDataGenerator(self._note)
         self._pre_processed_content = f"{header_generator.metadata_html}{self._pre_processed_content}"
 
     def __generate_links_to_other_note_pages(self):
+        self.logger.info(f"Creating links between pages")
         link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file)
         self.pre_processed_content = link_generator.content
