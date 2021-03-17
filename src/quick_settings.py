@@ -116,7 +116,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'pdf')
         },
         'export_formats': {
-            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pdf')
+            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc markdown', 'commonmark', 'html')
         },
         'meta_data_options': {
             'include_meta_data': ('True', 'False'),
