@@ -2,7 +2,7 @@ import re
 from abc import ABC, abstractmethod
 import ast
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplot
 from helper_functions import fig_to_img_buf, add_strong_between_tags
 import logging
 from globals import APP_NAME
@@ -93,9 +93,11 @@ class NSChart(Chart):
         if self._chart_type == 'pie':
             self.__plot_pie_chart()
             return
+
         if self._chart_type == 'bar':
             self.__plot_bar_chart()
             return
+
         self.__plot_line_chart()
 
     def __select_chart_titles(self):
@@ -123,7 +125,7 @@ class NSChart(Chart):
     def __plot_bar_chart(self):
         self.logger.info("Creating bar chart")
         df_transposed = self._df.copy().T
-        fig2, ax = plt.subplots()
+        fig2, ax = pyplot.subplots()
         ax = self.set_title_and_axes(ax)
         ax = self.remove_chart_frame(ax)
         plot = df_transposed.plot(kind='bar', grid=True, ax=ax, rot=0, title=self._title)
@@ -138,19 +140,19 @@ class NSChart(Chart):
         self.logger.info("Creating pie chart")
         self.__format_data_for_pie_chart()
         explode = [0.02 for x in range(len(self._df.index))]
-        fig, ax = plt.subplots()
-        plt.title(self._title)
-        plt.gca().axis("equal")
-        pie = plt.pie(self._df['sum'], autopct='%1.2f%%', pctdistance=1.2, explode=explode)
+        fig, ax = pyplot.subplots()
+        pyplot.title(self._title)
+        pyplot.gca().axis("equal")
+        pie = pyplot.pie(self._df['sum'], autopct='%1.2f%%', pctdistance=1.2, explode=explode)
         labels = self._y_category_labels
-        plt.legend(pie[0], labels, bbox_to_anchor=(1, 1), loc="upper right",
-                   bbox_transform=plt.gcf().transFigure)
+        pyplot.legend(pie[0], labels, bbox_to_anchor=(1, 1), loc="upper right",
+                      bbox_transform=pyplot.gcf().transFigure)
         self._png_img_buffer = fig_to_img_buf(fig)
 
     def __plot_line_chart(self):
         self.logger.info("Creating line chart")
         df_transposed = self._df.copy().T
-        fig2, ax = plt.subplots()
+        fig2, ax = pyplot.subplots()
         ax = self.set_title_and_axes(ax)
         ax = self.remove_chart_frame(ax)
         x_ticks = [x for x in range(len(df_transposed.index))]

@@ -16,8 +16,6 @@ def what_method_is_this():
 def what_class_is_this(obj):
     return obj.__class__.__name__
 
-#  when add pdf and html etc this is likely to be inherited from an abstract note writer.
-
 
 class NoteWriter:
     def __init__(self, conversion_settings):

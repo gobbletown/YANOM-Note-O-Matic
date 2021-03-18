@@ -75,6 +75,7 @@ class NotePage:
             else:
                 self._attachments[attachment_id] = sn_attachment.FileNSAttachment(self, attachment_id)
                 self._attachment_count += 1
+
         return self._image_count, self._attachment_count
 
     def process_attachments(self):
@@ -89,6 +90,7 @@ class NotePage:
         if self.conversion_settings.export_format == 'html':
             self._converted_content = self._pre_processed_content
             return
+
         self.logger.info(f"Converting content of '{self._title}' - {self._note_id}")
         self._converted_content = self._pandoc_converter.convert_using_strings(self._pre_processed_content, self._title)
 
@@ -96,13 +98,12 @@ class NotePage:
         self._note_writer = NoteWriter(self._conversion_settings)
 
     def update_paths_and_filenames(self):
-        self._file_name = self._note_writer.get_output_file_name()
+        self._file_name = self._note_writer.output_file_name
         self._full_path = self._note_writer.get_output_full_path()
 
     def post_process_content(self):
         self._post_processor = NoteStationPostProcessing(self)
         self._converted_content = self._post_processor.post_processed_content
-
 
     @property
     def title(self):

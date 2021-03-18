@@ -108,6 +108,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         Change attribute values to achieve a specific conversion process
 
     """
+    # These values are used here and in config_data
     validation_values = {
         'execution_mode': {
             'silent': ('True', 'False')
@@ -148,9 +149,8 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         # where the key value pair are like this '#your comment': None
         # the #comments in these dicts are only there to add comments to the config.ini
 
-        # if you change any of the following dictionaries changes are likely to affect the quick settings child classes
+        # if you change any of the following values changes are likely to affect the quick settings child classes
         # and the ConfigFileValidationSettings class
-        # self.output_file_types = ['md', 'pdf']
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
         self._valid_quick_settings = list(self.validation_values['quick_settings']['quick_setting'])

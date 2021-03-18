@@ -153,7 +153,7 @@ class NotesConvertor:
     def configure_for_ini_settings(self):
         # every time I look at his I wonder if values somebody enters after -i on the command line should be used...
         # No they should not.  they have chosen to use ini file and all the settings they need should be in it as
-        # they have chosen to use the ini file
+        # they have chosen to use the ini file so ignore any  other options they enter
         root_logger.info("Using settings from config  ini file")
         self.conversion_settings = self.config_data.conversion_settings
 
@@ -182,8 +182,6 @@ class NotesConvertor:
         self.logger.info(f"{self._note_page_count} Note Pages")
         self.logger.info(f"{self._image_count} Images")
         self.logger.info(f"{self._attachment_count} Attachments")
-
-
 
 
 if __name__ == '__main__':

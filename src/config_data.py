@@ -114,6 +114,7 @@ class ConfigData(ConfigParser):
             if what_to_do == 'exit':
                 sys.exit(0)
             self.logger.info("User chose to create default file")
+
             self.load_and_save_config_from_conversion_quick_setting_string(self._default_quick_setting)
 
     def __validate_config(self):

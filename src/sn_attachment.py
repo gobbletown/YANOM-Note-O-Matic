@@ -41,9 +41,9 @@ class NSAttachment(Attachment):
         self.get_updated_files_and_folders_from(attachment_writer)
 
     def get_updated_files_and_folders_from(self, attachment_writer):
-        self._file_name = attachment_writer.get_output_file_name()
-        self._full_path = attachment_writer.get_output_file_path()
-        self._path_relative_to_notebook = attachment_writer.get_relative_path()
+        self._file_name = attachment_writer.output_file_name
+        self._full_path = attachment_writer.output_file_path
+        self._path_relative_to_notebook = attachment_writer.relative_path
 
     @property
     def notebook_folder_name(self):

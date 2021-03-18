@@ -235,7 +235,6 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         if 'First column of table as header column' in answers['table_options']:
             self._current_conversion_settings.first_column_as_header = True
 
-
     def __ask_and_set_tag_prefix(self):
         questions = [
             {
@@ -260,6 +259,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         ]
         answers = prompt(questions, style=self.style)
         self._current_conversion_settings.export_folder_name = answers['export_folder_name']
+
         if str(self._current_conversion_settings.export_folder_name) != answers['export_folder_name']:
             self.__ask_to_confirm_changed_path_name(self._current_conversion_settings.export_folder_name)
 
@@ -274,6 +274,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         ]
         answers = prompt(questions, style=self.style)
         self._current_conversion_settings.attachment_folder_name = answers['attachment_folder_name']
+
         if str(self._current_conversion_settings.attachment_folder_name) != answers['attachment_folder_name']:
             self.__ask_to_confirm_changed_path_name(self._current_conversion_settings.attachment_folder_name)
 

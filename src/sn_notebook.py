@@ -24,7 +24,7 @@ class Notebook:
         self.logger.setLevel(logging.DEBUG)
         self.nsx_file = nsx_file
         self.notebook_id = notebook_id
-        self.conversion_settings = self.nsx_file._conversion_settings
+        self.conversion_settings = self.nsx_file.conversion_settings
         self.notebook_json = ''
         if self.notebook_id == 'recycle_bin':
             self.title = 'recycle_bin'
@@ -37,16 +37,18 @@ class Notebook:
         self.note_pages = []
 
     def fetch_notebook_data(self):
-        self.notebook_json = self.nsx_file._zipfile_reader.read_json_data(self.notebook_id)
+        self.notebook_json = self.nsx_file.zipfile_reader.read_json_data(self.notebook_id)
 
     def process_notebook_pages(self):
         self.logger.info(f"Processing note book {self.title} - {self.notebook_id}")
+
         for note_page in self.note_pages:
             note_page.process_note()
 
     def add_note_page_and_set_parent_notebook(self, note_page: NotePage):
         self.logger.info(f"Adding note '{note_page.title}' - {note_page.note_id} "
                          f"to Notebook '{self.title}' - {self.notebook_id}")
+
         note_page.notebook_folder_name = self.folder_name
         note_page.parent_notebook = self.notebook_id
         self.note_pages.append(note_page)
@@ -61,12 +63,12 @@ class Notebook:
     def create_notebook_folder(self):
         n = 0
         target_path = Path(Path(__file__).parent.absolute(),
-                           self.nsx_file._conversion_settings.export_folder_name,
+                           self.nsx_file.conversion_settings.export_folder_name,
                            self.folder_name)
         while target_path.exists():
             n += 1
             target_path = Path(Path(__file__).parent.absolute(),
-                               self.nsx_file._conversion_settings.export_folder_name,
+                               self.nsx_file.conversion_settings.export_folder_name,
                                f"{self.folder_name}-{n}")
 
         target_path.mkdir()

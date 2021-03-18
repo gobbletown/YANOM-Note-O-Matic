@@ -24,51 +24,57 @@ class AttachmentWriter:
         self.logger.setLevel(logging.DEBUG)
         self.logger.info(f'{__name__} - Creating an instance of {what_class_is_this(self)}')
         self.nsx_file = nsx_file
-        self.current_directory_path = Path(__file__).parent.absolute()
-        self.output_folder = nsx_file.conversion_settings.export_folder_name
-        self.attachment_folder = nsx_file.conversion_settings.attachment_folder_name
-        self.notebook_folder = None
-        self.output_file_name = None
-        self.input_file_name = None
-        self.path_relative_to_notebook = None
-        self.output_file_path = None
-        self.relative_path = None
+        self._current_directory_path = Path(__file__).parent.absolute()
+        self._output_folder = nsx_file.conversion_settings.export_folder_name
+        self._attachment_folder = nsx_file.conversion_settings.attachment_folder_name
+        self._notebook_folder = None
+        self._output_file_name = None
+        self._input_file_name = None
+        self._path_relative_to_notebook = None
+        self._output_file_path = None
+        self._relative_path = None
 
     def store_nsx_attachment(self, attachment):
         self.generate_relative_path(attachment)
         self.generate_output_path(attachment)
-        self.logger.info(f"Storing attachment {attachment.file_name} as {self.output_file_name}")
-        Path(self.output_file_path).write_bytes(self.nsx_file.fetch_attachment_file(attachment.filename_inside_nsx))
+
+        self.logger.info(f"Storing attachment {attachment.file_name} as {self._output_file_name}")
+        Path(self._output_file_path).write_bytes(self.nsx_file.fetch_attachment_file(attachment.filename_inside_nsx))
 
     def store_chart_attachment(self, attachment):
         self.generate_relative_path(attachment)
         self.generate_output_path(attachment)
-        self.logger.info(f"Storing attachment {attachment.file_name} as {self.output_file_name}")
+
+        self.logger.info(f"Storing attachment {attachment.file_name} as {self._output_file_name}")
         if isinstance(attachment, sn_attachment.ChartStringNSAttachment):
-            Path(self.output_file_path).write_text(attachment.chart_file_like_object)
+            Path(self._output_file_path).write_text(attachment.chart_file_like_object)
             return
-        Path(self.output_file_path).write_bytes(attachment.chart_file_like_object.getbuffer())
+
+        Path(self._output_file_path).write_bytes(attachment.chart_file_like_object.getbuffer())
 
     def generate_relative_path(self, attachment):
-        self.path_relative_to_notebook = Path(self.attachment_folder, attachment.file_name)
+        self._path_relative_to_notebook = Path(self._attachment_folder, attachment.file_name)
 
     def generate_output_path(self, attachment):
-        path = Path(self.current_directory_path, self.output_folder,
+        path = Path(self._current_directory_path, self._output_folder,
                     attachment.notebook_folder_name,
-                    self.path_relative_to_notebook)
+                    self._path_relative_to_notebook)
 
         while path.is_file():
             path = generate_new_filename(path)
 
-        self.output_file_name = path.name
-        self.output_file_path = path
-        self.relative_path = (Path(self.attachment_folder, self.output_file_name))
+        self._output_file_name = path.name
+        self._output_file_path = path
+        self._relative_path = (Path(self._attachment_folder, self._output_file_name))
 
-    def get_output_file_name(self):
-        return self.output_file_name
+    @property
+    def output_file_name(self):
+        return self._output_file_name
 
-    def get_output_file_path(self):
-        return self.output_file_path
+    @property
+    def output_file_path(self):
+        return self._output_file_path
 
-    def get_relative_path(self):
-        return self.relative_path
+    @property
+    def relative_path(self):
+        return self._relative_path

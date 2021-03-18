@@ -43,7 +43,6 @@ class Timer(ContextDecorator):
             self.timers.setdefault(self.name, 0)
 
     def start(self) -> None:
-        """Start a timer"""
         if self._start_time is not None:
             raise TimerError(f"Timer is running. Use .stop() to stop it")
 

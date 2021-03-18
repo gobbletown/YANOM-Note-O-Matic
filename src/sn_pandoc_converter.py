@@ -47,6 +47,7 @@ class PandocConverter:
             if not self.conversion_settings.silent:
                 print('Found pandoc ' + str(self.pandoc_version))
             self.logger.info(f"Found pandoc version {str(self.pandoc_version)}")
+
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Exiting as unable to find pandoc\n{e}")
             if not self.conversion_settings.silent:
@@ -117,12 +118,12 @@ class PandocConverter:
                 print("Can't find pandoc. Please install pandoc or place it to the directory, where the script is.")
             sys.exit(1)
 
-    @staticmethod
-    def error_handling(note_title):
+    def error_handling(self, note_title):
         msg = f"Error converting note {note_title} for pandoc please check nsx_converter.log and pandoc installation."
         logging.error(msg)
-        print(msg)
-        print("Attempting to continue...")
+        if not self.conversion_settings.silent:
+            print(msg)
+            print("Attempting to continue...")
 
     @staticmethod
     def create_temporary_files():

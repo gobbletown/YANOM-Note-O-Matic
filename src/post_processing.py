@@ -42,6 +42,7 @@ class NoteStationPostProcessing(PostProcessing):
     def post_process_note_page(self):
         if self._conversion_settings.include_meta_data:
             self.__add_meta_data()
+
         self.__add_check_lists()
 
     def __add_meta_data(self):

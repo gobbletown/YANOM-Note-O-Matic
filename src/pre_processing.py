@@ -168,7 +168,6 @@ class NSMetaDataGenerator(MetaDataGenerator):
         self.__add_modified_time_if_required()
         self.__remove_tag_spaces_if_required()
         self.__split_tags_if_required()
-        # TODO add spaces in tag processing
         self.__add_tags_if_required()
         self._metadata_text = self._metadata_yaml
         self.__add_head_wrapper()
@@ -190,11 +189,13 @@ class NSMetaDataGenerator(MetaDataGenerator):
     def __remove_tag_spaces_if_required(self):
         if not self._conversion_settings.spaces_in_tags:
             return
-        self._tags = [tag.replace(' ', '') for tag in self._tags]
+
+        self._tags = [tag.replace(' ', '-') for tag in self._tags]
 
     def __split_tags_if_required(self):
         if not self._conversion_settings.split_tags:
             return
+
         set_tags = {tag for tag_split in self._tags for tag in tag_split.split('/')}
         self._tags = [tag for tag in set_tags]
 
@@ -455,11 +456,6 @@ class NoteStationPreProcessing(PreProcessing):
 
         self.__add_checklists_to_pre_processed_content()
 
-        # TODO in post processing the note page has the pre processing object use this
-        # and inside that we can get the checklist items from the _check_list_items dict
-        # where id is the key and the value is the checklist item which has the processed
-        # item text to replace the id with
-
     def __extract_and_generate_chart(self):
         self.logger.info(f"Cleaning charts")
         raw_charts_html = re.findall('<p[^>]*><p class=[^>]*syno-ns-chart-object[^>]*></p>',
@@ -507,6 +503,7 @@ class NoteStationPreProcessing(PreProcessing):
     def __first_column_in_table_as_header_if_required(self):
         self.logger.info(f"Make tables first column bold")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
+
         for table in tables:
             new_table = add_strong_between_tags('<tr><td>', '</td><td>', table)
             new_table = change_html_tags('<tr><td>', '</td>', '<tr><th>', '</th>', new_table)
@@ -514,6 +511,7 @@ class NoteStationPreProcessing(PreProcessing):
 
     def __add_boarder_to_tables(self):
         tables = re.findall('<table.*</table>', self._pre_processed_content)
+
         for table in tables:
             new_table = table
             new_table = new_table.replace('<table', '<table border="1"')
