@@ -305,7 +305,7 @@ class ImageTag:
         self._relative_path = ''
         self.__set_ref_and_relative_path()
         self.__set_width()
-        self._processed_tag = f"<img src={self._relative_path} {self._width}>"
+        self._processed_tag = f'<img src="{self._relative_path}" {self._width}>'
         pass
 
     def __set_ref_and_relative_path(self):

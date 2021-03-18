@@ -160,7 +160,6 @@ class ConfigData(ConfigParser):
         self._conversion_settings.attachment_folder_name = self['file_options']['attachment_folder_name']
         self._conversion_settings.creation_time_in_exported_file_name = \
             self['file_options']['creation_time_in_exported_file_name']
-        self._conversion_settings.image_link_format = self['image_link_formats']['image_link_format']
 
     def __write_config_file(self):
         with open(self._config_file, 'w') as config_file:
@@ -276,13 +275,6 @@ class ConfigData(ConfigParser):
                 'export_folder_name': self._conversion_settings.export_folder_name,
                 'attachment_folder_name': self._conversion_settings.attachment_folder_name,
                 'creation_time_in_exported_file_name': self._conversion_settings.creation_time_in_exported_file_name
-            },
-            'image_link_formats': {
-                '    # valid entries are': None,
-                '    # strict_md     which looks like [](path to image)': None,
-                '    # gfm-html      which looks like <img src=path to file width=width_value>': None,
-                '    # obsidian      which looks like [|width_value](path to image)': None,
-                'image_link_format': self._conversion_settings.image_link_format
             }
         }
 

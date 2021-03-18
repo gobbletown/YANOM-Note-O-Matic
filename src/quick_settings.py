@@ -99,8 +99,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         Path object for the sub-directory name within the export folder to place images and attachments
     _creation_time_in_exported_file_name: bool
         Include the note creation time on the end of the file name
-    _image_link_format : str
-            Image link styling to be used in markdown files
 
     Methods
     -------
@@ -139,8 +137,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'export_folder_name': '',
             'attachment_folder_name': '',
             'creation_time_in_exported_file_name': ('True', 'False')
-        },
-        'image_link_formats': {'image_link_format': ('strict_md', 'obsidian', 'gfm-html')}
+        }
     }
 
     def __init__(self):
@@ -155,7 +152,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self.logger.setLevel(logging.DEBUG)
         self._valid_quick_settings = list(self.validation_values['quick_settings']['quick_setting'])
         self._valid_export_formats = list(self.validation_values['export_formats']['export_format'])
-        self._valid_image_link_formats = list(self.validation_values['image_link_formats']['image_link_format'])
         self._silent = False
         self._source = os.getcwd()
         self._quick_setting = 'gfm'
@@ -174,8 +170,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._export_folder_name = 'notes'
         self._attachment_folder_name = 'attachments'
         self._creation_time_in_exported_file_name = False
-        self._image_link_format = 'strict_md'
-
         self.set_settings()
 
     def __str__(self):
@@ -189,8 +183,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
-               f"creation_time_in_exported_file_name={self.creation_time_in_exported_file_name}, " \
-               f"image_link_format='{self.image_link_format}')"
+               f"creation_time_in_exported_file_name={self.creation_time_in_exported_file_name})"
 
     def __repr__(self):
         return f"{self.__class__.__name__}(silent={self.silent}, quick_setting='{self.quick_setting}', " \
@@ -203,8 +196,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
-               f"creation_time_in_exported_file_name={self.creation_time_in_exported_file_name}, " \
-               f"image_link_format='{self.image_link_format}')"
+               f"creation_time_in_exported_file_name={self.creation_time_in_exported_file_name})"
 
     @abstractmethod
     def set_settings(self):
@@ -217,10 +209,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     @property
     def valid_export_formats(self):
         return self._valid_export_formats
-
-    @property
-    def valid_image_link_formats(self):
-        return self._valid_image_link_formats
 
     @property
     def silent(self):
@@ -385,18 +373,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     def creation_time_in_exported_file_name(self, value: bool):
         self._creation_time_in_exported_file_name = value
 
-    @property
-    def image_link_format(self):
-        return self._image_link_format
-
-    @image_link_format.setter
-    def image_link_format(self, value: str):
-        if value in self.valid_image_link_formats:
-            self._image_link_format = value
-        else:
-            raise ValueError(f"Invalid value for export format. "
-                             f"Attempted to use {value}, valid values are {self.valid_image_link_formats}")
-
 
 class ManualConversionSettings(ConversionSettings):
     """
@@ -429,7 +405,6 @@ class QOwnNotesConversionSettings(ConversionSettings):
         self.logger.info("QOwnNotes Setting conversion settings")
         self.quick_setting = 'q_own_notes'
         self.export_format = 'q_own_notes'
-        self.image_link_format = 'strict_md'
 
 
 class GfmConversionSettings(ConversionSettings):
@@ -441,7 +416,6 @@ class GfmConversionSettings(ConversionSettings):
         self.logger.info("GFM conversion settings")
         self.quick_setting = 'gfm'
         self.yaml_meta_header_format = True
-        self.image_link_format = 'gfm-html'
 
 
 class ObsidianConversionSettings(ConversionSettings):
@@ -454,7 +428,6 @@ class ObsidianConversionSettings(ConversionSettings):
         self.quick_setting = 'obsidian'
         self.export_format = 'obsidian'
         self.yaml_meta_header_format = True
-        self.image_link_format = 'obsidian'
 
 
 class HTMLConversionSettings(ConversionSettings):

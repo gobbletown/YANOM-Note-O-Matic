@@ -84,8 +84,6 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
             self.__ask_and_set_export_folder_name()
             self.__ask_and_set_attachment_folder_name()
             self.__ask_and_set_creation_time_in_file_name()
-            if not self._current_conversion_settings.export_format == 'html':
-                self.__ask_and_set_image_link_formats()
             self.logger.info(f"Returning Manual settings of {self._current_conversion_settings}")
             return self._current_conversion_settings
 
@@ -306,20 +304,6 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answers = prompt(questions, style=self.style)
         self._current_conversion_settings.creation_time_in_exported_file_name = answers[
             'creation_time_in_exported_file_name']
-
-    def __ask_and_set_image_link_formats(self):
-        # ordered_list puts current default into the top of the list, this is needed because the default option on lists
-        # in PyInquirer does not work
-        ordered_list = self._default_settings.valid_image_link_formats.copy()
-        ordered_list.insert(0, ordered_list.pop(ordered_list.index(self._default_settings.image_link_format)))
-        export_format_prompt = {
-            'type': 'list',
-            'name': 'image_link_format',
-            'message': 'Choose an image link format',
-            'choices': ordered_list
-        }
-        answer = prompt(export_format_prompt, style=self.style)
-        self._current_conversion_settings.image_link_format = answer['image_link_format']
 
 
 class InvalidConfigFileCommandLineInterface(InquireCommandLineInterface):
