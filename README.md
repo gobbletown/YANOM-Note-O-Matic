@@ -1,4 +1,9 @@
 # YANOM-Note-O-Matic
+
+You must be curious if you have started looking in the develop branch.  It is a work in progress but close to done with only post processing image formatting left to do.  Then the documentation and creating some kind of deployment format.
+
+To see the current output look in the [Test folder](https://github.com/kevindurston21/YANOM-Note-O-Matic/tree/develop/test) and read the [readme](https://github.com/kevindurston21/YANOM-Note-O-Matic/blob/develop/test/readme.md) will point you to the current results.
+
 Yet Another Note-O-Matic - Convert files from closed file note-taking systems to various output formats.
 
 Why is YANOM being written? See this explanation in the [wiki](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki)
