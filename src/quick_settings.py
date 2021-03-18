@@ -405,6 +405,7 @@ class QOwnNotesConversionSettings(ConversionSettings):
         self.logger.info("QOwnNotes Setting conversion settings")
         self.quick_setting = 'q_own_notes'
         self.export_format = 'q_own_notes'
+        self.yaml_meta_header_format = True
 
 
 class GfmConversionSettings(ConversionSettings):
