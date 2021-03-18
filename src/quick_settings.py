@@ -112,10 +112,10 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'silent': ('True', 'False')
         },
         'quick_settings': {
-            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'html')
+            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'html')
         },
         'export_formats': {
-            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc markdown', 'commonmark', 'html')
+            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'html')
         },
         'meta_data_options': {
             'include_meta_data': ('True', 'False'),
@@ -431,6 +431,29 @@ class ObsidianConversionSettings(ConversionSettings):
         self.yaml_meta_header_format = True
 
 
+class CommonmarkConversionSettings(ConversionSettings):
+    """
+    Obsidian conversion settings to convert input formats to format suitable for Obsidian users.
+    """
+
+    def set_settings(self):
+        self.logger.info("Commonmark conversion settings")
+        self.quick_setting = 'commonmark'
+        self.export_format = 'commonmark'
+        self.yaml_meta_header_format = True
+
+
+class PandocMarkdownConversionSettings(ConversionSettings):
+    """
+    Obsidian conversion settings to convert input formats to format suitable for Obsidian users.
+    """
+
+    def set_settings(self):
+        self.logger.info("Pandoc markdown conversion settings")
+        self.quick_setting = 'pandoc_markdown'
+        self.export_format = 'pandoc_markdown'
+
+
 class HTMLConversionSettings(ConversionSettings):
     """
     HTML conversion settings to convert input formats to HTML files plus attachments in a folder.
@@ -451,6 +474,8 @@ please.register_builder('manual', ManualConversionSettings)
 please.register_builder('q_own_notes', QOwnNotesConversionSettings)
 please.register_builder('gfm', GfmConversionSettings)
 please.register_builder('obsidian', ObsidianConversionSettings)
+please.register_builder('commonmark', CommonmarkConversionSettings)
+please.register_builder('pandoc_markdown', PandocMarkdownConversionSettings)
 please.register_builder('html', HTMLConversionSettings)
 
 
