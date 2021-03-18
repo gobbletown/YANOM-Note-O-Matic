@@ -133,3 +133,4 @@ dmypy.json
 /Pipfile.lock
 /src/normal.log.1
 /src/normal.log.2
+/src/normal.log.3

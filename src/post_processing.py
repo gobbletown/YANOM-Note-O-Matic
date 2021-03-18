@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import logging
 from globals import APP_NAME
 import inspect
+from sn_attachment import FileNSAttachment
 
 
 def what_module_is_this():
@@ -42,8 +43,8 @@ class NoteStationPostProcessing(PostProcessing):
     def post_process_note_page(self):
         if self._conversion_settings.include_meta_data:
             self.__add_meta_data()
-
         self.__add_check_lists()
+        self.__format_images_links()
 
     def __add_meta_data(self):
         if self._note.conversion_settings.yaml_meta_header_format:
@@ -61,6 +62,16 @@ class NoteStationPostProcessing(PostProcessing):
             search_for = f'check-list-{str(id(checklist_item))}'
             replace_with = f'{checklist_item.processed_item}  '
             self._post_processed_content = self._post_processed_content.replace(search_for, replace_with)
+
+    def __format_images_links(self):
+        if self._conversion_settings.export_format == 'gfm' and self._conversion_settings.image_link_format == 'obsidian':
+            self.__format_images_obsidian_style()
+
+    def __format_images_obsidian_style(self):
+        # find the image tags
+        # generate new tag
+        # replace original tags
+        pass
 
     @property
     def post_processed_content(self):
