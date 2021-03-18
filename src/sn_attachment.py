@@ -87,7 +87,7 @@ class ImageNSAttachment(NSAttachment):
         return self._image_ref
 
     def create_html_link(self):
-        self._html_link = f"<img src={self._file_name} "
+        self._html_link = f'<img src="{self._file_name}" '
 
     def clean_name(self):
         self._name = self._name.replace('ns_attach_image_', '')
@@ -101,7 +101,7 @@ class FileNSAttachment(NSAttachment):
         self._filename_inside_nsx = f"file_{self._json['attachment'][attachment_id]['md5']}"
 
     def create_html_link(self):
-        self._html_link = f"<a href='{self._path_relative_to_notebook}'>{self.file_name}</a>"
+        self._html_link = f'<a href="{self._path_relative_to_notebook}">{self.file_name}</a>'
 
     def clean_name(self):
         self._file_name = generate_clean_path(self._name)

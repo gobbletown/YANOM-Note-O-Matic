@@ -32,7 +32,7 @@ class PandocConverter:
         self.pandoc_conversion_options = {'q_own_notes': 'markdown_strict+pipe_tables-raw_html',
                                           'gfm': 'gfm',
                                           'obsidian': 'gfm',
-                                          'pandoc markdown': 'markdown',
+                                          'pandoc_markdown': 'markdown',
                                           'commonmark': 'commonmark',
                                           'html': 'html'}
         self.pandoc_options = None

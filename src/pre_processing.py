@@ -7,6 +7,7 @@ from globals import APP_NAME
 import inspect
 from helper_functions import add_strong_between_tags, change_html_tags
 import time
+from sn_attachment import FileNSAttachment
 
 
 def what_module_is_this():
@@ -304,7 +305,7 @@ class ImageTag:
         self._relative_path = ''
         self.__set_ref_and_relative_path()
         self.__set_width()
-        self._processed_tag = f"<img src={self._relative_path} {self._width}>"
+        self._processed_tag = f'<img src="{self._relative_path}" {self._width}>'
         pass
 
     def __set_ref_and_relative_path(self):
@@ -392,6 +393,7 @@ class NoteStationPreProcessing(PreProcessing):
         if self._note.conversion_settings.include_meta_data:
             self.__generate_metadata()
         self.__generate_links_to_other_note_pages()
+        self.__add_attachment_links()
 
     def __create_image_tag_processors(self):
         self.logger.info(f"Cleaning image tags")
@@ -526,3 +528,13 @@ class NoteStationPreProcessing(PreProcessing):
         self.logger.info(f"Creating links between pages")
         link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file)
         self.pre_processed_content = link_generator.content
+
+    def __add_attachment_links(self):
+        attachments = [attachment
+                       for attachment in self._note.attachments.values()
+                       if isinstance(attachment, FileNSAttachment)
+                       ]
+        if attachments:
+            self.pre_processed_content = f'{self.pre_processed_content}<h6>Attachments</h6>'
+            for attachment in  attachments:
+                self.pre_processed_content = f'{self.pre_processed_content}<p>{attachment.html_link}</p>'

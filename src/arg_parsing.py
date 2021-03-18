@@ -61,7 +61,7 @@ class CommandLineParsing:
         settings_from_group.add_argument("-g", "--gui", action="store_true", help="Use gui interface.")
         settings_from_group.add_argument("-i", "--ini", action="store_true",
                                          help="Use config.ini for conversion settings.")
-        settings_from_group.add_argument('-q', "--quickset", choices=['q_own_notes', 'gfm', 'obsidian', 'pdf'],
+        settings_from_group.add_argument('-q', "--quickset", choices=['q_own_notes', 'gfm', 'obsidian', 'commonmark', 'pandoc_markdown', 'html'],
                                          help="Choose a quick conversion setting")
         settings_from_group.add_argument('-m', "--manual", action="store_true",
                                          help="Use manual settings commandline options")
@@ -92,10 +92,6 @@ class CommandLineParsing:
                                            help='Make the first column of tables a header row')
         manual_settings_group.add_argument('--ctef', action="store_true",
                                            help='Add meta creation time to end of note filename')
-        manual_settings_group.add_argument("--images", choices=['strict_md', 'obsidian', 'gfm-html'],
-                                           default='strict_md',
-                                           help="Choose image format for image links.  Default is strict_md."
-                                                "Options are 'strict_md', 'obsidian', 'gfm-html'.")
         manual_settings_group.add_argument('-x', '--export-format', choices=['q_own_notes', 'gfm', 'obsidian', 'pdf'],
                                            default='gfm',
                                            help="Default is 'gfm'.  Options are "
@@ -133,7 +129,6 @@ class CommandLineParsing:
         self.conversion_setting.export_folder_name = vars(self._args)['export_folder']
         self.conversion_setting.attachment_folder_name = vars(self._args)['attachments']
         self.conversion_setting.creation_time_in_exported_file_name = vars(self._args)['ctef']
-        self.conversion_setting.image_link_format = vars(self._args)['images']
 
 
 if __name__ == '__main__':
