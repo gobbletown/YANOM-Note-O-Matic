@@ -3,7 +3,7 @@ import sys
 import inspect
 import logging
 import logging.handlers as handlers
-from nsxfile import NSXFile
+from nsx_file_converter import NSXFile
 from config_data import ConfigData
 from globals import APP_NAME
 from interactive_cli import StartUpCommandLineInterface
@@ -11,6 +11,8 @@ from arg_parsing import CommandLineParsing
 import quick_settings
 from timer import Timer
 from quick_settings import ConversionSettings
+from html_file_converter import HTMLConverter
+
 
 log_filename = 'normal.log'
 error_log_filename = 'error.log'
@@ -69,11 +71,37 @@ class NotesConvertor:
         self.command_line = CommandLineParsing()
         self.config_data = ConfigData('config.ini', 'gfm', allow_no_value=True)
         self.evaluate_command_line_arguments()
-        self.fetch_nsx_backups()
-        self.process_nsx_files()
+        if self.conversion_settings.conversion_input == 'html':
+            self.convert_html()
+        else:
+            self.convert_nsx()
+
         self.output_results_if_not_silent_mode()
         self.log_results()
         self.logger.info("Processing Completed - exiting normally")
+
+    def convert_nsx(self):
+        self.fetch_nsx_backups()
+        self.process_nsx_files()
+
+    @Timer(name="html_conversion", logger=root_logger.info)
+    def convert_html(self):
+        html_files_to_convert = self.generate_html_file_list()
+        self.process_html_files(html_files_to_convert)
+
+    def generate_html_file_list(self):
+        if not self.conversion_settings.source.is_file():
+            return self.conversion_settings.source.rglob('*.html')   # this is duplicating th nsx code except for rglob do not need rglob on nsx files
+        return [self.conversion_settings.source]
+
+    def process_html_files(self, html_files_to_convert):
+        html_file_converter = HTMLConverter(self.conversion_settings)
+        html_file_count = 0
+        for file in html_files_to_convert:
+            html_file_converter.convert(file)
+            html_file_count += 1
+
+        self._note_page_count = html_file_count
 
     def fetch_nsx_backups(self):
         nsx_files_to_convert = self.generate_file_list_to_convert()
@@ -89,7 +117,7 @@ class NotesConvertor:
                 print(f'No .nsx files found at {self.conversion_settings.source}')
             sys.exit(1)
 
-    @Timer(name="conversion", logger=root_logger.info)
+    @Timer(name="nsx_conversion", logger=root_logger.info)
     def process_nsx_files(self):
         for nsx_file in self.nsx_backups:
             nsx_file.process_nsx_file()
@@ -172,10 +200,19 @@ class NotesConvertor:
     def output_results_if_not_silent_mode(self):
         if not self.conversion_settings.silent:
             print("Hello. I'm done")
-            print(f"{self._note_book_count} Note books")
-            print(f"{self._note_page_count} Note Pages")
-            print(f"{self._image_count} Images")
-            print(f"{self._attachment_count} Attachments")
+            self.print_result_if_any(self._note_book_count, 'Note book')
+            self.print_result_if_any(self._note_page_count, 'Note page')
+            self.print_result_if_any(self._image_count, 'Image')
+            self.print_result_if_any(self._attachment_count, 'Attachment')
+
+    @staticmethod
+    def print_result_if_any(conversion_count, message):
+        if conversion_count == 0:
+            return
+        plural = ''
+        if conversion_count > 1:
+            plural = 's'
+        print(f'{conversion_count} {message}{plural}')
 
     def log_results(self):
         self.logger.info(f"{self._note_book_count} Note books")

@@ -111,6 +111,9 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         'execution_mode': {
             'silent': ('True', 'False')
         },
+        'conversion_inputs': {
+            'conversion_input': ('nsx', 'html')
+        },
         'quick_settings': {
             'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'html')
         },
@@ -150,10 +153,12 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         # and the ConfigFileValidationSettings class
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
+        self._valid_conversion_inputs = list(self.validation_values['conversion_inputs']['conversion_input'])
         self._valid_quick_settings = list(self.validation_values['quick_settings']['quick_setting'])
         self._valid_export_formats = list(self.validation_values['export_formats']['export_format'])
         self._silent = False
         self._source = os.getcwd()
+        self._conversion_input = 'nsx'
         self._quick_setting = 'gfm'
         self._export_format = 'gfm'
         self._include_meta_data = True
@@ -173,7 +178,8 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self.set_settings()
 
     def __str__(self):
-        return f"{self.__class__.__name__}(silent={self.silent}, quick_setting='{self.quick_setting}', " \
+        return f"{self.__class__.__name__}(silent={self.silent}, conversion_input={self._conversion_input}, " \
+               f"quick_setting='{self.quick_setting}', " \
                f"export_format='{self.export_format}', include_meta_data={self.include_meta_data}, " \
                f"yaml_header={self.yaml_meta_header_format}, insert_title={self.insert_title}, " \
                f"insert_creation_time={self.insert_creation_time}, insert_modified_time={self.insert_modified_time}, " \
@@ -186,7 +192,8 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"creation_time_in_exported_file_name={self.creation_time_in_exported_file_name})"
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(silent={self.silent}, quick_setting='{self.quick_setting}', " \
+        return f"{self.__class__.__name__}(silent={self.silent}, conversion_input={self._conversion_input}, " \
+               f"quick_setting='{self.quick_setting}', " \
                f"export_format='{self.export_format}', include_meta_data={self.include_meta_data}, " \
                f"yaml_header={self.yaml_meta_header_format}, insert_title={self.insert_title}, " \
                f"insert_creation_time={self.insert_creation_time}, insert_modified_time={self.insert_modified_time}, " \
@@ -201,6 +208,10 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     @abstractmethod
     def set_settings(self):
         pass
+
+    @property
+    def valid_conversion_inputs(self):
+        return self._valid_conversion_inputs
 
     @property
     def valid_quick_settings(self):
@@ -233,6 +244,14 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             if not self.silent:
                 print(f"Invalid source location - {value}")
             raise ConversionSettingsError(f"Invalid source location - {value}")
+
+    @property
+    def conversion_input(self):
+        return self._conversion_input
+
+    @conversion_input.setter
+    def conversion_input(self, value):
+        self._conversion_input = value
 
     @property
     def quick_setting(self):

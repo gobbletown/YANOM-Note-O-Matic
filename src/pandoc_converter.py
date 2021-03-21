@@ -85,22 +85,22 @@ class PandocConverter:
 
         return 'Error converting data'
 
-    def convert_using_fies(self, content, note_title):
-        output_file, input_file = self.create_temporary_files()
-
-        file_options = self.pandoc_options + ['-o', output_file.name, input_file.name]
-
-        Path(input_file.name).write_text(content, 'utf-8')
-        try:
-            pandoc = subprocess.Popen(file_options)
-            pandoc.wait(20)
-            return Path(output_file.name).read_text('utf-8')
-
-        except subprocess.CalledProcessError:
-            self.error_handling(note_title)
-            self.logger.error(f"unable to convert note {note_title} in method {what_method_is_this()}")
-
-        return 'Error converting data'
+    # def convert_using_fies(self, content, note_title):
+    #     output_file, input_file = self.create_temporary_files()
+    #
+    #     file_options = self.pandoc_options + ['-o', output_file.name, input_file.name]
+    #
+    #     Path(input_file.name).write_text(content, 'utf-8')
+    #     try:
+    #         pandoc = subprocess.Popen(file_options)
+    #         pandoc.wait(20)
+    #         return Path(output_file.name).read_text('utf-8')
+    #
+    #     except subprocess.CalledProcessError:
+    #         self.error_handling(note_title)
+    #         self.logger.error(f"unable to convert note {note_title} in method {what_method_is_this()}")
+    #
+    #     return 'Error converting data'
 
     def pandoc_older_than_v_1_16(self):
         return distutils.version.LooseVersion(self.pandoc_version) < distutils.version.LooseVersion('1.16')

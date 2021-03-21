@@ -20,6 +20,31 @@ class MetaDataGenerator(ABC):
     pass
 
 
+class ObsidianImageTagFormatter:
+    def __init__(self, post_processed_content):
+        self._post_processed_content = post_processed_content
+
+    @property
+    def post_processed_content(self):
+        return self._post_processed_content
+
+    def __format_images_obsidian_style(self):
+        images = self.__find_html_image_links()
+
+        for image in images:
+            width = re.findall('width="([0-9]*)"', image)
+
+            file_path = re.match('<img src="(.*?\.\S*)"', image).group(1)
+
+            new_image_tag = f'![|{width[0]}]({file_path})'
+
+            self._post_processed_content = re.sub('<img src=[^>]*width=[^.]*>',
+                                                  new_image_tag, self._post_processed_content)
+
+    def __find_html_image_links(self):
+        return re.findall('<img src=[^>]*width="[0-9]*"[^>]*/>', self._post_processed_content)
+
+
 class PostProcessing(ABC):
     """Abstract class representing a pre conversion note formatting """
 
@@ -65,23 +90,8 @@ class NoteStationPostProcessing(PostProcessing):
 
     def __format_images_links(self):
         if self._conversion_settings.export_format == 'obsidian':
-            self.__format_images_obsidian_style()
-
-    def __format_images_obsidian_style(self):
-        images = self.__find_html_image_links()
-
-        for image in images:
-            width = re.findall('width="([0-9]*)"', image)
-
-            file_path = re.match('<img src="(.*?\.\S*)"', image).group(1)
-
-            new_image_tag = f'![|{width[0]}]({file_path})'
-
-            self._post_processed_content = re.sub('<img src=[^>]*width=[^.]*>',
-                                                  new_image_tag, self._post_processed_content)
-
-    def __find_html_image_links(self):
-        return re.findall('<img src=[^>]*width="[0-9]*"[^>]*/>', self._post_processed_content)
+            obsidian_image_link_formatter = ObsidianImageTagFormatter(self._post_processed_content)
+            self._post_processed_content = obsidian_image_link_formatter.post_processed_content
 
     def __add_one_last_line_break(self):
         self._post_processed_content = f'{self._post_processed_content}\n'

@@ -63,12 +63,38 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
         self._default_settings = config_ini_conversion_settings
-        self._current_conversion_settings = None
+        self._current_conversion_settings = quick_settings.please.provide('manual')
 
     def run_cli(self):
         self.logger.info("Running start up interactive command line")
         show_app_title()
 
+        self.__ask_and_set_conversion_input()
+
+        if self._current_conversion_settings.conversion_input == 'nsx':
+            self.__ask_nsx_conversion_options()
+        else:
+            self.__ask_html_conversion_options()
+
+        self.logger.info(f"Returning settings for {self._current_conversion_settings}")
+        return self._current_conversion_settings
+
+    def __ask_html_conversion_options(self):
+        self.__ask_and_set_conversion_quick_setting()
+
+        if type(self._current_conversion_settings) is ManualConversionSettings:
+            self.__ask_and_set_export_format()
+            if self._current_conversion_settings.export_format == 'html':
+                self.__nothing_to_convert()
+            self.__ask_and_set_export_folder_name()
+            self.__ask_and_set_attachment_folder_name()
+
+    def __nothing_to_convert(self):
+        self.logger.info('Input HTML and output HTML = nothing to convert. Exiting.')
+        print('Input HTML and output HTML = nothing to convert. Exiting.')
+        exit(0)
+
+    def __ask_nsx_conversion_options(self):
         self.__ask_and_set_conversion_quick_setting()
 
         if type(self._current_conversion_settings) is ManualConversionSettings:
@@ -84,11 +110,18 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
             self.__ask_and_set_export_folder_name()
             self.__ask_and_set_attachment_folder_name()
             self.__ask_and_set_creation_time_in_file_name()
-            self.logger.info(f"Returning Manual settings of {self._current_conversion_settings}")
-            return self._current_conversion_settings
 
-        self.logger.info(f"Returning Quick settings for {self._current_conversion_settings.quick_setting}")
-        return self._current_conversion_settings
+
+
+    def __ask_and_set_conversion_input(self):
+        conversion_input_prompt = {
+            'type': 'list',
+            'name': 'conversion_input',
+            'message': 'What do you wish to convert?',
+            'choices': self._default_settings.valid_conversion_inputs
+        }
+        answer = prompt(conversion_input_prompt, style=self.style)
+        self._current_conversion_settings.conversion_input = answer['conversion_input']
 
     def __ask_and_set_conversion_quick_setting(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists
@@ -102,7 +135,9 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
             'choices': ordered_list
         }
         answer = prompt(quick_setting_prompt, style=self.style)
-        self._current_conversion_settings = quick_settings.please.provide(answer['quick_setting'])
+        quick_conversion_settings = quick_settings.please.provide(answer['quick_setting'])
+        quick_conversion_settings.conversion_input = self._current_conversion_settings.conversion_input
+        self._current_conversion_settings = quick_conversion_settings
 
     def __ask_and_set_export_format(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists

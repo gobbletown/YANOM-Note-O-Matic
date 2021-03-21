@@ -217,9 +217,23 @@ class ConfigData(ConfigParser):
         Read a dictionary of config data, formatted for config file generation and store the new config file.
 
         """
+        self.__wipe_current_config()
         self.read_dict(self.__generate_conversion_dict())
         self.logger.info(f"Quick setting {self['quick_settings']['quick_setting']} loaded")
         self.__write_config_file()
+
+    def __wipe_current_config(self):
+        """
+        Wipe the current config sections.
+
+        When using read_dict new sections are added to the end of the current config. so when written to file they
+        are out of place compared to the validation data.  This method is here to save having to manually delete the
+        ini file when coding changes to the conversion dict.  That means it is here to save me having to remember to
+        delete the ini file :-)
+        """
+        for section, keys in self._validation_values.items():
+            self.remove_section(section)
+        pass
 
     def __generate_conversion_dict(self):
         """
@@ -237,6 +251,12 @@ class ConfigData(ConfigParser):
                 '    # silent mode stops any output to the command line during execution': None,
                 '    # and disables the interactive command line interface.': None,
                 'silent': False
+            },
+            'conversion_inputs': {
+                f'    # Valid entries are {", ".join(self._conversion_settings.valid_conversion_inputs)}': None,
+                '     #  nsx = synolpgy Note Station Export file': None,
+                '     #  html = simple html based notes pages, no complex CSS or html code': None,
+                'conversion_input': self._conversion_settings.conversion_input
             },
             'quick_settings': {
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_export_formats)}': None,
