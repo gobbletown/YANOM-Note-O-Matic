@@ -4,6 +4,7 @@ from globals import APP_NAME
 import inspect
 import re
 
+
 def what_module_is_this():
     return __name__
 
@@ -15,9 +16,9 @@ def what_method_is_this():
 def what_class_is_this(obj):
     return obj.__class__.__name__
 
-
-class MetaDataGenerator(ABC):
-    pass
+#
+# class MetaDataGenerator(ABC):
+#     pass
 
 
 class ObsidianImageTagFormatter:
@@ -83,10 +84,7 @@ class NoteStationPostProcessing(PostProcessing):
             return
 
     def __add_check_lists(self):
-        for checklist_item in self._pre_processor.check_list_items.values():
-            search_for = f'check-list-{str(id(checklist_item))}'
-            replace_with = f'{checklist_item.processed_item}  '
-            self._post_processed_content = self._post_processed_content.replace(search_for, replace_with)
+        self._post_processed_content = self._note.pre_processor.checklist_processor.add_checklist_items_to(self._post_processed_content)
 
     def __format_images_links(self):
         if self._conversion_settings.export_format == 'obsidian':

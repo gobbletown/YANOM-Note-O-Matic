@@ -7,6 +7,7 @@ from globals import APP_NAME
 import inspect
 from helper_functions import add_strong_between_tags, change_html_tags
 from sn_attachment import FileNSAttachment
+from src.checklist_processing import NSXInputMDOutputChecklistProcessor, NSXInputHTMLOutputChecklistProcessor
 from src.image_processing import ImageTag
 from src.inter_note_link_processing import SNLinksToOtherNotes
 from src.metadata_processing import NSMetaDataGenerator
@@ -22,92 +23,6 @@ def what_method_is_this():
 
 def what_class_is_this(obj):
     return obj.__class__.__name__
-
-
-class CheckListItem(ABC):
-    def __init__(self, raw_item_html):
-        self._raw_item_html = raw_item_html
-        self._processed_item = str
-        self._item_checked = False
-        self._item_text = str
-        self._check_list_level = 1
-        self.find_item_text()
-        self.find_status()
-        self.find_item_level()
-        self.build_processed_item()
-
-    @property
-    def raw_item_html(self):
-        return self._raw_item_html
-
-    @property
-    def processed_item(self):
-        return self._processed_item
-
-    @property
-    def check_list_level(self):
-        return self._check_list_level
-
-    @check_list_level.setter
-    def check_list_level(self, value):
-        self._check_list_level = value
-
-    @abstractmethod
-    def build_processed_item(self):
-        pass
-
-    def find_item_text(self):
-        matches = re.findall('<input type="checkbox"[^>]*>([^<]*)', self._raw_item_html)
-        self._item_text = matches[0]
-
-    @abstractmethod
-    def find_status(self):
-        pass
-
-    @abstractmethod
-    def find_item_level(self):
-        pass
-
-
-class NSCheckListItem(CheckListItem):
-    def build_processed_item(self):
-        pass
-
-    def find_item_text(self):
-        matches = re.findall('<input class=[^>]*syno-notestation-editor-checkbox[^>]*src=[^>]*type=[^>]*>([^<]*)',
-                             self._raw_item_html)
-        self._item_text = matches[0]
-
-    def find_status(self):
-        matches = re.findall('syno-notestation-editor-checkbox-checked', self._raw_item_html)
-        if matches:
-            self._item_checked = True
-
-    def find_item_level(self):
-        matches = re.findall('[0-9]{2}', self._raw_item_html)
-        if matches:
-            indent = int(matches[0])
-            self._check_list_level = indent // 30
-
-
-class GenerateNSMarkdownCheckListItem(NSCheckListItem):
-    def build_processed_item(self):
-        tabs = '\t' * self._check_list_level
-        checked = ' '
-        if self._item_checked:
-            checked = 'x'
-
-        self._processed_item = f"{tabs}- [{checked}] {self._item_text}"
-
-
-class GenerateNSHTMLCheckListItem(NSCheckListItem):
-    def build_processed_item(self):
-        indent = self._check_list_level * 30
-        checked = ''
-        if self._item_checked:
-            checked = 'checked'
-
-        self._processed_item = f'<p style="padding-left: {indent}px;"><input type="checkbox" {checked}/>{self._item_text}</p> '
 
 
 class PreProcessing(ABC):
@@ -136,7 +51,7 @@ class NoteStationPreProcessing(PreProcessing):
         self._image_tags = {}
         self._image_tag_processors = []
         self._image_ref_to_image_path = {}
-        self._check_list_items = {}
+        self._checklist_processor = None
         self._charts = []
         self._header_generator = None
         self.pre_process_note_page()
@@ -146,17 +61,17 @@ class NoteStationPreProcessing(PreProcessing):
     def pre_processed_content(self):
         return self._pre_processed_content
 
+    @pre_processed_content.setter
+    def pre_processed_content(self, content):
+        self._pre_processed_content = content
+
     @property
     def header_generator(self):
         return self._header_generator
 
     @property
-    def check_list_items(self):
-        return self._check_list_items
-
-    @pre_processed_content.setter
-    def pre_processed_content(self, content):
-        self._pre_processed_content = content
+    def checklist_processor(self):
+        return self._checklist_processor
 
     def pre_process_note_page(self):
         self.logger.info(f"Pre processing of note page {self._note.title}")
@@ -207,38 +122,15 @@ class NoteStationPreProcessing(PreProcessing):
         self._pre_processed_content = self._pre_processed_content.replace('</li><ul>', '<ul>')
         self._pre_processed_content = self._pre_processed_content.replace('</li></ul>', '</li></li></ul>')
 
-    def __generate_dict_of_checklist_generators(self, raw_checklists_items):
-        if self._note.conversion_settings.export_format == 'html':
-            check_list_items = [GenerateNSHTMLCheckListItem(item) for item in raw_checklists_items]
-        else:
-            check_list_items = [GenerateNSMarkdownCheckListItem(item) for item in raw_checklists_items]
-
-        self._check_list_items = {id(item): item for item in check_list_items}
-
-    def __add_checklists_to_pre_processed_content(self):
-        if self._note.conversion_settings.export_format == 'html':
-            for item in self._check_list_items.values():
-                # For html export replace synology html with newly generated html
-                self._pre_processed_content = self._pre_processed_content.replace(item.raw_item_html,
-                                                                                  item.processed_item)
-            return
-
-        for item in self._check_list_items.values():
-            # Using 'check-list-id(item)' as a checklist item place holder as pandoc cannot convert checklists,
-            # the unique id will be used to replace the id with good checklist items in post processing.
-            self._pre_processed_content = self._pre_processed_content.replace(item.raw_item_html,
-                                                                              f'check-list-{str(id(item))}<br/>')
-
     def __fix_check_lists(self):
         self.logger.info(f"Cleaning check lists")
 
-        raw_checklists_items = re.findall(
-            '<p[^>]*><input class=[^>]*syno-notestation-editor-checkbox[^>]*src=[^>]*type=[^>]*>[^<]*</p>',
-            self._pre_processed_content)
+        if self._note.conversion_settings.export_format == 'html':
+            self._checklist_processor = NSXInputHTMLOutputChecklistProcessor(self._pre_processed_content)
+        else:
+            self._checklist_processor = NSXInputMDOutputChecklistProcessor(self._pre_processed_content)
 
-        self.__generate_dict_of_checklist_generators(raw_checklists_items)
-
-        self.__add_checklists_to_pre_processed_content()
+        self._pre_processed_content = self._checklist_processor.processed_html
 
     def __extract_and_generate_chart(self):
         self.logger.info(f"Cleaning charts")

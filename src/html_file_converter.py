@@ -4,7 +4,7 @@ from globals import APP_NAME
 import inspect
 from pathlib import Path
 from post_processing import ObsidianImageTagFormatter
-from checklist_processing import HTMLInputChecklistProcessor
+from checklist_processing import HTMLInputMDOutputChecklistProcessor
 
 
 def what_module_is_this():
@@ -54,7 +54,7 @@ class HTMLConverter:
         output_path.write_text(self._post_processed_content, encoding="utf-8")
 
     def __pre_process_content(self):
-        self._checklist_processor = HTMLInputChecklistProcessor(self._html_file_content)
+        self._checklist_processor = HTMLInputMDOutputChecklistProcessor(self._html_file_content)
         self._pre_processed_content = self._checklist_processor.processed_html
 
     def __post_process_content(self):

@@ -22,7 +22,6 @@ class ChecklistItem:
             checked = 'x'
 
         self._markdown_item_text = f"{tabs}- [{checked}] {self._text}"
-        pass
 
     @property
     def placeholder_text(self):
@@ -56,6 +55,10 @@ class ChecklistItem:
     def markdown_item_text(self):
         return self._markdown_item_text
 
+    @property
+    def clean_html(self):
+        return self._clean_html
+
 
 class ChecklistProcessor(ABC):
     def __init__(self, html):
@@ -86,24 +89,23 @@ class ChecklistProcessor(ABC):
 
             this_checklist_item.indent = self.find_indent(tag)
 
-            self.replace_html_with_placeholder_text(tag, this_checklist_item)
+            self.replace_item_html_with_new_text(tag, this_checklist_item)
 
             self._list_of_checklist_items.append(this_checklist_item)
 
-        self.__calculate_indents_and_generate_markdown_checklist_item()
+        self.__calculate_indents_and_generate_cleaned_checklist_items()
 
         self._processed_html = str(self._soup)
 
-    def __calculate_indents_and_generate_markdown_checklist_item(self):
-        set_of_indents = {item.indent for item in self._list_of_checklist_items if item.indent > 0}
+    def __calculate_indents_and_generate_cleaned_checklist_items(self):
+        set_of_indents = {item.indent for item in self._list_of_checklist_items}
 
         list_of_indents = sorted(set_of_indents)
 
         indent_level_lookup = {list_of_indents[level]: level for level in range(0, len(list_of_indents))}
 
         for item in self._list_of_checklist_items:
-            if item.indent > 0:
-                item.indent = indent_level_lookup[item.indent]
+            item.indent = indent_level_lookup[item.indent]
             item.generate_markdown_item_text()
 
     def add_checklist_items_to(self, markdown_text):
@@ -119,29 +121,8 @@ class ChecklistProcessor(ABC):
 
     @staticmethod
     @abstractmethod
-    def find_checklist_item_text(tag):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def find_indent(tag):
-        pass
-
-    @staticmethod
-    @abstractmethod
     def find_checked_status(tag):
         pass
-
-    @staticmethod
-    @abstractmethod
-    def replace_html_with_placeholder_text(tag, this_checklist_item):
-        pass
-
-
-class HTMLInputChecklistProcessor(ChecklistProcessor):
-
-    def find_all_checklist_items(self):
-        return self._soup.select('input[type="checkbox"]')
 
     @staticmethod
     def find_checklist_item_text(tag):
@@ -157,12 +138,42 @@ class HTMLInputChecklistProcessor(ChecklistProcessor):
         return 0
 
     @staticmethod
+    def replace_item_html_with_new_text(tag, this_checklist_item):
+        tag.parent.replace_with(f'{this_checklist_item.placeholder_text}')
+
+
+class HTMLInputMDOutputChecklistProcessor(ChecklistProcessor):
+
+    def find_all_checklist_items(self):
+        return self._soup.select('input[type="checkbox"]')
+
+    @staticmethod
     def find_checked_status(tag):
         return 'checked' in tag.attrs
 
+
+class NSXInputMDOutputChecklistProcessor(ChecklistProcessor):
+
+    def find_all_checklist_items(self):
+        checked = self._soup.select(
+            'input[class="syno-notestation-editor-checkbox syno-notestation-editor-checkbox-checked"]')
+        unchecked = self._soup.select('input[class="syno-notestation-editor-checkbox"]')
+
+        return checked + unchecked
+
     @staticmethod
-    def replace_html_with_placeholder_text(tag, this_checklist_item):
-        tag.parent.replace_with(f'{this_checklist_item.placeholder_text}')
+    def find_checked_status(tag):
+        return 'syno-notestation-editor-checkbox-checked' in tag.attrs['class']
+
+
+class NSXInputHTMLOutputChecklistProcessor(NSXInputMDOutputChecklistProcessor):
+    def replace_item_html_with_new_text(self, tag, this_checklist_item):
+        del tag['class']
+        del tag['src']
+        del tag['type']
+        if this_checklist_item.checked:
+            tag['checked'] = ''
+        tag['type'] = 'checkbox'
 
 
 if __name__ == '__main__':
