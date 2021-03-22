@@ -2,7 +2,7 @@ from sn_notebook import Notebook
 from sn_note_page import NotePage
 from sn_zipfile_reader import NSXZipFileReader
 from sn_note_writer import NoteWriter
-from sn_pandoc_converter import PandocConverter
+from pandoc_converter import PandocConverter
 import logging
 from globals import APP_NAME
 import inspect
@@ -26,7 +26,6 @@ class NSXFile:
     def __init__(self, file, conversion_settings):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
-        self.logger.info(f'{__name__} - Creating an instance of {what_class_is_this(self)}')
         self._conversion_settings = conversion_settings
         self._nsx_file_name = file
         self._zipfile_reader = NSXZipFileReader(self._nsx_file_name)

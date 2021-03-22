@@ -10,6 +10,7 @@ custom-inherit = "*"
 numpy = "*"
 matplotlib = "*"
 pandas = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 

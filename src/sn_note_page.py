@@ -4,7 +4,7 @@ from sn_note_writer import NoteWriter
 import logging
 from globals import APP_NAME
 import inspect
-from pre_processing import NoteStationPreProcessing
+from nsx_pre_processing import NoteStationPreProcessing
 from post_processing import NoteStationPostProcessing
 
 
