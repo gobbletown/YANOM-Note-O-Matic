@@ -56,6 +56,7 @@ class HTMLConverter:
     def __pre_process_content(self):
         self._checklist_processor = HTMLInputMDOutputChecklistProcessor(self._html_file_content)
         self._pre_processed_content = self._checklist_processor.processed_html
+        # self._pre_processed_content = self._html_file_content
 
     def __post_process_content(self):
         self._post_processed_content = self._converted_content

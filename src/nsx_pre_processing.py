@@ -1,7 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from sn_attachment import ChartStringNSAttachment, ChartImageNSAttachment
-from chart_processing import NSChart
+from chart_processing import NSXChartProcessor
 import logging
 from globals import APP_NAME
 import inspect
@@ -114,13 +113,14 @@ class NoteStationPreProcessing(PreProcessing):
 
     def __fix_ordered_list(self):
         self.logger.info(f"Cleaning number lists")
-        self._pre_processed_content = self._pre_processed_content.replace('</li><ol>', '<ol>')
-        self._pre_processed_content = self._pre_processed_content.replace('</li></ol>', '</li></li></ol>')
+        self._pre_processed_content = self._pre_processed_content.replace('</li><ol><li>', '<ol><li>')
+        self._pre_processed_content = self._pre_processed_content.replace('</li></ol><li>', '</li></ol></li><li>')
+
 
     def __fix_unordered_list(self):
         self.logger.info(f"Cleaning bullet lists")
-        self._pre_processed_content = self._pre_processed_content.replace('</li><ul>', '<ul>')
-        self._pre_processed_content = self._pre_processed_content.replace('</li></ul>', '</li></li></ul>')
+        self._pre_processed_content = self._pre_processed_content.replace('</li><ul><li>', '<ul><li>')
+        self._pre_processed_content = self._pre_processed_content.replace('</li></ul><li>', '</li></ul></li><li>')
 
     def __fix_check_lists(self):
         self.logger.info(f"Cleaning check lists")
@@ -131,38 +131,14 @@ class NoteStationPreProcessing(PreProcessing):
             self._checklist_processor = NSXInputMDOutputChecklistProcessor(self._pre_processed_content)
 
         self._pre_processed_content = self._checklist_processor.processed_html
+        pass
 
     def __extract_and_generate_chart(self):
         self.logger.info(f"Cleaning charts")
-        raw_charts_html = re.findall('<p[^>]*><p class=[^>]*syno-ns-chart-object[^>]*></p>',
-                                     self._pre_processed_content)
 
-        if raw_charts_html:
-            self._charts = {NSChart(raw_chart): raw_chart for raw_chart in raw_charts_html}
+        chart_processor = NSXChartProcessor(self._note, self._pre_processed_content)
 
-            for chart, raw_chart_html in self._charts.items():
-                self.__generate_csv_attachment(chart)
-                self.__generate_png_attachment(chart)
-                self.__replace_raw_chart_html_with_pre_processed_html(chart, raw_chart_html)
-
-    def __generate_csv_attachment(self, chart):
-        self._note.attachments[f"{id(chart)}.csv"] = ChartStringNSAttachment(self._note, f"{id(chart)}.csv",
-                                                                             chart.csv_chart_data_string)
-        self._note.attachment_count += 1
-
-    def __generate_png_attachment(self, chart):
-        self._note.attachments[f"{id(chart)}.png"] = ChartImageNSAttachment(self._note, f"{id(chart)}.png",
-                                                                            chart.png_img_buffer)
-        self._note.image_count += 1
-
-    def __generate_replacement_html(self, chart):
-        return f"<p>{self._note.attachments[f'{id(chart)}.png'].html_link}</p>" \
-               f"<p>{self._note.attachments[f'{id(chart)}.csv'].html_link}</p>" \
-               f"<p>{chart.html_chart_data_table}</p>"
-
-    def __replace_raw_chart_html_with_pre_processed_html(self, chart, raw_charts_html):
-        replacement_html = self.__generate_replacement_html(chart)
-        self.pre_processed_content = self.pre_processed_content.replace(raw_charts_html, replacement_html)
+        self._pre_processed_content = chart_processor.processed_html
 
     def __fix_table_headers(self):
         self.logger.info(f"Cleaning table headers")
