@@ -84,18 +84,18 @@ class NotesConvertor:
         self.log_results()
         self.logger.info("Processing Completed - exiting normally")
 
-    @Timer(name="md_conversion", logger=root_logger.info)
     def convert_markdown(self):
-        file_extension = 'md'
-        md_files_to_convert = self.generate_file_list(file_extension)
-        self.exit_if_no_files_found(md_files_to_convert, file_extension)
+        with Timer(name="md_conversion", logger=root_logger.info, silent=self.conversion_settings.silent):
+            file_extension = 'md'
+            md_files_to_convert = self.generate_file_list(file_extension)
+            self.exit_if_no_files_found(md_files_to_convert, file_extension)
 
-        if self.conversion_settings.export_format == 'html':
-            md_file_converter = MDToHTMLConverter(self.conversion_settings, md_files_to_convert)
-        else:
-            md_file_converter = MDToMDConverter(self.conversion_settings, md_files_to_convert)
+            if self.conversion_settings.export_format == 'html':
+                md_file_converter = MDToHTMLConverter(self.conversion_settings, md_files_to_convert)
+            else:
+                md_file_converter = MDToMDConverter(self.conversion_settings, md_files_to_convert)
 
-        self.process_files(md_files_to_convert, md_file_converter)
+            self.process_files(md_files_to_convert, md_file_converter)
 
     def generate_file_list(self, file_extension):
         if not self.conversion_settings.source.is_file():
@@ -119,13 +119,13 @@ class NotesConvertor:
 
         self._note_page_count = file_count
 
-    @Timer(name="html_conversion", logger=root_logger.info)
     def convert_html(self):
-        file_extension = 'html'
-        html_files_to_convert = self.generate_file_list(file_extension)
-        self.exit_if_no_files_found(html_files_to_convert, file_extension)
-        html_file_converter = HTMLToMDConverter(self.conversion_settings, html_files_to_convert)
-        self.process_files(html_files_to_convert, html_file_converter)
+        with Timer(name="html_conversion", logger=root_logger.info, silent=self.conversion_settings.silent):
+            file_extension = 'html'
+            html_files_to_convert = self.generate_file_list(file_extension)
+            self.exit_if_no_files_found(html_files_to_convert, file_extension)
+            html_file_converter = HTMLToMDConverter(self.conversion_settings, html_files_to_convert)
+            self.process_files(html_files_to_convert, html_file_converter)
 
     def convert_nsx(self):
         self.fetch_nsx_backups()
@@ -139,11 +139,11 @@ class NotesConvertor:
 
         self.nsx_backups = [NSXFile(file, self.conversion_settings) for file in nsx_files_to_convert]
 
-    @Timer(name="nsx_conversion", logger=root_logger.info)
     def process_nsx_files(self):
-        for nsx_file in self.nsx_backups:
-            nsx_file.process_nsx_file()
-            self.update_processing_stats(nsx_file)
+        with Timer(name="nsx_conversion", logger=root_logger.info, silent=self.conversion_settings.silent):
+            for nsx_file in self.nsx_backups:
+                nsx_file.process_nsx_file()
+                self.update_processing_stats(nsx_file)
 
     def update_processing_stats(self, nsx_file):
         self._note_page_count += nsx_file.note_page_count
@@ -161,22 +161,16 @@ class NotesConvertor:
             self.configure_for_ini_settings()
             return
 
-        if self.command_line.args['manual']:
-            self.configure_for_manual_settings()
-            return
-
-        if not (self.command_line.args['quickset'] is None):
-            self.configure_for_quick_setting()
-            return
-
         if self.command_line.args['silent']:
-            root_logger.warning(f"Command line option -s  --silent used without -m, -g, q, or -i.  "
+            root_logger.warning(f"Command line option -s  --silent used without -g or -i.  "
                                 f"Unable to use Interactive command line due to silence request.  "
                                 f"Exiting program")
             sys.exit(0)
 
         root_logger.info("Starting interactive command line tool")
         self.run_interactive_command_line_interface()
+        return
+
 
     def add_file_paths_from_command_line_to_settings(self):
         self.conversion_settings.source = self.command_line.args['source']
