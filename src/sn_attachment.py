@@ -13,7 +13,7 @@ class NSAttachment(Attachment):
     def __init__(self, note, attachment_id):
         super(NSAttachment, self).__init__(note, attachment_id)
         self._nsx_file = self._note.nsx_file
-        self._json = self._note.json_data
+        self._json = self._note.note_json
         self._notebook_folder_name = note.notebook_folder_name
         self._conversion_settings = self._nsx_file.conversion_settings
         self._file_name = ''

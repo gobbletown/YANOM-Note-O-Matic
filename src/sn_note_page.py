@@ -5,7 +5,7 @@ import logging
 from globals import APP_NAME
 import inspect
 from nsx_pre_processing import NoteStationPreProcessing
-from post_processing import NoteStationPostProcessing
+from nsx_post_processing import NoteStationPostProcessing
 
 
 def what_module_is_this():
@@ -134,7 +134,7 @@ class NotePage:
         return self._converted_content
 
     @property
-    def json_data(self):
+    def note_json(self):
         return self._note_json
 
     @property

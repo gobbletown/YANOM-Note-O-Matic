@@ -11,6 +11,10 @@ numpy = "*"
 matplotlib = "*"
 pandas = "*"
 beautifulsoup4 = "*"
+python-frontmatter = "*"
+testfixtures = "*"
+coverage = "*"
+yanom = {editable = true, path = "."}
 
 [dev-packages]
 

@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as pyplot
 import io
 from sn_attachment import ChartStringNSAttachment, ChartImageNSAttachment
+from helper_functions import add_strong_between_tags
 
 
 def what_module_is_this():
@@ -68,9 +69,9 @@ class Chart(ABC):
         self._html_chart_data_table = self._df.to_html(formatters={'percent': '{:,.2f}'.format})
         self._html_chart_data_table = self._html_chart_data_table.replace('\n', '')
         self._html_chart_data_table = re.sub(">\s*<", '><', self._html_chart_data_table)
+        self._html_chart_data_table = add_strong_between_tags('<th>', '</th>', self._html_chart_data_table)
 
     def make_csv_chart_data_string(self):
-        print(self._df)
         self._csv_chart_data_string = self._df.to_csv()
 
     @property

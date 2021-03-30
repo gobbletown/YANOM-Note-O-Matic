@@ -71,47 +71,15 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
         self.__ask_and_set_conversion_input()
 
+        if self._current_conversion_settings.conversion_input == 'markdown':
+            self.__ask_markdown_conversion_options()
+        if self._current_conversion_settings.conversion_input == 'html':
+            self.__ask_html_conversion_options()
         if self._current_conversion_settings.conversion_input == 'nsx':
             self.__ask_nsx_conversion_options()
-        else:
-            self.__ask_html_conversion_options()
 
         self.logger.info(f"Returning settings for {self._current_conversion_settings}")
         return self._current_conversion_settings
-
-    def __ask_html_conversion_options(self):
-        self.__ask_and_set_conversion_quick_setting()
-
-        if type(self._current_conversion_settings) is ManualConversionSettings:
-            self.__ask_and_set_export_format()
-            if self._current_conversion_settings.export_format == 'html':
-                self.__nothing_to_convert()
-            self.__ask_and_set_export_folder_name()
-            self.__ask_and_set_attachment_folder_name()
-
-    def __nothing_to_convert(self):
-        self.logger.info('Input HTML and output HTML = nothing to convert. Exiting.')
-        print('Input HTML and output HTML = nothing to convert. Exiting.')
-        exit(0)
-
-    def __ask_nsx_conversion_options(self):
-        self.__ask_and_set_conversion_quick_setting()
-
-        if type(self._current_conversion_settings) is ManualConversionSettings:
-            self.__ask_and_set_export_format()
-            if self._current_conversion_settings.export_format == 'html':
-                self.__set_meta_data_for_html()
-            else:
-                self.__ask_and_set_include_metadata()
-                if self._current_conversion_settings.include_meta_data:
-                    self.__ask_and_set_metadata_details()
-                    self.__ask_and_set_tag_prefix()
-            self.__ask_and_set_table_details()
-            self.__ask_and_set_export_folder_name()
-            self.__ask_and_set_attachment_folder_name()
-            self.__ask_and_set_creation_time_in_file_name()
-
-
 
     def __ask_and_set_conversion_input(self):
         conversion_input_prompt = {
@@ -122,6 +90,85 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         }
         answer = prompt(conversion_input_prompt, style=self.style)
         self._current_conversion_settings.conversion_input = answer['conversion_input']
+        if answer['conversion_input'] == 'nsx':
+            self._current_conversion_settings.metadata_schema = 'title, ctime, mtime, tag'
+
+    def __ask_markdown_conversion_options(self):
+        self.__ask_and_set_markdown_input_format()
+
+        if type(self._current_conversion_settings) is ManualConversionSettings:
+            self.__ask_and_set_export_format()
+            if self._current_conversion_settings.export_format == self._current_conversion_settings.markdown_conversion_input:
+                self.__nothing_to_convert()
+            if not self._current_conversion_settings.export_format == 'html':
+                self.__ask_and_set_front_matter_format()
+                self.__ask_and_set_creation_time_in_file_name()
+                if self._current_conversion_settings.front_matter_format != 'none':
+                    self.__ask_and_set_metadata_details()
+                    if self._current_conversion_settings.front_matter_format != 'any':
+                        self.__ask_and_set_metadata_schema()
+                    self.__ask_and_set_tag_prefix()
+
+
+    def __ask_html_conversion_options(self):
+        self.__ask_and_set_conversion_quick_setting()
+        if self._current_conversion_settings.quick_setting == 'html':
+            self.__nothing_to_convert()
+
+        if type(self._current_conversion_settings) is ManualConversionSettings:
+            self.__ask_and_set_export_format()
+            if self._current_conversion_settings.export_format == 'html':
+                self.__nothing_to_convert()
+            self.__ask_and_set_creation_time_in_file_name()
+            self.__ask_and_set_metadata_schema()
+
+    def __nothing_to_convert(self):
+        self.logger.info('Input and output formats are the same nothing to convert. Exiting.')
+        if not self._default_settings.silent:
+            print('Input and output formats are the same nothing to convert. Exiting.')
+        exit(0)
+
+    def __ask_and_set_markdown_input_format(self):
+        markdown_conversion_input = {
+            'type': 'list',
+            'name': 'markdown_conversion_input',
+            'message': 'What is the format of your current markdown files?',
+            'choices': self._default_settings.valid_markdown_conversion_inputs
+        }
+        answer = prompt(markdown_conversion_input, style=self.style)
+        self._current_conversion_settings.markdown_conversion_input = answer['markdown_conversion_input']
+
+    def __ask_and_set_front_matter_format(self):
+        front_matter_format = {
+            'type': 'list',
+            'name': 'front_matter_format',
+            'message': 'What is the format of meta daat front matter do you wish to use?',
+            'choices': self._default_settings.valid_front_matter_formats
+        }
+        answer = prompt(front_matter_format, style=self.style)
+        self._current_conversion_settings.front_matter_format = answer['front_matter_format']
+
+    def __ask_nsx_conversion_options(self):
+        self.__ask_and_set_conversion_quick_setting()
+
+        if type(self._current_conversion_settings) is ManualConversionSettings:
+            self.__ask_and_set_export_format()
+            if self._current_conversion_settings.export_format == 'html':
+                self.__ask_and_set_metadata_schema()
+            else:
+                self.__ask_markdown_metadata_questions()
+            self.__ask_and_set_table_details()
+            self.__ask_and_set_export_folder_name()
+            self.__ask_and_set_attachment_folder_name()
+            self.__ask_and_set_creation_time_in_file_name()
+
+    def __ask_markdown_metadata_questions(self):
+        self.__ask_and_set_front_matter_format()
+        if self._current_conversion_settings.front_matter_format != 'none':
+            self.__ask_and_set_metadata_details()
+            if self._current_conversion_settings.front_matter_format != 'any':
+                self.__ask_and_set_metadata_schema()
+            self.__ask_and_set_tag_prefix()
 
     def __ask_and_set_conversion_quick_setting(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists
@@ -181,29 +228,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                 'message': 'Select meta data details',
                 'name': 'metadata_details',
                 'choices': [
-                    Separator('= Use YAML header ='),
-                    {
-                        'name': 'YAML header',
-                        'checked': self._default_settings.yaml_meta_header_format
-                    },
-                    Separator('= Note Details ='),
-                    {
-                        'name': 'Title included',
-                        'checked': self._default_settings.insert_title
-                    },
-                    {
-                        'name': 'Creation time included',
-                        'checked': self._default_settings.insert_creation_time
-                    },
-                    {
-                        'name': 'Modified time included',
-                        'checked': self._default_settings.insert_modified_time
-                    },
                     Separator('= Tag options ='),
-                    {
-                        'name': 'Tags included',
-                        'checked': self._default_settings.include_tags
-                    },
                     {
                         'name': 'Spaces in tags',
                         'checked': self._default_settings.spaces_in_tags
@@ -218,26 +243,23 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
         answers = prompt(questions, style=self.style)
 
-        if 'YAML header' in answers['metadata_details']:
-            self._current_conversion_settings.yaml_meta_header_format = True
-
-        if 'Title included' in answers['metadata_details']:
-            self._current_conversion_settings.insert_title = True
-
-        if 'Creation time included' in answers['metadata_details']:
-            self._current_conversion_settings.insert_creation_time = True
-
-        if 'Modified time included' in answers['metadata_details']:
-            self._current_conversion_settings.insert_modified_time = True
-
-        if 'Tags included' in answers['metadata_details']:
-            self._current_conversion_settings.include_tags = True
-
         if 'Spaces in tags' in answers['metadata_details']:
             self._current_conversion_settings.spaces_in_tags = True
 
         if 'Split tags' in answers['metadata_details']:
             self._current_conversion_settings.split_tags = True
+
+    def __ask_and_set_metadata_schema(self):
+        questions = [
+            {
+                'type': 'input',
+                'name': 'metadata_schema',
+                'message': 'Enter comma delimited list of metadata tags to look for.  Leave blank to use any tags found.',
+                'default': ", ".join(self._current_conversion_settings.metadata_schema)
+            },
+        ]
+        answer = prompt(questions, style=self.style)
+        self._current_conversion_settings.metadata_schema = answer['metadata_schema']
 
     def __ask_and_set_table_details(self):
         questions = [
@@ -275,7 +297,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                 'name': 'tag_prefix',
                 'message': 'Enter a tag prefix e.g. # or @',
                 'default': self._default_settings.tag_prefix
-            },
+            }
         ]
 
         answer = prompt(questions, style=self.style)
@@ -288,7 +310,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                 'name': 'export_folder_name',
                 'message': 'Enter a directory name for notes to be exported to',
                 'default': str(self._default_settings.export_folder_name)
-            },
+            }
         ]
         answers = prompt(questions, style=self.style)
         self._current_conversion_settings.export_folder_name = answers['export_folder_name']
@@ -333,12 +355,27 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                 'message': 'Include creation time in the file name',
                 'name': 'creation_time_in_exported_file_name',
                 'default': self._default_settings.creation_time_in_exported_file_name,
+            }
+        ]
+
+        answers = prompt(questions, style=self.style)
+        self._current_conversion_settings.creation_time_in_exported_file_name = \
+            answers['creation_time_in_exported_file_name']
+
+        if answers['creation_time_in_exported_file_name'] == False:
+            return
+
+        questions = [
+            {
+                'type': 'input',
+                'name': 'creation_time_key',
+                'message': 'Enter a the metadata key/id for creation time g.g. ctime',
+                'default': str(self._default_settings.creation_time_key)
             },
         ]
 
         answers = prompt(questions, style=self.style)
-        self._current_conversion_settings.creation_time_in_exported_file_name = answers[
-            'creation_time_in_exported_file_name']
+        self._current_conversion_settings.creation_time_key = answers['creation_time_key']
 
 
 class InvalidConfigFileCommandLineInterface(InquireCommandLineInterface):

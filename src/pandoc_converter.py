@@ -34,6 +34,7 @@ class PandocConverter:
                                           'obsidian': 'gfm',
                                           'pandoc_markdown': 'markdown',
                                           'commonmark': 'commonmark',
+                                          'pandoc_markdown_strict': 'markdown_strict',
                                           'html': 'html'}
         self.pandoc_options = None
         self.check_pandoc_is_installed_if_not_exit_program()
@@ -58,7 +59,8 @@ class PandocConverter:
     def generate_pandoc_options(self):
         self.logger.info(
             f"Pandoc configured for export format - '{self.pandoc_conversion_options[self.output_file_format]}'")
-        self.pandoc_options = ['pandoc', '-f', 'html', '-s', '-t',
+        input_format = self.calculate_input_format()
+        self.pandoc_options = ['pandoc', '-f', input_format, '-s', '-t',
                                self.pandoc_conversion_options[self.output_file_format]]
 
         if self.pandoc_older_than_v_1_16():
@@ -75,32 +77,21 @@ class PandocConverter:
 
         self.pandoc_options = self.pandoc_options + ['--wrap=none', '--markdown-headings=atx']
 
-    def convert_using_strings(self, input_data, note_title):
+    def calculate_input_format(self):
+        if self.conversion_settings.conversion_input == 'nsx' or self.conversion_settings.conversion_input == 'html':
+            return 'html'
+        if self.conversion_settings.conversion_input == 'markdown':
+            return self.pandoc_conversion_options[self.conversion_settings.markdown_conversion_input]
+
+    def convert_using_strings(self, input_data, name):
         try:
             out = subprocess.run(self.pandoc_options, input=input_data, capture_output=True, text=True, timeout=20)
             return out.stdout
         except subprocess.CalledProcessError:
-            self.logger.error(f" unable to convert note {note_title} in method {what_method_is_this()}")
-            self.error_handling(note_title)
+            self.logger.error(f" unable to convert note {name} in method {what_method_is_this()}")
+            self.error_handling(name)
 
         return 'Error converting data'
-
-    # def convert_using_fies(self, content, note_title):
-    #     output_file, input_file = self.create_temporary_files()
-    #
-    #     file_options = self.pandoc_options + ['-o', output_file.name, input_file.name]
-    #
-    #     Path(input_file.name).write_text(content, 'utf-8')
-    #     try:
-    #         pandoc = subprocess.Popen(file_options)
-    #         pandoc.wait(20)
-    #         return Path(output_file.name).read_text('utf-8')
-    #
-    #     except subprocess.CalledProcessError:
-    #         self.error_handling(note_title)
-    #         self.logger.error(f"unable to convert note {note_title} in method {what_method_is_this()}")
-    #
-    #     return 'Error converting data'
 
     def pandoc_older_than_v_1_16(self):
         return distutils.version.LooseVersion(self.pandoc_version) < distutils.version.LooseVersion('1.16')

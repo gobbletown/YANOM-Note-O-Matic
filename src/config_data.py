@@ -44,7 +44,7 @@ class ConfigData(ConfigParser):
     """
 
     def __init__(self, config_file, default_quick_setting, **kwargs):
-        super(ConfigData, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # Note: allow_no_value=True  allows for #comments in the ini file
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
@@ -142,14 +142,13 @@ class ConfigData(ConfigParser):
 
         """
         self._conversion_settings.silent = self['execution_mode']['silent']
+        self._conversion_settings.conversion_input = self['conversion_inputs']['conversion_input']
+        self._conversion_settings.markdown_conversion_input = \
+            self['markdown_conversion_inputs']['markdown_conversion_input']
         self._conversion_settings.quick_setting = self['quick_settings']['quick_setting']
         self._conversion_settings.export_format = self['export_formats']['export_format']
-        self._conversion_settings.include_meta_data = self['meta_data_options']['include_meta_data']
-        self._conversion_settings.yaml_meta_header_format = self['meta_data_options']['yaml_meta_header_format']
-        self._conversion_settings.insert_title = self['meta_data_options']['insert_title']
-        self._conversion_settings.insert_creation_time = self['meta_data_options']['insert_creation_time']
-        self._conversion_settings.insert_modified_time = self['meta_data_options']['insert_modified_time']
-        self._conversion_settings.include_tags = self['meta_data_options']['include_tags']
+        self._conversion_settings.front_matter_format = self['meta_data_options']['metadata_front_matter_format']
+        self._conversion_settings.metadata_schema = self['meta_data_options']['metadata_schema']
         self._conversion_settings.tag_prefix = self['meta_data_options']['tag_prefix']
         self._conversion_settings.spaces_in_tags = self['meta_data_options']['spaces_in_tags']
         self._conversion_settings.split_tags = self['meta_data_options']['split_tags']
@@ -160,6 +159,7 @@ class ConfigData(ConfigParser):
         self._conversion_settings.attachment_folder_name = self['file_options']['attachment_folder_name']
         self._conversion_settings.creation_time_in_exported_file_name = \
             self['file_options']['creation_time_in_exported_file_name']
+        self._conversion_settings.creation_time_key = self['file_options']['creation_time_metadata_key']
 
     def __write_config_file(self):
         with open(self._config_file, 'w') as config_file:
@@ -249,14 +249,19 @@ class ConfigData(ConfigParser):
         return {
             'execution_mode': {
                 '    # silent mode stops any output to the command line during execution': None,
-                '    # and disables the interactive command line interface.': None,
+                '    # and disables the interactive command line interface.  True or False': None,
                 'silent': False
             },
             'conversion_inputs': {
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_conversion_inputs)}': None,
-                '     #  nsx = synolpgy Note Station Export file': None,
-                '     #  html = simple html based notes pages, no complex CSS or html code': None,
+                '    #  nsx = synolpgy Note Station Export file': None,
+                '    #  html = simple html based notes pages, no complex CSS or html code': None,
+                '    #  markdown =  text files in markdown format': None,
                 'conversion_input': self._conversion_settings.conversion_input
+            },
+            'markdown_conversion_inputs': {
+                f'    # Valid entries are {", ".join(self._conversion_settings.valid_markdown_conversion_inputs)}': None,
+                'markdown_conversion_input': self._conversion_settings.markdown_conversion_input
             },
             'quick_settings': {
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_export_formats)}': None,
@@ -266,7 +271,7 @@ class ConfigData(ConfigParser):
                 '    #': None,
                 "quick_setting": self._conversion_settings.quick_setting,
                 '    # ': None,
-                '    # The following sections only apply if all of the above are no': None,
+                '    # The following sections only apply if the above is set to manual': None,
                 '    #  ': None
             },
             'export_formats': {
@@ -274,19 +279,28 @@ class ConfigData(ConfigParser):
                 "export_format": self._conversion_settings.export_format
             },
             'meta_data_options': {
-                'include_meta_data': self._conversion_settings.include_meta_data,
-                '    # Note if include_meta_data = no then the following values will': None,
-                '    # not be included in the export file': None,
-                'yaml_meta_header_format': self._conversion_settings.yaml_meta_header_format,
-                'insert_title': self._conversion_settings.insert_title,
-                'insert_creation_time': self._conversion_settings.insert_creation_time,
-                'insert_modified_time': self._conversion_settings.insert_modified_time,
-                'include_tags': self._conversion_settings.include_tags,
+                '    # Note if front_matter_format sets the presence and type of a section with metadata ': None,
+                '    #retrieved from the source': None,
+                f'    # Valid entries are {", ".join(self._conversion_settings.valid_front_matter_formats)}': None,
+                '    # no entry will result in no front matter section': None,
+                'metadata_front_matter_format': self._conversion_settings.front_matter_format,
+                '    # metadata schema is a comma separated list of metadata keys that you wish to ': None,
+                '    # restrict the retrieved metadata keys. for example ': None,
+                '    # title, tags    will return those two if they are found': None,
+                '    # If left blank any meta data found will be used': None,
+                'metadata_schema': ",".join(self._conversion_settings.metadata_schema),
+                '    # tag prefix is a character you wish to be added to the front of any tag values ': None,
+                '    # retrieved from metadata': None,
+                '    # The available keys in an nsx file are title, ctime, mtime, tag': None,
                 'tag_prefix': self._conversion_settings.tag_prefix,
+                '    # spaces_in_tags if True will maintain spaces in tag words, if False spaces are replaced by a dash -': None,
                 'spaces_in_tags': self._conversion_settings.spaces_in_tags,
+                '    # split tags will split grouped tags into individual tags if True': None,
+                '    # "Tag1", "Tag1/Sub Tag2"  will become "Tag1", "Sub Tag2"': None,
                 'split_tags': self._conversion_settings.split_tags
             },
             'table_options': {
+                '  #  These two options apply to NSX files ONLY': None,
                 'first_row_as_header': self._conversion_settings.first_row_as_header,
                 'first_column_as_header': self._conversion_settings.first_column_as_header
             },
@@ -294,7 +308,10 @@ class ConfigData(ConfigParser):
                 'source': self._conversion_settings.source,
                 'export_folder_name': self._conversion_settings.export_folder_name,
                 'attachment_folder_name': self._conversion_settings.attachment_folder_name,
-                'creation_time_in_exported_file_name': self._conversion_settings.creation_time_in_exported_file_name
+
+                'creation_time_in_exported_file_name': self._conversion_settings.creation_time_in_exported_file_name,
+                'creation_time_metadata_key': self._conversion_settings.creation_time_key,
+                '    # If creation time in the file name provide a the meta data key it is found in, for exmaple ctime': None
             }
         }
 

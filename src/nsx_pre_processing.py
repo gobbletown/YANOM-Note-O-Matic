@@ -6,10 +6,10 @@ from globals import APP_NAME
 import inspect
 from helper_functions import add_strong_between_tags, change_html_tags
 from sn_attachment import FileNSAttachment
-from src.checklist_processing import NSXInputMDOutputChecklistProcessor, NSXInputHTMLOutputChecklistProcessor
-from src.image_processing import ImageTag
-from src.inter_note_link_processing import SNLinksToOtherNotes
-from src.metadata_processing import NSMetaDataGenerator
+from checklist_processing import NSXInputMDOutputChecklistProcessor, NSXInputHTMLOutputChecklistProcessor
+from image_processing import ImageTag
+from inter_note_link_processing import SNLinksToOtherNotes
+from metadata_processing import MetaDataProcessor
 
 
 def what_module_is_this():
@@ -52,7 +52,7 @@ class NoteStationPreProcessing(PreProcessing):
         self._image_ref_to_image_path = {}
         self._checklist_processor = None
         self._charts = []
-        self._header_generator = None
+        self._metadata_processor = None
         self.pre_process_note_page()
         pass
 
@@ -66,7 +66,7 @@ class NoteStationPreProcessing(PreProcessing):
 
     @property
     def header_generator(self):
-        return self._header_generator
+        return self._metadata_processor
 
     @property
     def checklist_processor(self):
@@ -86,7 +86,7 @@ class NoteStationPreProcessing(PreProcessing):
         if self._note.conversion_settings.first_column_as_header:
             self.__first_column_in_table_as_header_if_required()
         self.__extract_and_generate_chart()
-        if self._note.conversion_settings.include_meta_data:
+        if self._note.conversion_settings.front_matter_format != 'none':
             self.__generate_metadata()
         self.__generate_links_to_other_note_pages()
         self.__add_attachment_links()
@@ -171,8 +171,11 @@ class NoteStationPreProcessing(PreProcessing):
 
     def __generate_metadata(self):
         self.logger.info(f"Generating meta-data")
-        self._header_generator = NSMetaDataGenerator(self._note)
-        self._pre_processed_content = f"{self._header_generator.metadata_html}{self._pre_processed_content}"
+        self._metadata_processor = MetaDataProcessor(self._note.conversion_settings)
+        self._metadata_processor.parse_dict_metadata(self._note.note_json)
+        self._pre_processed_content = f'<head><title> </title></head>{self._pre_processed_content}'  # add head and title to add meta data to
+        self._pre_processed_content = self._metadata_processor.add_metadata_html_to_content(self._pre_processed_content)
+        pass
 
     def __generate_links_to_other_note_pages(self):
         self.logger.info(f"Creating links between pages")

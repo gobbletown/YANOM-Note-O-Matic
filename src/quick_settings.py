@@ -60,25 +60,31 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         a static dictionary that is used by ConfigData class to validate ini files read from disk.
     logger : logger object
         used for program logging
-    _valid_quick_settings : list
+    _valid_conversion_inputs : list of strings
+        List of file formats that can be converted
+    _valid_markdown_conversion_inputs : list of strings
+        List of markdown formats that can be converted
+    _valid_quick_settings : list of strings
         Quick settings strings that are used to create 'default' conversions for various program and file types.
         Also are the values used in an object generator to create child classes
-    _valid_export_formats : list
+    _valid_export_formats : list of strings
         Export format names used to trigger specific conversion behaviour in style of file type
-    _valid_image_link_formats: list
-        Image link formats used in markdown files to style image links for display
     _silent : bool
         Run program with no output to command line
     _source : pathlib.Path
         Directory to search for nsx files or path to specific nsx file
+    _conversion_input : str
+        The type of file to be converted
+    _markdown_conversion_input : str
+        The markdown format for the markdown files if they are the file type to be converted
     _quick_setting: str
         A trigger string used for a default set for some of the following filed values
     _export_format: str
         The export format to be used
     _include_meta_data: bool
         Add available meta data, not in a note body, to the main text of the exported note
-    _yaml_meta_header_format: bool
-        Meta data to be placed in a yaml header above the body of the main text
+    _metadata_front_matter_format: str
+        Meta data to be placed in a yaml/json/toml front matter section above the body of the main text
     _insert_title: bool
         Include title in the included meta data
     _insert_creation_time: bool
@@ -112,21 +118,20 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'silent': ('True', 'False')
         },
         'conversion_inputs': {
-            'conversion_input': ('nsx', 'html')
+            'conversion_input': ('nsx', 'html', 'markdown')
+        },
+        'markdown_conversion_inputs': {
+            'markdown_conversion_input': ('obsidian', 'gfm', 'commonmark', 'q_own_notes', 'pandoc_markdown_strict', 'pandoc_markdown')
         },
         'quick_settings': {
-            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'html')
+            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'pandoc_markdown_strict', 'html')
         },
         'export_formats': {
-            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'html')
+            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'pandoc_markdown_strict', 'html')
         },
         'meta_data_options': {
-            'include_meta_data': ('True', 'False'),
-            'yaml_meta_header_format': ('True', 'False'),
-            'insert_title': ('True', 'False'),
-            'insert_creation_time': ('True', 'False'),
-            'insert_modified_time': ('True', 'False'),
-            'include_tags': ('True', 'False'),
+            'metadata_front_matter_format': ('yaml', 'toml', 'json', 'none', 'any'),
+            'metadata_schema': '',
             'tag_prefix': '',
             'spaces_in_tags': ('True', 'False'),
             'split_tags': ('True', 'False')
@@ -154,19 +159,18 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
         self._valid_conversion_inputs = list(self.validation_values['conversion_inputs']['conversion_input'])
+        self._valid_markdown_conversion_inputs = list(self.validation_values['markdown_conversion_inputs']['markdown_conversion_input'])
         self._valid_quick_settings = list(self.validation_values['quick_settings']['quick_setting'])
         self._valid_export_formats = list(self.validation_values['export_formats']['export_format'])
+        self._valid_front_matter_formats = list(self.validation_values['meta_data_options']['metadata_front_matter_format'])
         self._silent = False
         self._source = os.getcwd()
         self._conversion_input = 'nsx'
+        self._markdown_conversion_input = 'gfm'
         self._quick_setting = 'gfm'
         self._export_format = 'gfm'
-        self._include_meta_data = True
-        self._yaml_meta_header_format = False
-        self._insert_title = True
-        self._insert_creation_time = True
-        self._insert_modified_time = True
-        self._include_tags = True
+        self._front_matter_format = 'yaml'
+        self._metadata_schema = []
         self._tag_prefix = '#'
         self._spaces_in_tags = False
         self._split_tags = False
@@ -175,35 +179,46 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._export_folder_name = 'notes'
         self._attachment_folder_name = 'attachments'
         self._creation_time_in_exported_file_name = False
+        self._creation_time_key = ''
         self.set_settings()
 
     def __str__(self):
-        return f"{self.__class__.__name__}(silent={self.silent}, conversion_input={self._conversion_input}, " \
-               f"quick_setting='{self.quick_setting}', " \
-               f"export_format='{self.export_format}', include_meta_data={self.include_meta_data}, " \
-               f"yaml_header={self.yaml_meta_header_format}, insert_title={self.insert_title}, " \
-               f"insert_creation_time={self.insert_creation_time}, insert_modified_time={self.insert_modified_time}, " \
-               f"include_tags={self.include_tags}, tag_prefix='{self.tag_prefix}', " \
+        return f"{self.__class__.__name__}(valid_conversion_inputs={self.valid_conversion_inputs}, " \
+               f"valid_markdown_conversion_inputs='{self.valid_markdown_conversion_inputs}', " \
+               f"valid_quick_settings='{self.valid_quick_settings}', " \
+               f"valid_export_formats='{self.valid_export_formats}', " \
+               f"valid_front_matter_formats]'{self.valid_front_matter_formats}', " \
+               f"silent={self.silent}, conversion_input={self._conversion_input}, " \
+               f"markdown_conversion_input='{self._markdown_conversion_input}, quick_setting='{self.quick_setting}', " \
+               f"export_format='{self.export_format}', " \
+               f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
+               f"tag_prefix='{self.tag_prefix}', " \
                f"first_row_as_header={self._first_row_as_header}, " \
                f"first_column_as_header={self._first_column_as_header}" \
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
-               f"creation_time_in_exported_file_name={self.creation_time_in_exported_file_name})"
+               f"creation_time_in_exported_file_name='{self.creation_time_in_exported_file_name})'," \
+               f"creation_time_key='{self.creation_time_key}'"
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(silent={self.silent}, conversion_input={self._conversion_input}, " \
-               f"quick_setting='{self.quick_setting}', " \
-               f"export_format='{self.export_format}', include_meta_data={self.include_meta_data}, " \
-               f"yaml_header={self.yaml_meta_header_format}, insert_title={self.insert_title}, " \
-               f"insert_creation_time={self.insert_creation_time}, insert_modified_time={self.insert_modified_time}, " \
-               f"include_tags={self.include_tags}, tag_prefix='{self.tag_prefix}', " \
+        return f"{self.__class__.__name__}(valid_conversion_inputs={self.valid_conversion_inputs}, " \
+               f"valid_markdown_conversion_inputs='{self.valid_markdown_conversion_inputs}', " \
+               f"valid_quick_settings='{self.valid_quick_settings}', " \
+               f"valid_export_formats='{self.valid_export_formats}', " \
+               f"valid_front_matter_formats]'{self.valid_front_matter_formats}', " \
+               f"silent={self.silent}, conversion_input={self._conversion_input}, " \
+               f"markdown_conversion_input='{self._markdown_conversion_input}, quick_setting='{self.quick_setting}', " \
+               f"export_format='{self.export_format}', " \
+               f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
+               f"tag_prefix='{self.tag_prefix}', " \
                f"first_row_as_header={self._first_row_as_header}, " \
                f"first_column_as_header={self._first_column_as_header}" \
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
-               f"creation_time_in_exported_file_name={self.creation_time_in_exported_file_name})"
+               f"creation_time_in_exported_file_name='{self.creation_time_in_exported_file_name})'," \
+               f"creation_time_key='{self.creation_time_key}'"
 
     @abstractmethod
     def set_settings(self):
@@ -214,12 +229,20 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         return self._valid_conversion_inputs
 
     @property
+    def valid_markdown_conversion_inputs(self):
+        return self._valid_markdown_conversion_inputs
+
+    @property
     def valid_quick_settings(self):
         return self._valid_quick_settings
 
     @property
     def valid_export_formats(self):
         return self._valid_export_formats
+
+    @property
+    def valid_front_matter_formats(self):
+        return self._valid_front_matter_formats
 
     @property
     def silent(self):
@@ -254,6 +277,14 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._conversion_input = value
 
     @property
+    def markdown_conversion_input(self):
+        return self._markdown_conversion_input
+
+    @markdown_conversion_input.setter
+    def markdown_conversion_input(self, value):
+        self._markdown_conversion_input = value
+
+    @property
     def quick_setting(self):
         return self._quick_setting
 
@@ -281,52 +312,27 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                              f"Attempted to use {value}, valid values are {self.valid_export_formats}")
 
     @property
-    def include_meta_data(self):
-        return self._include_meta_data
+    def metadata_schema(self):
+        return self._metadata_schema
 
-    @include_meta_data.setter
-    def include_meta_data(self, value: bool):
-        self._include_meta_data = value
-
-    @property
-    def yaml_meta_header_format(self):
-        return self._yaml_meta_header_format
-
-    @yaml_meta_header_format.setter
-    def yaml_meta_header_format(self, value: bool):
-        self._yaml_meta_header_format = value
-
-    @property
-    def insert_title(self):
-        return self._insert_title
-
-    @insert_title.setter
-    def insert_title(self, value: bool):
-        self._insert_title = value
+    @metadata_schema.setter
+    def metadata_schema(self, value):
+        if isinstance(value, str):
+            values = value.split(",")
+            self._metadata_schema = [value.strip() for value in values]
+            return
+        if isinstance(value, list):
+            self._metadata_schema = value
+            return
+        self.logger.warning(f'Invalid creation time key provided {value}')
 
     @property
-    def insert_creation_time(self):
-        return self._insert_creation_time
+    def front_matter_format(self):
+        return self._front_matter_format
 
-    @insert_creation_time.setter
-    def insert_creation_time(self, value: bool):
-        self._insert_creation_time = value
-
-    @property
-    def insert_modified_time(self):
-        return self._insert_modified_time
-
-    @insert_modified_time.setter
-    def insert_modified_time(self, value: bool):
-        self._insert_modified_time = value
-
-    @property
-    def include_tags(self):
-        return self._include_tags
-
-    @include_tags.setter
-    def include_tags(self, value: bool):
-        self._include_tags = value
+    @front_matter_format.setter
+    def front_matter_format(self, value: str):
+        self._front_matter_format = value
 
     @property
     def tag_prefix(self):
@@ -392,6 +398,17 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     def creation_time_in_exported_file_name(self, value: bool):
         self._creation_time_in_exported_file_name = value
 
+    @property
+    def creation_time_key(self):
+        return self._creation_time_key
+
+    @creation_time_key.setter
+    def creation_time_key(self, value):
+        if isinstance(value, str):
+            self._creation_time_key = value
+            return
+        self.logger.warning(f'Invalid creation time key provided {value}')
+
 
 class ManualConversionSettings(ConversionSettings):
     """
@@ -404,11 +421,10 @@ class ManualConversionSettings(ConversionSettings):
         """Set initial conversion settings for a manual conversion setting"""
         self.logger.info("Manual conversion settings")
         self.quick_setting = 'manual'
-        self.yaml_meta_header_format = False
-        self.insert_title = False
-        self.insert_creation_time = False
-        self.insert_modified_time = False
-        self.include_tags = False
+        self.front_matter_format = 'none'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
         self.spaces_in_tags = False
         self.split_tags = False
         self.first_row_as_header = False
@@ -424,7 +440,10 @@ class QOwnNotesConversionSettings(ConversionSettings):
         self.logger.info("QOwnNotes Setting conversion settings")
         self.quick_setting = 'q_own_notes'
         self.export_format = 'q_own_notes'
-        self.yaml_meta_header_format = True
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
 
 
 class GfmConversionSettings(ConversionSettings):
@@ -435,7 +454,10 @@ class GfmConversionSettings(ConversionSettings):
     def set_settings(self):
         self.logger.info("GFM conversion settings")
         self.quick_setting = 'gfm'
-        self.yaml_meta_header_format = True
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
 
 
 class ObsidianConversionSettings(ConversionSettings):
@@ -447,7 +469,10 @@ class ObsidianConversionSettings(ConversionSettings):
         self.logger.info("Obsidian conversion settings")
         self.quick_setting = 'obsidian'
         self.export_format = 'obsidian'
-        self.yaml_meta_header_format = True
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
 
 
 class CommonmarkConversionSettings(ConversionSettings):
@@ -459,7 +484,10 @@ class CommonmarkConversionSettings(ConversionSettings):
         self.logger.info("Commonmark conversion settings")
         self.quick_setting = 'commonmark'
         self.export_format = 'commonmark'
-        self.yaml_meta_header_format = True
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
 
 
 class PandocMarkdownConversionSettings(ConversionSettings):
@@ -471,6 +499,23 @@ class PandocMarkdownConversionSettings(ConversionSettings):
         self.logger.info("Pandoc markdown conversion settings")
         self.quick_setting = 'pandoc_markdown'
         self.export_format = 'pandoc_markdown'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+
+class PandocMarkdownStrictConversionSettings(ConversionSettings):
+    """
+    QOwnNotes conversion settings to convert input formats to format suitable for QOwnNotes users.
+    """
+
+    def set_settings(self):
+        self.logger.info("Pandoc Markdown Strict Setting conversion settings")
+        self.quick_setting = 'pandoc_markdown_strict'
+        self.export_format = 'pandoc_markdown_strict'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
 
 
 class HTMLConversionSettings(ConversionSettings):
@@ -481,11 +526,12 @@ class HTMLConversionSettings(ConversionSettings):
     def set_settings(self):
         self.logger.info("HTML conversion settings")
         self.export_format = 'html'
-        self.include_meta_data = True
-        self.insert_title = True
-        self.insert_creation_time = True
-        self.insert_modified_time = True
-        self.include_tags = True
+        self.quick_setting = 'html'
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
 
 
 please = ConversionSettingProvider()
@@ -495,9 +541,5 @@ please.register_builder('gfm', GfmConversionSettings)
 please.register_builder('obsidian', ObsidianConversionSettings)
 please.register_builder('commonmark', CommonmarkConversionSettings)
 please.register_builder('pandoc_markdown', PandocMarkdownConversionSettings)
+please.register_builder('pandoc_markdown_strict', PandocMarkdownStrictConversionSettings)
 please.register_builder('html', HTMLConversionSettings)
-
-
-
-
-

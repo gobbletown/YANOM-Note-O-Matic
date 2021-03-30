@@ -11,7 +11,9 @@ from arg_parsing import CommandLineParsing
 import quick_settings
 from timer import Timer
 from quick_settings import ConversionSettings
-from html_file_converter import HTMLConverter
+from file_converter_HTML_to_MD import HTMLToMDConverter
+from file_converter_MD_to_MD import MDToMDConverter
+from file_converter_MD_to_HTML import MDToHTMLConverter
 
 
 log_filename = 'normal.log'
@@ -73,6 +75,8 @@ class NotesConvertor:
         self.evaluate_command_line_arguments()
         if self.conversion_settings.conversion_input == 'html':
             self.convert_html()
+        elif self.conversion_settings.conversion_input == 'markdown':
+            self.convert_markdown()
         else:
             self.convert_nsx()
 
@@ -80,42 +84,60 @@ class NotesConvertor:
         self.log_results()
         self.logger.info("Processing Completed - exiting normally")
 
+    @Timer(name="md_conversion", logger=root_logger.info)
+    def convert_markdown(self):
+        file_extension = 'md'
+        md_files_to_convert = self.generate_file_list(file_extension)
+        self.exit_if_no_files_found(md_files_to_convert, file_extension)
+
+        if self.conversion_settings.export_format == 'html':
+            md_file_converter = MDToHTMLConverter(self.conversion_settings, md_files_to_convert)
+        else:
+            md_file_converter = MDToMDConverter(self.conversion_settings, md_files_to_convert)
+
+        self.process_files(md_files_to_convert, md_file_converter)
+
+    def generate_file_list(self, file_extension):
+        if not self.conversion_settings.source.is_file():
+            file_list_generator = self.conversion_settings.source.rglob(f'*.{file_extension}')
+            file_list = [item for item in file_list_generator]
+            return file_list
+        return [self.conversion_settings.source]
+
+    def exit_if_no_files_found(self, files_to_convert, file_extension):
+        if not files_to_convert:
+            root_logger.info(f"No .{file_extension} files found at path {self.conversion_settings.source}. Exiting program")
+            if not self.conversion_settings.silent:
+                print(f'No .{file_extension} files found at {self.conversion_settings.source}')
+            sys.exit(0)
+
+    def process_files(self, files_to_convert, file_converter):
+        file_count = 0
+        for file in files_to_convert:
+            file_converter.convert(file)
+            file_count += 1
+
+        self._note_page_count = file_count
+
+    @Timer(name="html_conversion", logger=root_logger.info)
+    def convert_html(self):
+        file_extension = 'html'
+        html_files_to_convert = self.generate_file_list(file_extension)
+        self.exit_if_no_files_found(html_files_to_convert, file_extension)
+        html_file_converter = HTMLToMDConverter(self.conversion_settings, html_files_to_convert)
+        self.process_files(html_files_to_convert, html_file_converter)
+
     def convert_nsx(self):
         self.fetch_nsx_backups()
         self.process_nsx_files()
 
-    @Timer(name="html_conversion", logger=root_logger.info)
-    def convert_html(self):
-        html_files_to_convert = self.generate_html_file_list()
-        self.process_html_files(html_files_to_convert)
-
-    def generate_html_file_list(self):
-        if not self.conversion_settings.source.is_file():
-            return self.conversion_settings.source.rglob('*.html')   # this is duplicating th nsx code except for rglob do not need rglob on nsx files
-        return [self.conversion_settings.source]
-
-    def process_html_files(self, html_files_to_convert):
-        html_file_converter = HTMLConverter(self.conversion_settings)
-        html_file_count = 0
-        for file in html_files_to_convert:
-            html_file_converter.convert(file)
-            html_file_count += 1
-
-        self._note_page_count = html_file_count
-
     def fetch_nsx_backups(self):
-        nsx_files_to_convert = self.generate_file_list_to_convert()
+        file_extension = 'nsx'
+        nsx_files_to_convert = self.generate_file_list(file_extension)
 
-        self.exit_if_no_nsx_files_found(nsx_files_to_convert)
+        self.exit_if_no_files_found(nsx_files_to_convert, file_extension)
 
         self.nsx_backups = [NSXFile(file, self.conversion_settings) for file in nsx_files_to_convert]
-
-    def exit_if_no_nsx_files_found(self, nsx_files_to_convert):
-        if not nsx_files_to_convert:
-            root_logger.info(f"No .nsx files found at path {self.conversion_settings.source}. Exiting program")
-            if not self.conversion_settings.silent:
-                print(f'No .nsx files found at {self.conversion_settings.source}')
-            sys.exit(1)
 
     @Timer(name="nsx_conversion", logger=root_logger.info)
     def process_nsx_files(self):
@@ -128,11 +150,6 @@ class NotesConvertor:
         self._note_book_count += nsx_file.note_book_count
         self._image_count += nsx_file.image_count
         self._attachment_count += nsx_file.attachment_count
-
-    def generate_file_list_to_convert(self):
-        if not self.conversion_settings.source.is_file():
-            return self.conversion_settings.source.glob('*.nsx')
-        return [self.conversion_settings.source]
 
     def evaluate_command_line_arguments(self):
 

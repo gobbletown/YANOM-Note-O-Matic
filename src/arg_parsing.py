@@ -115,7 +115,7 @@ class CommandLineParsing:
         self.conversion_setting.quick_setting = vars(self._args)['quickset']
         self.conversion_setting.export_format = vars(self._args)['export_format']
         self.conversion_setting.include_meta_data = vars(self._args)['meta_data']
-        self.conversion_setting.yaml_meta_header_format = vars(self._args)['yaml']
+        self.conversion_setting.yaml_meta_front_matter = vars(self._args)['yaml']
         self.conversion_setting.insert_title = vars(self._args)['title']
         self.conversion_setting.insert_creation_time = vars(self._args)['creation']
         self.conversion_setting.insert_modified_time = vars(self._args)['modified']
