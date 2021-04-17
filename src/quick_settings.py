@@ -130,7 +130,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'pandoc_markdown_strict', 'html')
         },
         'meta_data_options': {
-            'metadata_front_matter_format': ('yaml', 'toml', 'json', 'none', 'any'),
+            'metadata_front_matter_format': ('yaml', 'toml', 'json', 'none'),
             'metadata_schema': '',
             'tag_prefix': '',
             'spaces_in_tags': ('True', 'False'),
@@ -149,11 +149,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     }
 
     def __init__(self):
-        # Note #comments are treated as 'values' with no value in a config.ini.
-        # So to get the comment into the ini use a dictionary entry
-        # where the key value pair are like this '#your comment': None
-        # the #comments in these dicts are only there to add comments to the config.ini
-
         # if you change any of the following values changes are likely to affect the quick settings child classes
         # and the ConfigFileValidationSettings class
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
@@ -198,8 +193,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
-               f"creation_time_in_exported_file_name='{self.creation_time_in_exported_file_name})'," \
-               f"creation_time_key='{self.creation_time_key}'"
+               f"creation_time_in_exported_file_name='{self.creation_time_in_exported_file_name})'"
 
     def __repr__(self):
         return f"{self.__class__.__name__}(valid_conversion_inputs={self.valid_conversion_inputs}, " \
@@ -217,8 +211,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
-               f"creation_time_in_exported_file_name='{self.creation_time_in_exported_file_name})'," \
-               f"creation_time_key='{self.creation_time_key}'"
+               f"creation_time_in_exported_file_name='{self.creation_time_in_exported_file_name})'"
 
     @abstractmethod
     def set_settings(self):

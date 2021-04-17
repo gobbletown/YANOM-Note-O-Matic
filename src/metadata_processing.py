@@ -43,7 +43,7 @@ class MetaDataProcessor:
         for tag in head:
             if tag.name == 'meta':
                 for key, value in tag.attrs.items():
-                    if key in self._metadata_schema:
+                    if self._metadata_schema == [''] or key in self._metadata_schema:
                         self._metadata[key] = value
 
     def parse_dict_metadata(self, metadata_dict):
@@ -57,6 +57,10 @@ class MetaDataProcessor:
 
     def parse_md_metadata(self, md_string):
         metadata, content = frontmatter.parse(md_string)
+        if self._metadata_schema == ['']:
+            self._metadata = {key: value for key, value in metadata.items()}
+            return content
+
         self._metadata = {key: value for key, value in metadata.items() if key in self._metadata_schema}
         return content
 
@@ -93,6 +97,7 @@ class MetaDataProcessor:
 
         if self._conversion_settings.front_matter_format == 'yaml':
             content = frontmatter.dumps(merged_content, handler=YAMLHandler())
+            pass
         if self._conversion_settings.front_matter_format == 'toml':
             content = frontmatter.dumps(merged_content, handler=TOMLHandler())
         if self._conversion_settings.front_matter_format == 'json':

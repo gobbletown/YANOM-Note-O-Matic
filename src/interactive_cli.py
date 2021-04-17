@@ -102,25 +102,21 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                 self.__nothing_to_convert()
             if not self._current_conversion_settings.export_format == 'html':
                 self.__ask_and_set_front_matter_format()
-                self.__ask_and_set_creation_time_in_file_name()
                 if self._current_conversion_settings.front_matter_format != 'none':
                     self.__ask_and_set_metadata_details()
-                    if self._current_conversion_settings.front_matter_format != 'any':
-                        self.__ask_and_set_metadata_schema()
+                    self.__ask_and_set_metadata_schema()
+                else:
                     self.__ask_and_set_tag_prefix()
 
 
     def __ask_html_conversion_options(self):
         self.__ask_and_set_conversion_quick_setting()
-        if self._current_conversion_settings.quick_setting == 'html':
-            self.__nothing_to_convert()
 
         if type(self._current_conversion_settings) is ManualConversionSettings:
             self.__ask_and_set_export_format()
-            if self._current_conversion_settings.export_format == 'html':
-                self.__nothing_to_convert()
-            self.__ask_and_set_creation_time_in_file_name()
-            self.__ask_and_set_metadata_schema()
+            self.__ask_and_set_front_matter_format()
+            if self._current_conversion_settings.front_matter_format != 'none':
+                self.__ask_and_set_metadata_schema()
 
     def __nothing_to_convert(self):
         self.logger.info('Input and output formats are the same nothing to convert. Exiting.')
@@ -142,7 +138,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         front_matter_format = {
             'type': 'list',
             'name': 'front_matter_format',
-            'message': 'What is the format of meta daat front matter do you wish to use?',
+            'message': 'What is the format of meta data front matter do you wish to use?',
             'choices': self._default_settings.valid_front_matter_formats
         }
         answer = prompt(front_matter_format, style=self.style)
@@ -166,15 +162,19 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self.__ask_and_set_front_matter_format()
         if self._current_conversion_settings.front_matter_format != 'none':
             self.__ask_and_set_metadata_details()
-            if self._current_conversion_settings.front_matter_format != 'any':
-                self.__ask_and_set_metadata_schema()
-            self.__ask_and_set_tag_prefix()
+            self.__ask_and_set_metadata_schema()
+            return
+
+        self.__ask_and_set_tag_prefix()
 
     def __ask_and_set_conversion_quick_setting(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists
         # in PyInquirer does not work
         ordered_list = self._default_settings.valid_quick_settings.copy()
         ordered_list.insert(0, ordered_list.pop(ordered_list.index(self._default_settings.quick_setting)))
+        if self._current_conversion_settings.conversion_input == 'html':
+            ordered_list.remove('html')
+
         quick_setting_prompt = {
             'type': 'list',
             'name': 'quick_setting',
@@ -191,6 +191,10 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         # in PyInquirer does not work
         ordered_list = self._default_settings.valid_export_formats.copy()
         ordered_list.insert(0, ordered_list.pop(ordered_list.index(self._default_settings.export_format)))
+        if self._current_conversion_settings.conversion_input == 'html':
+            ordered_list.remove('html')
+
+
         export_format_prompt = {
             'type': 'list',
             'name': 'export_format',
@@ -361,21 +365,6 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answers = prompt(questions, style=self.style)
         self._current_conversion_settings.creation_time_in_exported_file_name = \
             answers['creation_time_in_exported_file_name']
-
-        if answers['creation_time_in_exported_file_name'] == False:
-            return
-
-        questions = [
-            {
-                'type': 'input',
-                'name': 'creation_time_key',
-                'message': 'Enter a the metadata key/id for creation time g.g. ctime',
-                'default': str(self._default_settings.creation_time_key)
-            },
-        ]
-
-        answers = prompt(questions, style=self.style)
-        self._current_conversion_settings.creation_time_key = answers['creation_time_key']
 
 
 class InvalidConfigFileCommandLineInterface(InquireCommandLineInterface):

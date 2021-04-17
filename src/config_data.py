@@ -129,12 +129,13 @@ class ConfigData(ConfigParser):
                 raise ConfigException(f'Missing section {section} in the config ini file')
 
             for key, values in keys.items():
-                if key not in self[section] or self[section][key] == '':
-                    raise ConfigException(f'Missing value for {key} under section {section} in the config ini file')
+                # if key not in self[section] or self[section][key] == '':
+                if key not in self[section]:
+                    raise ConfigException(f'Missing erntry for {key} under section {section} in the config ini file')
 
                 if values:
                     if self[section][key] not in values:
-                        raise ConfigException(f'Invalid value for {key} under section {section} in the config file')
+                        raise ConfigException(f'Invalid value of "{self[section][key]}" for {key} under section {section} in the config file')
 
     def __generate_conversion_settings_from_parsed_config_file_data(self):
         """
@@ -159,7 +160,6 @@ class ConfigData(ConfigParser):
         self._conversion_settings.attachment_folder_name = self['file_options']['attachment_folder_name']
         self._conversion_settings.creation_time_in_exported_file_name = \
             self['file_options']['creation_time_in_exported_file_name']
-        self._conversion_settings.creation_time_key = self['file_options']['creation_time_metadata_key']
 
     def __write_config_file(self):
         with open(self._config_file, 'w') as config_file:
@@ -288,10 +288,10 @@ class ConfigData(ConfigParser):
                 '    # restrict the retrieved metadata keys. for example ': None,
                 '    # title, tags    will return those two if they are found': None,
                 '    # If left blank any meta data found will be used': None,
+                '    # The available keys in an nsx file are title, ctime, mtime, tag': None,
                 'metadata_schema': ",".join(self._conversion_settings.metadata_schema),
                 '    # tag prefix is a character you wish to be added to the front of any tag values ': None,
-                '    # retrieved from metadata': None,
-                '    # The available keys in an nsx file are title, ctime, mtime, tag': None,
+                '    # retrieved from metadata.  NOTE only used if front_matter_format is none': None,
                 'tag_prefix': self._conversion_settings.tag_prefix,
                 '    # spaces_in_tags if True will maintain spaces in tag words, if False spaces are replaced by a dash -': None,
                 'spaces_in_tags': self._conversion_settings.spaces_in_tags,
@@ -310,8 +310,8 @@ class ConfigData(ConfigParser):
                 'attachment_folder_name': self._conversion_settings.attachment_folder_name,
 
                 'creation_time_in_exported_file_name': self._conversion_settings.creation_time_in_exported_file_name,
-                'creation_time_metadata_key': self._conversion_settings.creation_time_key,
-                '    # If creation time in the file name provide a the meta data key it is found in, for exmaple ctime': None
+                '    # creation time in file name only apploies to NSX files.': None,
+                '    # If True creation time will be added as prefix to file name': None
             }
         }
 
