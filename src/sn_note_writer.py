@@ -33,10 +33,17 @@ class NoteWriter:
         Path(note_page.full_path).write_text(note_page.converted_content, 'utf-8')
 
     def generate_output_path_and_set_note_file_name(self, note_page):
-        dirty_filename = note_page.title + '.md'
+        dirty_filename = note_page.title
+
+        if self.conversion_settings.creation_time_in_exported_file_name:
+            dirty_filename = f"{note_page.note_json['ctime']}-{dirty_filename}"
+
 
         if self.conversion_settings.export_format == 'html':
-            dirty_filename = note_page.title + '.html'
+            dirty_filename = f"{dirty_filename}.html"
+        else:
+            dirty_filename = f"{dirty_filename}.md"
+
 
         self.output_file_name = (generate_clean_path(dirty_filename))
         n = 0

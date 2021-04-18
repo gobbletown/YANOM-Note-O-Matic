@@ -6,7 +6,7 @@ from globals import APP_NAME
 import inspect
 from nsx_pre_processing import NoteStationPreProcessing
 from nsx_post_processing import NoteStationPostProcessing
-
+import time
 
 def what_module_is_this():
     return __name__
@@ -33,8 +33,7 @@ class NotePage:
         self._note_id = note_id
         self._note_json = nsx_file.fetch_json_data(note_id)
         self._title = self._note_json['title']
-        self._creation_time = self._note_json['ctime']
-        self._modified_time = self._note_json['mtime']
+        self.format_ctime_and_mtime_if_required()
         self._raw_content = self._note_json['content']
         self._parent_notebook = self._note_json['parent_id']
         self._attachments_json = self._note_json['attachment']
@@ -48,6 +47,13 @@ class NotePage:
         self._attachment_count = 0
         self._pre_processor = None
         self._post_processor = None
+
+
+    def format_ctime_and_mtime_if_required(self):
+        if self._conversion_settings.front_matter_format != 'none' or self._conversion_settings.creation_time_in_exported_file_name is True:
+            self._note_json['ctime'] =  time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['ctime']))
+            self._note_json['mtime'] =  time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['mtime']))
+            pass
 
     def process_note(self):
         self.logger.info(f"Processing note page '{self._title}' - {self._note_id}")
@@ -98,7 +104,7 @@ class NotePage:
         self._note_writer = NoteWriter(self._conversion_settings)
 
     def update_paths_and_filenames(self):
-        self._file_name = self._note_writer.output_file_name
+        self._file_name = self._note_writer.get_output_file_name()
         self._full_path = self._note_writer.get_output_full_path()
 
     def post_process_content(self):

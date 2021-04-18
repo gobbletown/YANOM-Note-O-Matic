@@ -115,7 +115,6 @@ class FileConverter(ABC):
             return
 
         check_target_path = target_path
-        # TODO add option to replace the original files
         while check_target_path.exists():
             n += 1
             check_target_path = Path(self._file.parent, f'{self._file.stem}-old-{n}{self._out_put_extension}')
