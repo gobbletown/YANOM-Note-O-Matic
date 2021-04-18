@@ -121,13 +121,13 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'conversion_input': ('nsx', 'html', 'markdown')
         },
         'markdown_conversion_inputs': {
-            'markdown_conversion_input': ('obsidian', 'gfm', 'commonmark', 'q_own_notes', 'pandoc_markdown_strict', 'pandoc_markdown')
+            'markdown_conversion_input': ('obsidian', 'gfm', 'commonmark', 'q_own_notes', 'pandoc_markdown_strict', 'pandoc_markdown', 'multimarkdown')
         },
         'quick_settings': {
-            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'pandoc_markdown_strict', 'html')
+            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'pandoc_markdown_strict', 'multimarkdown', 'html')
         },
         'export_formats': {
-            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'pandoc_markdown_strict', 'html')
+            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'pandoc_markdown_strict', 'multimarkdown', 'html')
         },
         'meta_data_options': {
             'metadata_front_matter_format': ('yaml', 'toml', 'json', 'none'),
@@ -470,7 +470,7 @@ class ObsidianConversionSettings(ConversionSettings):
 
 class CommonmarkConversionSettings(ConversionSettings):
     """
-    Obsidian conversion settings to convert input formats to format suitable for Obsidian users.
+    Commonmark conversion settings
     """
 
     def set_settings(self):
@@ -485,7 +485,7 @@ class CommonmarkConversionSettings(ConversionSettings):
 
 class PandocMarkdownConversionSettings(ConversionSettings):
     """
-    Obsidian conversion settings to convert input formats to format suitable for Obsidian users.
+    Pandoc Markdown conversion settings.
     """
 
     def set_settings(self):
@@ -497,9 +497,23 @@ class PandocMarkdownConversionSettings(ConversionSettings):
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
 
 
+class MultiMarkdownConversionSettings(ConversionSettings):
+    """
+    MultiMarkdown conversion settings.
+    """
+
+    def set_settings(self):
+        self.logger.info("MultiMarkdown conversion settings")
+        self.quick_setting = 'multimarkdown'
+        self.export_format = 'multimarkdown'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+
 class PandocMarkdownStrictConversionSettings(ConversionSettings):
     """
-    QOwnNotes conversion settings to convert input formats to format suitable for QOwnNotes users.
+     Pandoc Markdown-strict conversion settings.
     """
 
     def set_settings(self):
@@ -535,4 +549,5 @@ please.register_builder('obsidian', ObsidianConversionSettings)
 please.register_builder('commonmark', CommonmarkConversionSettings)
 please.register_builder('pandoc_markdown', PandocMarkdownConversionSettings)
 please.register_builder('pandoc_markdown_strict', PandocMarkdownStrictConversionSettings)
+please.register_builder('multimarkdown', MultiMarkdownConversionSettings)
 please.register_builder('html', HTMLConversionSettings)

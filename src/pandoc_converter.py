@@ -35,6 +35,7 @@ class PandocConverter:
                                           'pandoc_markdown': 'markdown',
                                           'commonmark': 'commonmark',
                                           'pandoc_markdown_strict': 'markdown_strict',
+                                          'multimarkdown': 'markdown_mmd',
                                           'html': 'html'}
         self.pandoc_options = None
         self.check_pandoc_is_installed_if_not_exit_program()
