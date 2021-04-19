@@ -15,6 +15,7 @@ python-frontmatter = "*"
 testfixtures = "*"
 coverage = "*"
 yanom = {editable = true, path = "."}
+pyinstaller = "*"
 
 [dev-packages]
 

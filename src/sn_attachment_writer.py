@@ -1,6 +1,6 @@
 import logging
 from globals import APP_NAME
-from helper_functions import generate_new_filename
+from helper_functions import generate_new_filename, find_working_directory
 import inspect
 from pathlib import Path
 import sn_attachment
@@ -24,7 +24,7 @@ class AttachmentWriter:
         self.logger.setLevel(logging.DEBUG)
         self.logger.info(f'{__name__} - Creating an instance of {what_class_is_this(self)}')
         self.nsx_file = nsx_file
-        self._current_directory_path = Path(__file__).parent.absolute()
+        self._current_directory_path = None
         self._output_folder = nsx_file.conversion_settings.export_folder_name
         self._attachment_folder = nsx_file.conversion_settings.attachment_folder_name
         self._notebook_folder = None
@@ -33,6 +33,11 @@ class AttachmentWriter:
         self._path_relative_to_notebook = None
         self._output_file_path = None
         self._relative_path = None
+        self.find_current_directory_path()
+
+    def find_current_directory_path(self):
+        self._current_directory_path, message = find_working_directory()
+        self.logger.info(message)
 
     def store_nsx_attachment(self, attachment):
         self.generate_relative_path(attachment)

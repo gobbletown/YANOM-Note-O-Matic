@@ -1,5 +1,5 @@
 from sn_note_page import NotePage
-from helper_functions import generate_clean_path
+from helper_functions import generate_clean_path, find_working_directory
 from pathlib import Path
 import logging
 from globals import APP_NAME
@@ -61,13 +61,17 @@ class Notebook:
         self.create_attachment_folder()
 
     def create_notebook_folder(self):
+        current_directory_path, message = find_working_directory()
+        self.logger.info(message)
+
         n = 0
-        target_path = Path(Path(__file__).parent.absolute(),
+        target_path = Path(current_directory_path,
                            self.nsx_file.conversion_settings.export_folder_name,
                            self.folder_name)
+
         while target_path.exists():
             n += 1
-            target_path = Path(Path(__file__).parent.absolute(),
+            target_path = Path(current_directory_path,
                                self.nsx_file.conversion_settings.export_folder_name,
                                f"{self.folder_name}-{n}")
 

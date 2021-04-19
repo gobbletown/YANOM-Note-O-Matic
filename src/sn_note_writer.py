@@ -1,9 +1,9 @@
 import logging
 from globals import APP_NAME
-from helper_functions import generate_clean_path
+from helper_functions import generate_clean_path, find_working_directory
 import inspect
 from pathlib import Path
-
+import sys
 
 def what_module_is_this():
     return __name__
@@ -22,10 +22,15 @@ class NoteWriter:
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
         self.conversion_settings = conversion_settings
-        self.current_directory_path = Path(__file__).parent.absolute()
+        self.current_directory_path = None
         self.output_folder = conversion_settings.export_folder_name
         self.output_full_path = None
         self.output_file_name = None
+        self.find_current_directory_path()
+
+    def find_current_directory_path(self):
+        self.current_directory_path, message = find_working_directory()
+        self.logger.info(message)
 
     def store_file(self, note_page):
         self.logger.info(f"Storing note '{note_page.title}' as '{self.output_file_name}' "

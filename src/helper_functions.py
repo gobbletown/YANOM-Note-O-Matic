@@ -4,6 +4,31 @@ import io
 from pathlib import Path
 import random
 import string
+import sys
+
+
+def find_working_directory():
+    """
+    This function helps fetcht he current working directory when a prohgram maybe run in a frozen pyinstaller bundle or
+    in a python environment.
+
+    Returns
+    -------
+    current_directory_path
+        Path object of the absolute path for the current working directory
+    message
+        Str that describes if the program is run as a bundle or in python and the current working directory path
+    """
+    if getattr(sys, 'frozen', False):
+        # we are running in a bundle
+        current_directory_path = Path(sys.executable).parent.absolute()
+        message = f"Running in a application bundle, current path is {current_directory_path}"
+    else:
+        # we are running in a normal Python environment
+        current_directory_path = Path(__file__).parent.absolute()
+        message = f"Running in a python environment, current path is {current_directory_path}"
+
+    return current_directory_path, message
 
 
 def generate_clean_path(value, allow_unicode=False):
