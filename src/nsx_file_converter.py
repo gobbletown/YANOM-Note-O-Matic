@@ -23,7 +23,7 @@ def what_class_is_this(obj):
 
 class NSXFile:
 
-    def __init__(self, file, conversion_settings):
+    def __init__(self, file, conversion_settings, pandoc_converter):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
         self._conversion_settings = conversion_settings
@@ -39,7 +39,7 @@ class NSXFile:
         self._note_book_count = 0
         self._image_count = 0
         self._attachment_count = 0
-        self._pandoc_converter = PandocConverter(self._conversion_settings)
+        self._pandoc_converter = pandoc_converter
 
     def process_nsx_file(self):
         self.logger.info(f"Processing {self._nsx_file_name}")

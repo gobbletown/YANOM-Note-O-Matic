@@ -14,7 +14,7 @@ from quick_settings import ConversionSettings
 from file_converter_HTML_to_MD import HTMLToMDConverter
 from file_converter_MD_to_MD import MDToMDConverter
 from file_converter_MD_to_HTML import MDToHTMLConverter
-
+from pandoc_converter import PandocConverter
 
 log_filename = 'normal.log'
 error_log_filename = 'error.log'
@@ -70,6 +70,7 @@ class NotesConvertor:
         self._attachment_count = 0
         self.conversion_settings = ConversionSettings
         self.nsx_backups = None
+        self.pandoc_converter = None
         self.command_line = CommandLineParsing()
         self.config_data = ConfigData('config.ini', 'gfm', allow_no_value=True)
         self.evaluate_command_line_arguments()
@@ -137,7 +138,8 @@ class NotesConvertor:
 
         self.exit_if_no_files_found(nsx_files_to_convert, file_extension)
 
-        self.nsx_backups = [NSXFile(file, self.conversion_settings) for file in nsx_files_to_convert]
+        self.pandoc_converter = PandocConverter(self.conversion_settings)
+        self.nsx_backups = [NSXFile(file, self.conversion_settings, self.pandoc_converter) for file in nsx_files_to_convert]
 
     def process_nsx_files(self):
         with Timer(name="nsx_conversion", logger=root_logger.info, silent=self.conversion_settings.silent):
