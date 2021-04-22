@@ -155,10 +155,6 @@ class NotesConvertor:
 
     def evaluate_command_line_arguments(self):
 
-        if self.command_line.args['gui']:
-            self.run_gui()
-            return
-
         if self.command_line.args['ini']:
             self.configure_for_ini_settings()
             return

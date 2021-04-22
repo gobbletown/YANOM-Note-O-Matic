@@ -12,11 +12,12 @@ matplotlib = "*"
 pandas = "*"
 beautifulsoup4 = "*"
 python-frontmatter = "*"
-testfixtures = "*"
-coverage = "*"
 yanom = {editable = true, path = "."}
-pyinstaller = "*"
+toml = "*"
 
 [dev-packages]
+testfixtures = "*"
+coverage = "*"
+pyinstaller = "*"
 
 [requires]

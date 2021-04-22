@@ -149,9 +149,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
         if type(self._current_conversion_settings) is ManualConversionSettings:
             self.__ask_and_set_export_format()
-            if self._current_conversion_settings.export_format == 'html':
-                self.__ask_and_set_metadata_schema()
-            else:
+            if self._current_conversion_settings.export_format != 'html':
                 self.__ask_markdown_metadata_questions()
             self.__ask_and_set_table_details()
             self.__ask_and_set_export_folder_name()
@@ -162,10 +160,9 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self.__ask_and_set_front_matter_format()
         if self._current_conversion_settings.front_matter_format != 'none':
             self.__ask_and_set_metadata_details()
+            if self._current_conversion_settings.front_matter_format == 'text':
+                self.__ask_and_set_tag_prefix()
             self.__ask_and_set_metadata_schema()
-            return
-
-        self.__ask_and_set_tag_prefix()
 
     def __ask_and_set_conversion_quick_setting(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists

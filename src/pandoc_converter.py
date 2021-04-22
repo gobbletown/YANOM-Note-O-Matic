@@ -86,7 +86,9 @@ class PandocConverter:
 
     def convert_using_strings(self, input_data, name):
         try:
-            out = subprocess.run(self.pandoc_options, input=input_data, capture_output=True, text=True, timeout=20)
+            out = subprocess.run(self.pandoc_options, input=input_data, capture_output=True, encoding='utf-8', text=True, timeout=20)
+            if out.returncode > 0:
+                self.logger.error(f"Pandoc Return code={out.returncode}, error={out.stderr}")
             return out.stdout
         except subprocess.CalledProcessError:
             self.logger.error(f" unable to convert note {name} in method {what_method_is_this()}")

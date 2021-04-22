@@ -7,7 +7,7 @@ import logging
 from globals import APP_NAME
 import inspect
 from pathlib import Path
-
+from helper_functions import find_working_directory
 
 def what_module_is_this():
     return __name__
@@ -82,7 +82,8 @@ class NSXFile:
         self._notebooks['recycle_bin'] = Notebook(self, 'recycle_bin')
 
     def create_export_folder_if_not_exist(self):
-        target_path = Path(Path(__file__).parent.absolute(),
+        current_woring_directory, message = find_working_directory()
+        target_path = Path(current_woring_directory,
                            self._conversion_settings.export_folder_name)
 
         target_path.mkdir(exist_ok=True)

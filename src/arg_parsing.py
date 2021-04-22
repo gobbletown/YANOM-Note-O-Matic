@@ -55,13 +55,12 @@ class CommandLineParsing:
                                        'If not provided will search and use current folder AND any sub folders.')
         group = self._parser.add_argument_group('Mutually exclusive options. ',
                                                 'To use the interactive command line tool for settings '
-                                                'DO NOT use -s, -g, -i, -q, or -m')
+                                                'DO NOT use -s or -i')
         settings_from_group = group.add_mutually_exclusive_group()
-        settings_from_group.add_argument("-g", "--gui", action="store_true", help="Use gui interface.")
         settings_from_group.add_argument("-i", "--ini", action="store_true",
                                          help="Use config.ini for conversion settings.")
         settings_from_group.add_argument("-c", "--cli", action="store_true",
-                                         help="Use interative comand line interfacce to choose options and settings. This is the default if no argumetn is provided.")
+                                         help="Use interactive command line interface to choose options and settings. This is the default if no argument is provided.")
 
 
 if __name__ == '__main__':

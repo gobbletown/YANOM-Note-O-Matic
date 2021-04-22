@@ -1,7 +1,7 @@
 import logging
 import re
 import inspect
-from src.globals import APP_NAME
+from globals import APP_NAME
 
 
 def what_module_is_this():

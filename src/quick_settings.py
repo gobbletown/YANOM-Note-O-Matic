@@ -7,7 +7,7 @@ from abc import abstractmethod
 from globals import APP_NAME
 import inspect
 import logging
-from helper_functions import generate_clean_path
+from helper_functions import generate_clean_path, find_working_directory
 from custom_inherit import DocInheritMeta
 import os
 from pathlib import Path
@@ -174,7 +174,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._export_folder_name = 'notes'
         self._attachment_folder_name = 'attachments'
         self._creation_time_in_exported_file_name = False
-        self._creation_time_key = ''
         self.set_settings()
 
     def __str__(self):
@@ -252,7 +251,8 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     @source.setter
     def source(self, value):
         if value == '':
-            self._source = Path(os.getcwd())
+            self._source, message = find_working_directory()
+            self.logger.error(f"Using {self._source} as source directory")
         elif Path(value).exists():
             self._source = Path(value)
         else:
