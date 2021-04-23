@@ -1,10 +1,10 @@
-import unicodedata
-import re
 import io
 from pathlib import Path
 import random
+import re
 import string
 import sys
+import unicodedata
 
 
 def find_working_directory():

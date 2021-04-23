@@ -1,9 +1,10 @@
-import logging
-from globals import APP_NAME
-from helper_functions import generate_clean_path, find_working_directory
 import inspect
+import logging
 from pathlib import Path
 import sys
+
+from globals import APP_NAME
+from helper_functions import generate_clean_path, find_working_directory
 
 def what_module_is_this():
     return __name__

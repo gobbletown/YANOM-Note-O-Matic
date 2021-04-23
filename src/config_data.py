@@ -1,12 +1,13 @@
 from configparser import ConfigParser
-from pathlib import Path
-from quick_settings import ConversionSettings
-import quick_settings
-import logging
 import inspect
+import logging
+from pathlib import Path
+import sys
+
 from globals import APP_NAME
 from interactive_cli import InvalidConfigFileCommandLineInterface
-import sys
+from conversion_settings import ConversionSettings
+import conversion_settings
 
 
 def what_module_is_this():
@@ -50,7 +51,7 @@ class ConfigData(ConfigParser):
         self.logger.setLevel(logging.DEBUG)
         self._config_file = config_file
         self._default_quick_setting = default_quick_setting
-        self._conversion_settings = quick_settings.please.provide('manual')
+        self._conversion_settings = conversion_settings.please.provide('manual')
         self._validation_values = self._conversion_settings.validation_values
         self.__read_config_file()
         self.__validate_config_file()
@@ -197,7 +198,7 @@ class ConfigData(ConfigParser):
             string: A key 'quick setting' value
 
         """
-        self._conversion_settings = quick_settings.please.provide(setting)
+        self._conversion_settings = conversion_settings.please.provide(setting)
         self.__load_and_save_settings()
 
     def load_and_save_config_from_conversion_settings_obj(self, settings: ConversionSettings):

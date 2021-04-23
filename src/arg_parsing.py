@@ -1,10 +1,11 @@
-import argparse
-import os
-from globals import VERSION
-import quick_settings
-import logging
 import inspect
-from globals import APP_NAME
+import logging
+import os
+
+import argparse
+
+from globals import VERSION, APP_NAME
+import conversion_settings
 
 
 def what_module_is_this():
@@ -32,7 +33,7 @@ class CommandLineParsing:
         self.logger.info("Parsing command line arguments")
         self._args = self._parser.parse_args()
         self.logger.info(f"command line arguments are {self._args}")
-        self._conversion_setting = quick_settings.please.provide('manual')
+        self._conversion_setting = conversion_settings.please.provide('manual')
 
     @property
     def conversion_setting(self):

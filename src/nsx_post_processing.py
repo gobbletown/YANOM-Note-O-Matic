@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-import logging
-from globals import APP_NAME
 import inspect
+import logging
 
+from globals import APP_NAME
 from image_processing import ObsidianImageTagFormatter
 
 
@@ -46,7 +46,7 @@ class NoteStationPostProcessing(PostProcessing):
 
     def __add_meta_data(self):
         if self._note.conversion_settings.front_matter_format != 'none':
-            self._post_processed_content = self._pre_processor.header_generator.add_metadata_md_to_content(self._post_processed_content)
+            self._post_processed_content = self._pre_processor.metadata_processor.add_metadata_md_to_content(self._post_processed_content)
 
     def __add_check_lists(self):
         self._post_processed_content = self._note.pre_processor.checklist_processor.add_checklist_items_to(self._post_processed_content)

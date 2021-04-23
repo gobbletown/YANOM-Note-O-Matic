@@ -1,5 +1,5 @@
 import unittest
-import src.quick_settings as quick_settings
+import src.conversion_settings as quick_settings
 from src.file_converter_HTML_to_MD import HTMLToMDConverter
 from pathlib import Path
 from src.metadata_processing import MetaDataProcessor

@@ -1,6 +1,7 @@
+import inspect
 import logging
 import re
-import inspect
+
 from globals import APP_NAME
 
 

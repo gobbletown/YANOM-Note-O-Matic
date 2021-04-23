@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-import sn_attachment_writer
+
 from helper_functions import generate_clean_path
+import sn_attachment_writer
 
 
 class Attachment(ABC):

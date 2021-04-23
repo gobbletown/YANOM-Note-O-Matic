@@ -1,12 +1,13 @@
-import sn_attachment
-from helper_functions import generate_clean_path
-from sn_note_writer import NoteWriter
-import logging
-from globals import APP_NAME
 import inspect
-from nsx_pre_processing import NoteStationPreProcessing
-from nsx_post_processing import NoteStationPostProcessing
+import logging
 import time
+
+from globals import APP_NAME
+from helper_functions import generate_clean_path
+from nsx_post_processing import NoteStationPostProcessing
+from nsx_pre_processing import NoteStationPreProcessing
+import sn_attachment
+from sn_note_writer import NoteWriter
 
 def what_module_is_this():
     return __name__

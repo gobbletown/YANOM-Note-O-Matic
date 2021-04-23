@@ -1,6 +1,7 @@
-from bs4 import BeautifulSoup
-import re
 from abc import ABC, abstractmethod
+import re
+
+from bs4 import BeautifulSoup
 
 
 class ChecklistItem:

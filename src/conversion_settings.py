@@ -2,15 +2,17 @@
 Provide classes for provision of conversion settings for manual or specific pre configured sets of conversion settings
 
 """
-import object_factory
 from abc import abstractmethod
-from globals import APP_NAME
+import os
 import inspect
 import logging
-from helper_functions import generate_clean_path, find_working_directory
-from custom_inherit import DocInheritMeta
-import os
 from pathlib import Path
+
+from custom_inherit import DocInheritMeta
+
+from globals import APP_NAME
+from helper_functions import generate_clean_path, find_working_directory
+import object_factory
 
 
 def what_module_is_this():
@@ -130,7 +132,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'pandoc_markdown_strict', 'multimarkdown', 'html')
         },
         'meta_data_options': {
-            'metadata_front_matter_format': ('yaml', 'toml', 'json', 'none'),
+            'metadata_front_matter_format': ('yaml', 'toml', 'json', 'text', 'none'),
             'metadata_schema': '',
             'tag_prefix': '',
             'spaces_in_tags': ('True', 'False'),

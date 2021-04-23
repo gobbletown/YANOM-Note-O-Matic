@@ -1,13 +1,15 @@
+import inspect
+import logging
+from pathlib import Path
+
+from globals import APP_NAME
+from helper_functions import find_working_directory
+from pandoc_converter import PandocConverter
 from sn_notebook import Notebook
 from sn_note_page import NotePage
-from sn_zipfile_reader import NSXZipFileReader
 from sn_note_writer import NoteWriter
-from pandoc_converter import PandocConverter
-import logging
-from globals import APP_NAME
-import inspect
-from pathlib import Path
-from helper_functions import find_working_directory
+from sn_zipfile_reader import NSXZipFileReader
+
 
 def what_module_is_this():
     return __name__

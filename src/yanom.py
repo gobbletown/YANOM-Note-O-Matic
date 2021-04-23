@@ -1,20 +1,21 @@
-#!/usr/bin/env python
-import sys
+#!/usr/bin/env python3
+from arg_parsing import CommandLineParsing
 import inspect
 import logging
 import logging.handlers as handlers
-from nsx_file_converter import NSXFile
+import sys
+from timer import Timer
+
 from config_data import ConfigData
 from globals import APP_NAME
 from interactive_cli import StartUpCommandLineInterface
-from arg_parsing import CommandLineParsing
-import quick_settings
-from timer import Timer
-from quick_settings import ConversionSettings
-from file_converter_HTML_to_MD import HTMLToMDConverter
-from file_converter_MD_to_MD import MDToMDConverter
-from file_converter_MD_to_HTML import MDToHTMLConverter
+from nsx_file_converter import NSXFile
 from pandoc_converter import PandocConverter
+import conversion_settings
+from conversion_settings import ConversionSettings
+from file_converter_HTML_to_MD import HTMLToMDConverter
+from file_converter_MD_to_HTML import MDToHTMLConverter
+from file_converter_MD_to_MD import MDToMDConverter
 
 log_filename = 'normal.log'
 error_log_filename = 'error.log'
@@ -202,7 +203,7 @@ class NotesConvertor:
         # for a quick setting the source, export folder and attachment folder provided on the command
         # line will be used or the defaults if they were not provided as arguments
         root_logger.info(f"Using quick settings for {self.command_line.args['quickset']}")
-        self.conversion_settings = quick_settings.please.provide(self.command_line.args['quickset'])
+        self.conversion_settings = conversion_settings.please.provide(self.command_line.args['quickset'])
         self.add_file_paths_from_command_line_to_settings()
         self.config_data.conversion_settings = self.conversion_settings
 

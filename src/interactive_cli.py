@@ -1,11 +1,13 @@
-from PyInquirer import style_from_dict, Token, prompt, Separator
 from abc import ABC, abstractmethod
-import quick_settings
-from quick_settings import ManualConversionSettings
-from pyfiglet import Figlet
-from globals import APP_NAME, APP_SUB_NAME
-import logging
 import inspect
+import logging
+
+from pyfiglet import Figlet
+from PyInquirer import style_from_dict, Token, prompt, Separator
+
+from globals import APP_NAME, APP_SUB_NAME
+import conversion_settings
+from conversion_settings import ManualConversionSettings
 
 
 def what_module_is_this():
@@ -63,7 +65,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
         self._default_settings = config_ini_conversion_settings
-        self._current_conversion_settings = quick_settings.please.provide('manual')
+        self._current_conversion_settings = conversion_settings.please.provide('manual')
 
     def run_cli(self):
         self.logger.info("Running start up interactive command line")
@@ -179,7 +181,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
             'choices': ordered_list
         }
         answer = prompt(quick_setting_prompt, style=self.style)
-        quick_conversion_settings = quick_settings.please.provide(answer['quick_setting'])
+        quick_conversion_settings = conversion_settings.please.provide(answer['quick_setting'])
         quick_conversion_settings.conversion_input = self._current_conversion_settings.conversion_input
         self._current_conversion_settings = quick_conversion_settings
 
@@ -390,5 +392,5 @@ class InvalidConfigFileCommandLineInterface(InquireCommandLineInterface):
 
 
 if __name__ == '__main__':
-    cli = StartUpCommandLineInterface(quick_settings.please.provide('obsidian'))
+    cli = StartUpCommandLineInterface(conversion_settings.please.provide('obsidian'))
     cli.run_cli()

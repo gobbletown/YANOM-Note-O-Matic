@@ -1,9 +1,10 @@
-from sn_note_page import NotePage
-from helper_functions import generate_clean_path, find_working_directory
-from pathlib import Path
-import logging
-from globals import APP_NAME
 import inspect
+import logging
+from pathlib import Path
+
+from globals import APP_NAME
+from helper_functions import generate_clean_path, find_working_directory
+from sn_note_page import NotePage
 
 
 def what_module_is_this():

@@ -1,13 +1,14 @@
+import distutils.version
+import inspect
+import logging
+import os
+from pathlib import Path
 import shutil
 import subprocess
-import distutils.version
-import os
-import tempfile
-import logging
-from globals import APP_NAME
-from pathlib import Path
-import inspect
 import sys
+import tempfile
+
+from globals import APP_NAME
 
 
 def what_module_is_this():

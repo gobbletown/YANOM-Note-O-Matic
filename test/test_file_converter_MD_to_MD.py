@@ -1,5 +1,5 @@
 import unittest
-import src.quick_settings as quick_settings
+import src.conversion_settings as quick_settings
 from src.file_converter_MD_to_MD import MDToMDConverter
 from pathlib import Path
 from testfixtures import TempDirectory

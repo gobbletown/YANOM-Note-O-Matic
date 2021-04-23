@@ -1,5 +1,5 @@
-import zipfile
 import json
+import zipfile
 
 
 class NSXZipFileReader:

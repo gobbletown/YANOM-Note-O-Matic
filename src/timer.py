@@ -1,7 +1,7 @@
-from typing import Any, Callable, ClassVar, Dict, Optional
 from contextlib import ContextDecorator
 from dataclasses import dataclass, field
 import time
+from typing import Any, Callable, ClassVar, Dict, Optional
 
 
 class TimerError(Exception):

@@ -1,15 +1,17 @@
-from bs4 import BeautifulSoup
-import re
 from abc import ABC, abstractmethod
-import logging
-from globals import APP_NAME
-import inspect
 import ast
-import pandas as pd
-import matplotlib.pyplot as pyplot
+import inspect
 import io
-from sn_attachment import ChartStringNSAttachment, ChartImageNSAttachment
+import logging
+import re
+
+from bs4 import BeautifulSoup
+import matplotlib.pyplot as pyplot
+import pandas as pd
+
+from globals import APP_NAME
 from helper_functions import add_strong_between_tags
+from sn_attachment import ChartStringNSAttachment, ChartImageNSAttachment
 
 
 def what_module_is_this():

@@ -1,8 +1,9 @@
+import inspect
 import logging
+from pathlib import Path
+
 from globals import APP_NAME
 from helper_functions import generate_new_filename, find_working_directory
-import inspect
-from pathlib import Path
 import sn_attachment
 
 

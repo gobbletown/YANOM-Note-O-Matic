@@ -1,15 +1,16 @@
-import re
 from abc import ABC, abstractmethod
-from chart_processing import NSXChartProcessor
-import logging
-from globals import APP_NAME
 import inspect
-from helper_functions import add_strong_between_tags, change_html_tags
-from sn_attachment import FileNSAttachment
+import logging
+import re
+
+from chart_processing import NSXChartProcessor
 from checklist_processing import NSXInputMDOutputChecklistProcessor, NSXInputHTMLOutputChecklistProcessor
+from globals import APP_NAME
+from helper_functions import add_strong_between_tags, change_html_tags
 from image_processing import ImageTag
-from inter_note_link_processing import SNLinksToOtherNotes
 from metadata_processing import MetaDataProcessor
+from sn_attachment import FileNSAttachment
+from sn_inter_note_link_processing import SNLinksToOtherNotes
 
 
 def what_module_is_this():
@@ -65,7 +66,7 @@ class NoteStationPreProcessing(PreProcessing):
         self._pre_processed_content = content
 
     @property
-    def header_generator(self):
+    def metadata_processor(self):
         return self._metadata_processor
 
     @property
@@ -175,7 +176,6 @@ class NoteStationPreProcessing(PreProcessing):
         self._metadata_processor.parse_dict_metadata(self._note.note_json)
         self._pre_processed_content = f'<head><title> </title></head>{self._pre_processed_content}'  # add head and title to add meta data to
         self._pre_processed_content = self._metadata_processor.add_metadata_html_to_content(self._pre_processed_content)
-        pass
 
     def __generate_links_to_other_note_pages(self):
         self.logger.info(f"Creating links between pages")

@@ -1,13 +1,15 @@
-from pandoc_converter import PandocConverter
-import logging
-from globals import APP_NAME
-import inspect
-from pathlib import Path
-from image_processing import ObsidianImageTagFormatter
 from abc import ABC, abstractmethod
-import frontmatter
-from bs4 import BeautifulSoup
+import inspect
+import logging
+from pathlib import Path
 import re
+
+from bs4 import BeautifulSoup
+import frontmatter
+
+from globals import APP_NAME
+from image_processing import ObsidianImageTagFormatter
+from pandoc_converter import PandocConverter
 
 
 def what_module_is_this():

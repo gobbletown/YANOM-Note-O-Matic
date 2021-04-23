@@ -1,11 +1,11 @@
-import frontmatter
-import logging
 import inspect
+import logging
 
+from bs4 import BeautifulSoup
+import frontmatter
 from frontmatter import YAMLHandler, TOMLHandler, JSONHandler
 
 from globals import APP_NAME
-from bs4 import BeautifulSoup
 
 
 def what_module_is_this():
@@ -27,6 +27,7 @@ class MetaDataProcessor:
         self._conversion_settings = conversion_settings
         self._split_tags = conversion_settings.split_tags
         self._spaces_in_tags = conversion_settings.split_tags
+        self._tag_prefix = conversion_settings.tag_prefix
         self._metadata_schema = conversion_settings.metadata_schema
         self._metadata = {}
         self._tags = None
@@ -45,6 +46,9 @@ class MetaDataProcessor:
                 for key, value in tag.attrs.items():
                     if self._metadata_schema == [''] or key in self._metadata_schema:
                         self._metadata[key] = value
+
+        self.format_tag_metadata_if_required()
+
 
     def parse_dict_metadata(self, metadata_dict):
         for item in self._metadata_schema:
@@ -65,22 +69,40 @@ class MetaDataProcessor:
         return content
 
     def format_tag_metadata_if_required(self):
-        if 'tags' in self._metadata.keys():
+        if 'tags' in self._metadata.keys() or 'tag' in self._metadata.keys():
             self.split_tags_if_required()
             self.remove_tag_spaces_if_required()
+
 
     def remove_tag_spaces_if_required(self):
         if self._spaces_in_tags:
             return
 
-        self._metadata['tags'] = [tag.replace(' ', '-') for tag in self._metadata['tags']]
+        if 'tags' in self._metadata:
+            self._metadata['tags'] = [tag.replace(' ', '-') for tag in self._metadata['tags']]
+        if 'tag' in self._metadata:
+            self._metadata['tag'] = [tag.replace(' ', '-') for tag in self._metadata['tag']]
 
     def split_tags_if_required(self):
         if not self._split_tags:
             return
+        if 'tags' in self._metadata:
+            set_tags = {tag for tag_split in self._metadata['tags'] for tag in tag_split.split('/')}
+            self._metadata['tags'] = [tag for tag in set_tags]
+        if 'tag' in self._metadata:
+            set_tags = {tag for tag_split in self._metadata['tag'] for tag in tag_split.split('/')}
+            self._metadata['tag'] = [tag for tag in set_tags]
 
-        set_tags = {tag for tag_split in self._metadata['tags'] for tag in tag_split.split('/')}
-        self._metadata['tags'] = [tag for tag in set_tags]
+    def add_tag_prefix_of_required(self):
+        if not self._split_tags:
+            return
+        if 'tags' in self._metadata:
+            set_tags = {tag for tag_split in self._metadata['tags'] for tag in tag_split.split('/')}
+            self._metadata['tags'] = [tag for tag in set_tags]
+        if 'tag' in self._metadata:
+            set_tags = {tag for tag_split in self._metadata['tag'] for tag in tag_split.split('/')}
+            self._metadata['tag'] = [tag for tag in set_tags]
+
 
     def add_metadata_md_to_content(self, content):
 
@@ -93,17 +115,48 @@ class MetaDataProcessor:
         if frontmatter.checks(content):
             self.logger.warning('Meta data front matter already exits, continuing to add a second front matter section')
 
+        if self._conversion_settings.front_matter_format == 'text':
+            content = self.add_text_metadata_to_content(content)
+            return content
+
         merged_content = frontmatter.Post(content, **self._metadata)
 
         if self._conversion_settings.front_matter_format == 'yaml':
             content = frontmatter.dumps(merged_content, handler=YAMLHandler())
-            pass
         if self._conversion_settings.front_matter_format == 'toml':
             content = frontmatter.dumps(merged_content, handler=TOMLHandler())
         if self._conversion_settings.front_matter_format == 'json':
             content = frontmatter.dumps(merged_content, handler=JSONHandler())
 
         return content
+
+    def add_text_metadata_to_content(self, content):
+        if self._conversion_settings.markdown_conversion_input == 'markdown':
+            return content
+
+        if len(self._metadata) == 0:
+            return content
+
+        text_meta_data = ''
+        for key, value in self._metadata.items():
+            if key =='tag' or key == 'tags':
+                value = self.add_tag_prefix(value)
+                text_meta_data = f'{text_meta_data}{key}: '
+                for item in value:
+                    text_meta_data = f'{text_meta_data}{item}, '
+                if value:  # if there were actual tags trim off last space and comma
+                    text_meta_data = text_meta_data[:-2]
+                continue
+
+            text_meta_data = f'{text_meta_data}{key}: {value}\n'
+
+        return f'{text_meta_data}\n\n{content}'
+
+    def add_tag_prefix(self, tags):
+        tags = [f'{self._tag_prefix}{tag}' for tag in tags]
+
+        return tags
+
 
     def add_metadata_html_to_content(self, content):
         if self._conversion_settings.markdown_conversion_input == 'markdown':
