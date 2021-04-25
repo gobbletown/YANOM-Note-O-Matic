@@ -34,6 +34,7 @@ class NotePage:
         self._note_id = note_id
         self._note_json = nsx_file.fetch_json_data(note_id)
         self._title = self._note_json['title']
+        self._original_title = self._note_json['title']
         self.format_ctime_and_mtime_if_required()
         self._raw_content = self._note_json['content']
         self._parent_notebook = self._note_json['parent_id']
@@ -112,9 +113,29 @@ class NotePage:
         self._post_processor = NoteStationPostProcessing(self)
         self._converted_content = self._post_processor.post_processed_content
 
+    def increment_duplicated_title(self, list_of_existing_titles):
+        """
+        Add incrementing number to title for duplicates notes in a notebook.
+
+        When a note title is found to already exist in a notebook add a number to the end of the title, incrementing
+        if required when there are multiple duplicates
+        """
+        this_title = self._title
+        n = 0
+
+        while this_title in list_of_existing_titles:
+            n += 1
+            this_title = f'{self._title}-{n}'
+
+        self._title = this_title
+
     @property
     def title(self):
-        return self._title
+        return self._title    \
+
+    @property
+    def original_title(self):
+        return self._original_title
 
     @property
     def note_id(self):

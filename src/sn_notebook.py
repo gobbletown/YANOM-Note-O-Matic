@@ -36,6 +36,7 @@ class Notebook:
         self.create_folder_name()
         self.full_path_to_notebook = ''
         self.note_pages = []
+        self.note_titles = []
 
     def fetch_notebook_data(self):
         self.notebook_json = self.nsx_file.zipfile_reader.read_json_data(self.notebook_id)
@@ -52,6 +53,11 @@ class Notebook:
 
         note_page.notebook_folder_name = self.folder_name
         note_page.parent_notebook = self.notebook_id
+
+        while note_page.title in self.note_titles:
+            note_page.increment_duplicated_title(self.note_titles)
+
+        self.note_titles.append(note_page.title)
         self.note_pages.append(note_page)
 
     def create_folder_name(self):
