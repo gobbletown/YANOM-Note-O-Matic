@@ -18,7 +18,7 @@ You can get an idea of the road map for YANOM from the [Projects] and [Milestone
 
 If an issue you raise or feature you would like is something you think you can address, then [fork YANOM].
 
-YANOM has two main branches and attempts to follow the [git flow] approach.  
+YANOM has two main branches and attempts to follow the [git flow](https://nvie.com/posts/a-successful-git-branching-model/) approach.  
 - The ```main``` branch is for released versions.  Branch from this for a bug fix to the currently released version.
 - The ```develop``` branch is the branch to contribute new features to.
 

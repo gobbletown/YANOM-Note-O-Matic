@@ -1,9 +1,9 @@
 import unittest
-import src.conversion_settings as quick_settings
-from src.file_converter_MD_to_HTML import MDToHTMLConverter
+import conversion_settings as quick_settings
+from file_converter_MD_to_HTML import MDToHTMLConverter
 from pathlib import Path
 from testfixtures import TempDirectory
-from src.metadata_processing import MetaDataProcessor
+from metadata_processing import MetaDataProcessor
 
 
 class TestMDToHTMLConverter(unittest.TestCase):
@@ -45,8 +45,10 @@ class TestMDToHTMLConverter(unittest.TestCase):
                                  self.file_converter._pre_processed_content,
                                  test_set[3])
 
+
+    def test_parse_metadata_if_required(self):
         test_strings = [
-            ('markdown',
+            ('pandoc_markdown',
              '---\nexcerpt: tl;dr\nlayout: post\ntitle: TITLE\n---\n\n# Hello',
              '---\nexcerpt: tl;dr\nlayout: post\ntitle: TITLE\n---\n\n# Hello',
              'markdown pre processing for meta data failed'),
@@ -199,3 +201,5 @@ class TestMDToHTMLConverter(unittest.TestCase):
             '<head><title>-</title></head><p><a href="a_folder/test_md_file.md">md file</a></p>',
             self.file_converter._post_processed_content,
             'title and meta data inserted incorrectly with markdown conversion input')
+
+

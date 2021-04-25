@@ -255,7 +255,7 @@ class ConfigData(ConfigParser):
             },
             'conversion_inputs': {
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_conversion_inputs)}': None,
-                '    #  nsx = synolpgy Note Station Export file': None,
+                '    #  nsx = synology Note Station Export file': None,
                 '    #  html = simple html based notes pages, no complex CSS or html code': None,
                 '    #  markdown =  text files in markdown format': None,
                 'conversion_input': self._conversion_settings.conversion_input
@@ -311,7 +311,7 @@ class ConfigData(ConfigParser):
                 'attachment_folder_name': self._conversion_settings.attachment_folder_name,
 
                 'creation_time_in_exported_file_name': self._conversion_settings.creation_time_in_exported_file_name,
-                '    # creation time in file name only apploies to NSX files.': None,
+                '    # creation time in file name only applies to NSX files.': None,
                 '    # If True creation time will be added as prefix to file name': None
             }
         }
