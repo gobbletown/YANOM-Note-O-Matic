@@ -3,6 +3,7 @@ from arg_parsing import CommandLineParsing
 import inspect
 import logging
 import logging.handlers as handlers
+import os
 import sys
 from timer import Timer
 
@@ -17,8 +18,10 @@ from file_converter_HTML_to_MD import HTMLToMDConverter
 from file_converter_MD_to_HTML import MDToHTMLConverter
 from file_converter_MD_to_MD import MDToMDConverter
 
-log_filename = 'normal.log'
-error_log_filename = 'error.log'
+os.makedirs('data/logs/', exist_ok=True)
+
+log_filename = 'data/logs/normal.log'
+error_log_filename = 'data/logs/error.log'
 
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
@@ -73,7 +76,7 @@ class NotesConvertor:
         self.nsx_backups = None
         self.pandoc_converter = None
         self.command_line = CommandLineParsing()
-        self.config_data = ConfigData('config.ini', 'gfm', allow_no_value=True)
+        self.config_data = ConfigData('data/config.ini', 'gfm', allow_no_value=True)
         self.evaluate_command_line_arguments()
         if self.conversion_settings.conversion_input == 'html':
             self.convert_html()
