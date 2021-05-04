@@ -1,0 +1,13 @@
+FROM  debian:buster-slim
+RUN apt-get update --yes && \
+    apt-get install --yes curl  && \
+    curl -OL https://github.com/jgm/pandoc/releases/download/2.13/pandoc-2.13-1-amd64.deb && \
+    dpkg -i \pandoc-2.13-1-amd64.deb
+RUN adduser --disabled-password --gecos '' app
+WORKDIR /app
+COPY --chown=app:app dist/Debian-Linux/Debian10-buster-slim/yanom1-deb10.tar.gz .
+RUN chown app /app && \
+	tar -xvf yanom1-deb10.tar.gz && \
+	rm yanom1-deb10.tar.gz
+USER app
+CMD ./yanom
