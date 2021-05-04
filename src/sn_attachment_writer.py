@@ -2,7 +2,7 @@ import inspect
 import logging
 from pathlib import Path
 
-from globals import APP_NAME
+from globals import APP_NAME, DATA_DIR
 from helper_functions import generate_new_filename, find_working_directory
 import sn_attachment
 
@@ -62,7 +62,7 @@ class AttachmentWriter:
         self._path_relative_to_notebook = Path(self._attachment_folder, attachment.file_name)
 
     def generate_output_path(self, attachment):
-        path = Path(self._current_directory_path, self._output_folder,
+        path = Path(self._current_directory_path, DATA_DIR, self._output_folder,
                     attachment.notebook_folder_name,
                     self._path_relative_to_notebook)
 

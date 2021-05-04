@@ -9,7 +9,7 @@ import unicodedata
 
 def find_working_directory():
     """
-    This function helps fetcht he current working directory when a prohgram maybe run in a frozen pyinstaller bundle or
+    This function helps fetch the current working directory when a program may be run in a frozen pyinstaller bundle or
     in a python environment.
 
     Returns

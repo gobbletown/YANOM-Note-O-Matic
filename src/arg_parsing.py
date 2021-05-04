@@ -49,7 +49,7 @@ class CommandLineParsing:
         self._parser.add_argument('-v', '--version', action='version', version='%(prog)s Version {}'.format(VERSION))
         self._parser.add_argument("-s", "--silent", action="store_true",
                                   help="No output to console. No interactive command line interface for settings.")
-        self._parser.add_argument('--source', nargs='?', default=os.getcwd(),
+        self._parser.add_argument('--source', nargs='?', default='',
                                   help='Sub directory of current directory containing one or more files to process, '
                                        'or the name of a single file.  '
                                        'For example "my_html_file.html" or "my_nsx_files".  '

@@ -4,11 +4,12 @@ import inspect
 import logging
 import logging.handlers as handlers
 import os
+from pathlib import Path
 import sys
 from timer import Timer
 
 from config_data import ConfigData
-from globals import APP_NAME
+from globals import APP_NAME, DATA_DIR
 from interactive_cli import StartUpCommandLineInterface
 from nsx_file_converter import NSXFile
 from pandoc_converter import PandocConverter
@@ -18,10 +19,10 @@ from file_converter_HTML_to_MD import HTMLToMDConverter
 from file_converter_MD_to_HTML import MDToHTMLConverter
 from file_converter_MD_to_MD import MDToMDConverter
 
-os.makedirs('data/logs/', exist_ok=True)
+os.makedirs(f"{DATA_DIR}/logs/", exist_ok=True)
 
-log_filename = 'data/logs/normal.log'
-error_log_filename = 'data/logs/error.log'
+log_filename = f"{DATA_DIR}/logs/normal.log"
+error_log_filename = f"{DATA_DIR}/logs/error.log"
 
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
@@ -76,7 +77,7 @@ class NotesConvertor:
         self.nsx_backups = None
         self.pandoc_converter = None
         self.command_line = CommandLineParsing()
-        self.config_data = ConfigData('data/config.ini', 'gfm', allow_no_value=True)
+        self.config_data = ConfigData(f"{DATA_DIR}/config.ini", 'gfm', allow_no_value=True)
         self.evaluate_command_line_arguments()
         if self.conversion_settings.conversion_input == 'html':
             self.convert_html()
@@ -164,7 +165,7 @@ class NotesConvertor:
             return
 
         if self.command_line.args['silent']:
-            root_logger.warning(f"Command line option -s  --silent used without -g or -i.  "
+            root_logger.warning(f"Command line option -s  --silent used without -i.  "
                                 f"Unable to use Interactive command line due to silence request.  "
                                 f"Exiting program")
             sys.exit(0)
@@ -203,8 +204,8 @@ class NotesConvertor:
         self.config_data.conversion_settings = self.conversion_settings
 
     def configure_for_quick_setting(self):
-        # for a quick setting the source, export folder and attachment folder provided on the command
-        # line will be used or the defaults if they were not provided as arguments
+        # for a quick setting the source folder provided on the command
+        # line will be used if provided as argument
         root_logger.info(f"Using quick settings for {self.command_line.args['quickset']}")
         self.conversion_settings = conversion_settings.please.provide(self.command_line.args['quickset'])
         self.add_file_paths_from_command_line_to_settings()

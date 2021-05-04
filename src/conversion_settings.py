@@ -10,7 +10,7 @@ from pathlib import Path
 
 from custom_inherit import DocInheritMeta
 
-from globals import APP_NAME
+from globals import APP_NAME, DATA_DIR
 from helper_functions import generate_clean_path, find_working_directory
 import object_factory
 
@@ -161,7 +161,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._valid_export_formats = list(self.validation_values['export_formats']['export_format'])
         self._valid_front_matter_formats = list(self.validation_values['meta_data_options']['metadata_front_matter_format'])
         self._silent = False
-        self._source = os.getcwd()
+        self._source = '' # os.getcwd() + '/' + DATA_DIR
         self._conversion_input = 'nsx'
         self._markdown_conversion_input = 'gfm'
         self._quick_setting = 'gfm'
@@ -254,6 +254,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     def source(self, value):
         if value == '':
             self._source, message = find_working_directory()
+            self._source = Path(self._source, DATA_DIR)
             self.logger.error(f"Using {self._source} as source directory")
         elif Path(value).exists():
             self._source = Path(value)

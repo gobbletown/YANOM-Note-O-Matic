@@ -2,7 +2,7 @@ import inspect
 import logging
 from pathlib import Path
 
-from globals import APP_NAME
+from globals import APP_NAME, DATA_DIR
 from helper_functions import generate_clean_path, find_working_directory
 from sn_note_page import NotePage
 
@@ -72,17 +72,17 @@ class Notebook:
         self.logger.info(message)
 
         n = 0
-        target_path = Path(current_directory_path,
+        target_path = Path(current_directory_path, DATA_DIR,
                            self.nsx_file.conversion_settings.export_folder_name,
                            self.folder_name)
 
         while target_path.exists():
             n += 1
-            target_path = Path(current_directory_path,
+            target_path = Path(current_directory_path, DATA_DIR,
                                self.nsx_file.conversion_settings.export_folder_name,
                                f"{self.folder_name}-{n}")
 
-        target_path.mkdir()
+        target_path.mkdir(parents=True, exist_ok=True)
         self.folder_name = target_path.stem
         self.full_path_to_notebook = target_path
 

@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 import sys
 
-from globals import APP_NAME
+from globals import APP_NAME, DATA_DIR
 from helper_functions import generate_clean_path, find_working_directory
 
 def what_module_is_this():
@@ -53,11 +53,11 @@ class NoteWriter:
 
         self.output_file_name = (generate_clean_path(dirty_filename))
         n = 0
-        target_path = Path(self.current_directory_path, self.output_folder,
+        target_path = Path(self.current_directory_path, DATA_DIR, self.output_folder,
                            note_page.notebook_folder_name, self.output_file_name)
         while target_path.exists():
             n += 1
-            target_path = Path(self.current_directory_path, self.output_folder, note_page.notebook_folder_name,
+            target_path = Path(self.current_directory_path, DATA_DIR, self.output_folder, note_page.notebook_folder_name,
                                f"{Path(self.output_file_name).stem}-{n}{Path(self.output_file_name).suffix}")
 
         self.output_file_name = target_path.name

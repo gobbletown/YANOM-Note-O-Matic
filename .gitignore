@@ -136,3 +136,5 @@ dmypy.json
 /src/normal.log.3
 /src/normal.log.4
 /src/normal.log.5
+
+/src/data/notes/
