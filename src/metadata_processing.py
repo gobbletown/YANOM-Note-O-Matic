@@ -70,9 +70,28 @@ class MetaDataProcessor:
 
     def format_tag_metadata_if_required(self):
         if 'tags' in self._metadata.keys() or 'tag' in self._metadata.keys():
+            self.convert_tag_sting_to_tag_list()
             self.split_tags_if_required()
             self.remove_tag_spaces_if_required()
 
+    def convert_tag_sting_to_tag_list(self):
+
+        if 'tags' in self._metadata and len(self._metadata['tags']) > 0:
+            if isinstance(self._metadata['tags'], str):
+                self._metadata['tags']  = self.clean_tag_string(self._metadata['tags'])
+        if 'tag' in self._metadata and len(self._metadata['tag']) > 0:
+            if isinstance(self._metadata['tag'], str):
+                self._metadata['tag'] = self.clean_tag_string(self._metadata['tag'])
+
+    @staticmethod
+    def clean_tag_string(tags):
+        """Split a tag string into a list of tags and remove any spaces left from the comma seperated list"""
+
+        new_tags = []
+        tag_list = tags.split(",")
+        clean_tags = [tag.strip() for tag in tag_list]
+        new_tags = new_tags + clean_tags
+        return new_tags
 
     def remove_tag_spaces_if_required(self):
         if self._spaces_in_tags:
@@ -177,7 +196,11 @@ class MetaDataProcessor:
             if key.lower() == 'title':
                 title_text = value
             meta_tag = soup.new_tag('meta')
-            meta_tag.attrs[key] = value
+            if isinstance(value, list):
+                meta_tag.attrs[key] = ','.join(value)
+            else:
+                meta_tag.attrs[key] = value
+
             head.append(meta_tag)
 
         title = soup.find('title')

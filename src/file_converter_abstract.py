@@ -88,7 +88,7 @@ class FileConverter(ABC):
         self.write_post_processed_content()
 
     def read_file(self):
-        self._file_content = self._file.read_text()
+        self._file_content = self._file.read_text(encoding='utf-8')
 
     def convert_content(self):
         self.logger.info(f"Converting content of '{self._file}'")
