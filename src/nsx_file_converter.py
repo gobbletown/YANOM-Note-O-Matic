@@ -2,7 +2,7 @@ import inspect
 import logging
 from pathlib import Path
 
-from globals import APP_NAME
+from globals import APP_NAME, DATA_DIR
 from helper_functions import find_working_directory
 from pandoc_converter import PandocConverter
 from sn_notebook import Notebook
@@ -85,7 +85,7 @@ class NSXFile:
 
     def create_export_folder_if_not_exist(self):
         current_woring_directory, message = find_working_directory()
-        target_path = Path(current_woring_directory,
+        target_path = Path(current_woring_directory, DATA_DIR,
                            self._conversion_settings.export_folder_name)
 
         target_path.mkdir(exist_ok=True)

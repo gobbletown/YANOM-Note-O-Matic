@@ -7,6 +7,7 @@ import os
 import inspect
 import logging
 from pathlib import Path
+import sys
 
 from custom_inherit import DocInheritMeta
 
@@ -259,10 +260,10 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         elif Path(value).exists():
             self._source = Path(value)
         else:
-            self.logger.error(f"Invalid source location - {value} - Exiting program")
+            self.logger.error(f"Invalid source location - {value} - Check command line argument OR config.ini entry - Exiting program")
             if not self.silent:
-                print(f"Invalid source location - {value}")
-            raise ConversionSettingsError(f"Invalid source location - {value}")
+                sys.exit(f"Invalid source location - {value} - Check command line argument OR config.ini entry. Exiting program")
+
 
     @property
     def conversion_input(self):

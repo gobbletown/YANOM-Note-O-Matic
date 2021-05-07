@@ -138,3 +138,4 @@ dmypy.json
 /src/normal.log.5
 
 /src/data/notes/
+/src/data/test.nsx
