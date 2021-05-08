@@ -143,7 +143,7 @@ class ConfigData(ConfigParser):
         Transcribe the values in a ConversionSettings object into the ConfigParser format used by this class
 
         """
-        self._conversion_settings.silent = self['execution_mode']['silent']
+        self._conversion_settings.silent = self.getboolean('execution_mode', 'silent')
         self._conversion_settings.conversion_input = self['conversion_inputs']['conversion_input']
         self._conversion_settings.markdown_conversion_input = \
             self['markdown_conversion_inputs']['markdown_conversion_input']
@@ -152,15 +152,15 @@ class ConfigData(ConfigParser):
         self._conversion_settings.front_matter_format = self['meta_data_options']['metadata_front_matter_format']
         self._conversion_settings.metadata_schema = self['meta_data_options']['metadata_schema']
         self._conversion_settings.tag_prefix = self['meta_data_options']['tag_prefix']
-        self._conversion_settings.spaces_in_tags = self['meta_data_options']['spaces_in_tags']
-        self._conversion_settings.split_tags = self['meta_data_options']['split_tags']
-        self._conversion_settings.first_row_as_header = self['table_options']['first_row_as_header']
-        self._conversion_settings.first_column_as_header = self['table_options']['first_column_as_header']
+        self._conversion_settings.spaces_in_tags = self.getboolean('meta_data_options', 'spaces_in_tags')
+        self._conversion_settings.split_tags = self.getboolean('meta_data_options', 'split_tags')
+        self._conversion_settings.first_row_as_header = self.getboolean('table_options', 'first_row_as_header')
+        self._conversion_settings.first_column_as_header = self.getboolean('table_options', 'first_column_as_header')
         self._conversion_settings.source = self['file_options']['source']
         self._conversion_settings.export_folder_name = self['file_options']['export_folder_name']
         self._conversion_settings.attachment_folder_name = self['file_options']['attachment_folder_name']
         self._conversion_settings.creation_time_in_exported_file_name = \
-            self['file_options']['creation_time_in_exported_file_name']
+            self.getboolean('file_options', 'creation_time_in_exported_file_name')
 
     def __write_config_file(self):
         with open(self._config_file, 'w') as config_file:
