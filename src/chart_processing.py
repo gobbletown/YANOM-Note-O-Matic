@@ -183,6 +183,8 @@ class BarChart(Chart):
 
 class ChartProcessor(ABC):
     def __init__(self, note, html):
+        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
+        self.logger.setLevel(logging.DEBUG)
         self._note = note
         self._raw_html = html
         self._processed_html = self._raw_html
@@ -247,11 +249,13 @@ class ChartProcessor(ABC):
         pass
 
     def generate_csv_attachment(self, chart):
+        self.logger.info("Generate chart csv file")
         self._note.attachments[f"{id(chart)}.csv"] = ChartStringNSAttachment(self._note, f"{id(chart)}.csv",
                                                                              chart.csv_chart_data_string)
         self._note.attachment_count += 1
 
     def generate_png_attachment(self, chart):
+        self.logger.info("Generate chart image attachemner")
         self._note.attachments[f"{id(chart)}.png"] = ChartImageNSAttachment(self._note, f"{id(chart)}.png",
                                                                             chart.png_img_buffer)
         self._note.image_count += 1
@@ -260,16 +264,18 @@ class ChartProcessor(ABC):
 class NSXChartProcessor(ChartProcessor):
 
     def find_all_charts(self):
+        self.logger.info("Searching for charts")
         return self._soup.select('p.syno-ns-chart-object')
 
     def fetch_chart_config_from_html(self, tag):
+        self.logger.info("Reading chart configuration")
         chart_config = tag.attrs['chart-config']
         chart_config = chart_config.replace('true', 'True')
         chart_config = chart_config.replace('false', 'False')
         self._chart_config = ast.literal_eval(chart_config)
 
-    @staticmethod
-    def retrieve_chart_data(tag, chart):
+    def retrieve_chart_data(self, tag, chart):
+        self.logger.info("Retrieving chart data")
         raw_data = tag.attrs['chart-data']
         raw_data = ast.literal_eval(raw_data)
         chart.x_category_labels = raw_data.pop(0)[1:]

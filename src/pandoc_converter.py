@@ -120,7 +120,7 @@ class PandocConverter:
             print(msg)
             print("Attempting to continue...")
 
-    @staticmethod
+    @staticmethod  # orphan method delete nect code cleaning
     def create_temporary_files():
         output_file = tempfile.NamedTemporaryFile(delete=False)
         input_file = tempfile.NamedTemporaryFile(delete=False)

@@ -45,13 +45,16 @@ class NoteStationPostProcessing(PostProcessing):
         self.__add_one_last_line_break()
 
     def __add_meta_data(self):
+        self.logger.info(f"Adding meta-data to page")
         if self._note.conversion_settings.front_matter_format != 'none':
             self._post_processed_content = self._pre_processor.metadata_processor.add_metadata_md_to_content(self._post_processed_content)
 
     def __add_check_lists(self):
+        self.logger.info(f"Adding checklists to note page")
         self._post_processed_content = self._note.pre_processor.checklist_processor.add_checklist_items_to(self._post_processed_content)
 
     def __format_images_links(self):
+        self.logger.info(f"Formatting image links for Obsidian")
         if self._conversion_settings.export_format == 'obsidian':
             obsidian_image_link_formatter = ObsidianImageTagFormatter(self._post_processed_content, 'obsidian')
             self._post_processed_content = obsidian_image_link_formatter.processed_content

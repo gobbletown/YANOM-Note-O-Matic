@@ -1,7 +1,18 @@
 from abc import ABC, abstractmethod
+import logging
 import re
 
 from bs4 import BeautifulSoup
+
+from globals import APP_NAME
+
+
+def what_module_is_this():
+    return __name__
+
+
+def what_class_is_this(obj):
+    return obj.__class__.__name__
 
 
 class ChecklistItem:
@@ -63,6 +74,8 @@ class ChecklistItem:
 
 class ChecklistProcessor(ABC):
     def __init__(self, html):
+        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
+        self.logger.setLevel(logging.DEBUG)
         self._raw_html = html
         self._processed_html = ''
         self._list_of_checklist_items = []
@@ -78,7 +91,7 @@ class ChecklistProcessor(ABC):
         return self._list_of_checklist_items
 
     def __checklist_pre_processing(self):
-
+        self.logger.info("Pre process checklists")
         checklists = self.find_all_checklist_items()
 
         for tag in checklists:
@@ -99,6 +112,7 @@ class ChecklistProcessor(ABC):
         self._processed_html = str(self._soup)
 
     def __calculate_indents_and_generate_cleaned_checklist_items(self):
+        self.logger.info("Generate cleaned checklists")
         set_of_indents = {item.indent for item in self._list_of_checklist_items}
 
         list_of_indents = sorted(set_of_indents)
@@ -110,6 +124,7 @@ class ChecklistProcessor(ABC):
             item.generate_markdown_item_text()
 
     def add_checklist_items_to(self, markdown_text):
+        self.logger.info(f"Add checklists to page")
         for item in self._list_of_checklist_items:
             search_for = rf'\ *{item.placeholder_text}'   # removing leading spaces as would stop markdown working
             replace_with = f'{item.markdown_item_text}\n'
@@ -146,6 +161,7 @@ class ChecklistProcessor(ABC):
 class HTMLInputMDOutputChecklistProcessor(ChecklistProcessor):
 
     def find_all_checklist_items(self):
+        self.logger.info("Searching for checklist items")
         return self._soup.select('input[type="checkbox"]')
 
     @staticmethod
@@ -156,6 +172,7 @@ class HTMLInputMDOutputChecklistProcessor(ChecklistProcessor):
 class NSXInputMDOutputChecklistProcessor(ChecklistProcessor):
 
     def find_all_checklist_items(self):
+        self.logger.info("Searching for checklist items")
         checked = self._soup.select(
             'input[class="syno-notestation-editor-checkbox syno-notestation-editor-checkbox-checked"]')
         unchecked = self._soup.select('input[class="syno-notestation-editor-checkbox"]')
@@ -169,6 +186,7 @@ class NSXInputMDOutputChecklistProcessor(ChecklistProcessor):
 
 class NSXInputHTMLOutputChecklistProcessor(NSXInputMDOutputChecklistProcessor):
     def replace_item_html_with_new_text(self, tag, this_checklist_item):
+        self.logger.info("Cleaning nsx checklist items")
         del tag['class']
         del tag['src']
         del tag['type']

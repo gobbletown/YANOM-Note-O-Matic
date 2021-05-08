@@ -163,6 +163,7 @@ class NoteStationPreProcessing(PreProcessing):
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
     def __add_boarder_to_tables(self):
+        self.logger.info(f"Adding boarders to tables")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
 
         for table in tables:
@@ -183,6 +184,7 @@ class NoteStationPreProcessing(PreProcessing):
         self.pre_processed_content = link_generator.content
 
     def __add_attachment_links(self):
+        self.logger.info(f"Add attachment links to page content")
         attachments = [attachment
                        for attachment in self._note.attachments.values()
                        if isinstance(attachment, FileNSAttachment)

@@ -68,6 +68,7 @@ class Notebook:
         self.create_attachment_folder()
 
     def create_notebook_folder(self):
+        self.logger.info(f"Creating notebook folder for {self.title}")
         current_directory_path, message = find_working_directory()
         self.logger.info(message)
 
@@ -87,5 +88,6 @@ class Notebook:
         self.full_path_to_notebook = target_path
 
     def create_attachment_folder(self):
+        self.logger.info(f"Creating attachemnt")
         Path(self.full_path_to_notebook, self.conversion_settings.attachment_folder_name).mkdir()
 

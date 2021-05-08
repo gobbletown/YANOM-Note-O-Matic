@@ -5,7 +5,6 @@ from pathlib import Path
 import re
 
 from bs4 import BeautifulSoup
-import frontmatter
 
 from globals import APP_NAME
 from image_processing import ObsidianImageTagFormatter
@@ -69,7 +68,7 @@ class FileConverter(ABC):
         for a in soup.findAll('a'):
             link = re.search(fr'^((?!https).*).{source_extension}$', a['href'])  # find  non-internet links
             if link is not None:
-                if Path(str(link.group(1))).name in links_that_can_be_renamed:  # only do names in list of files being processed
+                if Path(str(link.group(1))).name in links_that_can_be_renamed:  # only names in list being processed
                     a['href'] = str(link.group(1)) + '.' + target_extension
 
         return str(soup)
@@ -97,15 +96,18 @@ class FileConverter(ABC):
 
     def pre_process_obsidian_image_links_if_required(self):
         if self._conversion_settings.markdown_conversion_input == 'obsidian':
+            self.logger.info(f"Pre process obsidian image links")
             obsidian_image_link_formatter = ObsidianImageTagFormatter(self._pre_processed_content, 'gfm')
             self._pre_processed_content = obsidian_image_link_formatter.processed_content
 
     def post_process_obsidian_image_links_if_required(self):
         if self._conversion_settings.export_format == 'obsidian':
+            self.logger.info(f"Post process obsidian image links")
             obsidian_image_link_formatter = ObsidianImageTagFormatter(self._post_processed_content, 'obsidian')
             self._post_processed_content = obsidian_image_link_formatter.processed_content
 
     def write_post_processed_content(self):
+        self.logger.info(f"writign new file {self._file.stem + self._out_put_extension}")
         output_path = self._file.parent / (self._file.stem + self._out_put_extension)
         output_path.write_text(self._post_processed_content, encoding="utf-8")
 
@@ -122,4 +124,3 @@ class FileConverter(ABC):
             check_target_path = Path(self._file.parent, f'{self._file.stem}-old-{n}{self._out_put_extension}')
 
         target_path.replace(check_target_path)
-

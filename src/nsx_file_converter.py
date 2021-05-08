@@ -74,6 +74,7 @@ class NSXFile:
         return self._zipfile_reader.read_attachment_file(file_name)
 
     def add_notebooks(self):
+        self.logger.info(f"Creating Notebooks")
         self._notebooks = {
             notebook_id: Notebook(self, notebook_id)
             for notebook_id in self._notebook_ids
@@ -81,9 +82,11 @@ class NSXFile:
         self._note_book_count += len(self._notebooks)
 
     def add_recycle_bin_notebook(self):
+        self.logger.info(f"Creating recycle bin notebook")
         self._notebooks['recycle_bin'] = Notebook(self, 'recycle_bin')
 
     def create_export_folder_if_not_exist(self):
+        self.logger.info(f"Creating export folder if it does not exist")
         current_woring_directory, message = find_working_directory()
         target_path = Path(current_woring_directory, DATA_DIR,
                            self._conversion_settings.export_folder_name)
@@ -92,10 +95,12 @@ class NSXFile:
         self._conversion_settings.export_folder_name = target_path.stem
 
     def create_folders(self):
+        self.logger.info(f"Creating folders for notebooks")
         for notebooks_id in self._notebooks:
             self._notebooks[notebooks_id].create_folders()
 
     def add_note_pages(self):
+        self.logger.info(f"Creating note page objects")
         self._note_pages = {
             note_id: NotePage(self, note_id)
             for note_id in self._note_page_ids
@@ -103,6 +108,7 @@ class NSXFile:
         self._note_page_count += len(self._note_pages)
 
     def add_note_pages_to_notebooks(self):
+        self.logger.info(f"Add note pages to notebooks")
         for note_page_id in self._note_pages:
             current_parent_id = self._note_pages[note_page_id].get_parent_notebook_id()
             if current_parent_id in self._notebooks:
@@ -114,6 +120,7 @@ class NSXFile:
         self._note_writer = NoteWriter(self._conversion_settings)
 
     def create_attachments(self):
+        self.logger.info(f"Creating attachemnt objects")
         for note_page_id in self._note_pages:
             image_count, attachment_count = self._note_pages[note_page_id].create_attachments()
             self._image_count += image_count

@@ -87,6 +87,7 @@ class NotePage:
         return self._image_count, self._attachment_count
 
     def process_attachments(self):
+        self.logger.info('Process attachemnts')
         for attachment_id in self._attachments:
             self._attachments[attachment_id].process_attachment()
 

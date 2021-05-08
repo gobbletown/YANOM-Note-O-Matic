@@ -39,6 +39,7 @@ class NoteWriter:
         Path(note_page.full_path).write_text(note_page.converted_content, 'utf-8')
 
     def generate_output_path_and_set_note_file_name(self, note_page):
+        self.logger.info(f"Generate output path for '{note_page.title}'")
         dirty_filename = note_page.title
 
         if self.conversion_settings.creation_time_in_exported_file_name:
@@ -62,6 +63,7 @@ class NoteWriter:
 
         self.output_file_name = target_path.name
         self.output_full_path = target_path
+        self.logger.info(f"Path for '{note_page.title}' is {self.output_full_path}, file name will be {self.output_file_name}")
 
     def get_output_full_path(self):
         return self.output_full_path

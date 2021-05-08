@@ -53,6 +53,8 @@ class SNLinksToOtherNotes:
         """
 
         def __init__(self, raw_link, note, href_note):
+            self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
+            self.logger.setLevel(logging.DEBUG)
             self._raw_link = raw_link
             self._href_text = ''
             self._href_link_value = re.findall('<a href=\"(.*)\"', raw_link)[0]
@@ -63,6 +65,7 @@ class SNLinksToOtherNotes:
             self.__generate_new_link()
 
         def __generate_new_link(self):
+            self.logger.info("Creating inter note links")
             if self._note_page.parent_notebook == self._href_note.parent_notebook:  # check if link is to a note in the same notebook
                 self._new_link = f'<a href="{self._href_note.file_name}">{self._href_note.title}</a>'
             self._new_link = f'<a href="../{self._href_note.notebook_folder_name}/{self._href_note.file_name}">{self._href_note.title}</a>'
@@ -86,7 +89,7 @@ class SNLinksToOtherNotes:
     def __generate_dict_of_links(self):
         """
         Generate a dictionary where the keys are text strings displayed on a page and the values are the raw
-        and unusable, becasue they do not link to anything in an nsx export, href links
+        and unusable, because they do not link to anything in an nsx export, href links
         :return:
         """
         self._raw_note_links = re.findall('<a href="notestation://[^>]*>[^>]*>', self._content)
@@ -104,8 +107,8 @@ class SNLinksToOtherNotes:
         """
         Build a list of tuples containing original note titles and the note object.
 
-        Note tiels amy be renamed as they are processed into notebooks.  Duplicate names have thier note title
-        number incremented.  The original titles are the ones the intoer not links should have as their displayed text.
+        Note files may be renamed as they are processed into notebooks.  Duplicate names have their note title
+        number incremented.  The original titles are the ones the inter note links should have as their displayed text.
 
         """
         self._all_note_pages = [(note.original_title, note)
@@ -150,6 +153,7 @@ class SNLinksToOtherNotes:
             self._replacement_links = {**self._replacement_links, **new_replacement_links}
 
     def __update_content(self):
+        self.logger.info("Adding inter note links to page")
         for raw_link, replacement_links in self._replacement_links.items():
             self._content = self._content.replace(raw_link, self.__generate_html_code_for_new_links(replacement_links))
 
