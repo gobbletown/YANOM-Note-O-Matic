@@ -22,5 +22,3 @@ class MDToMDConverter(FileConverter):
     def add_meta_data_if_required(self):
         if not self._conversion_settings.markdown_conversion_input == 'markdown':
             self._post_processed_content = self._metadata_processor.add_metadata_md_to_content(self._post_processed_content)
-
-

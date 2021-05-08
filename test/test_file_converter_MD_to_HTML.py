@@ -45,7 +45,6 @@ class TestMDToHTMLConverter(unittest.TestCase):
                                  self.file_converter._pre_processed_content,
                                  test_set[3])
 
-
     def test_parse_metadata_if_required(self):
         test_strings = [
             ('pandoc_markdown',
@@ -76,7 +75,6 @@ class TestMDToHTMLConverter(unittest.TestCase):
                                                  Path('renaming source file failed'),
                                                  Path('a_folder/test_md_file.md'),
                                                  Path('a_folder/test_.md_file.md')]
-
 
         content = '<p><a href="a_folder/test_md_file.md">md file</a></p>' \
                   '<p><a href="a_folder/test_.md_file.md">md file  with dot md in name</a></p>' \
@@ -201,5 +199,3 @@ class TestMDToHTMLConverter(unittest.TestCase):
             '<head><title>-</title></head><p><a href="a_folder/test_md_file.md">md file</a></p>',
             self.file_converter._post_processed_content,
             'title and meta data inserted incorrectly with markdown conversion input')
-
-

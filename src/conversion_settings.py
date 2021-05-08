@@ -3,7 +3,6 @@ Provide classes for provision of conversion settings for manual or specific pre 
 
 """
 from abc import abstractmethod
-import os
 import inspect
 import logging
 from pathlib import Path
@@ -84,18 +83,8 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         A trigger string used for a default set for some of the following filed values
     _export_format: str
         The export format to be used
-    _include_meta_data: bool
-        Add available meta data, not in a note body, to the main text of the exported note
-    _metadata_front_matter_format: str
+    _front_matter_format: str
         Meta data to be placed in a yaml/json/toml front matter section above the body of the main text
-    _insert_title: bool
-        Include title in the included meta data
-    _insert_creation_time: bool
-        Include the note creation time in the included meta data
-    _insert_modified_time: bool
-        Include the note modified time iin the included meta data
-    _include_tags: bool
-        Include tags in the meta data
     _tag_prefix: str
         Prefix to place on tags
     _spaces_in_tags: bool
@@ -162,7 +151,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._valid_export_formats = list(self.validation_values['export_formats']['export_format'])
         self._valid_front_matter_formats = list(self.validation_values['meta_data_options']['metadata_front_matter_format'])
         self._silent = False
-        self._source = '' # os.getcwd() + '/' + DATA_DIR
+        self._source = ''
         self._conversion_input = 'nsx'
         self._markdown_conversion_input = 'gfm'
         self._quick_setting = 'gfm'
@@ -263,7 +252,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             self.logger.error(f"Invalid source location - {value} - Check command line argument OR config.ini entry - Exiting program")
             if not self.silent:
                 sys.exit(f"Invalid source location - {value} - Check command line argument OR config.ini entry. Exiting program")
-
 
     @property
     def conversion_input(self):
@@ -394,17 +382,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     @creation_time_in_exported_file_name.setter
     def creation_time_in_exported_file_name(self, value: bool):
         self._creation_time_in_exported_file_name = value
-
-    @property
-    def creation_time_key(self):
-        return self._creation_time_key
-
-    @creation_time_key.setter
-    def creation_time_key(self, value):
-        if isinstance(value, str):
-            self._creation_time_key = value
-            return
-        self.logger.warning(f'Invalid creation time key provided {value}')
 
 
 class ManualConversionSettings(ConversionSettings):
@@ -542,7 +519,6 @@ class HTMLConversionSettings(ConversionSettings):
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
 
 
 please = ConversionSettingProvider()

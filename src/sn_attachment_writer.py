@@ -1,4 +1,3 @@
-import inspect
 import logging
 from pathlib import Path
 
@@ -9,10 +8,6 @@ import sn_attachment
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
 
 
 def what_class_is_this(obj):

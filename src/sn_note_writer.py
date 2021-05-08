@@ -1,17 +1,12 @@
-import inspect
 import logging
 from pathlib import Path
-import sys
 
 from globals import APP_NAME, DATA_DIR
 from helper_functions import generate_clean_path, find_working_directory
 
+
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
 
 
 def what_class_is_this(obj):
@@ -45,12 +40,10 @@ class NoteWriter:
         if self.conversion_settings.creation_time_in_exported_file_name:
             dirty_filename = f"{note_page.note_json['ctime']}-{dirty_filename}"
 
-
         if self.conversion_settings.export_format == 'html':
             dirty_filename = f"{dirty_filename}.html"
         else:
             dirty_filename = f"{dirty_filename}.md"
-
 
         self.output_file_name = (generate_clean_path(dirty_filename))
         n = 0

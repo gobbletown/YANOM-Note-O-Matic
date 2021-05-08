@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import inspect
 import logging
 from pathlib import Path
 import re
@@ -13,10 +12,6 @@ from pandoc_converter import PandocConverter
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
 
 
 def what_class_is_this(obj):
@@ -107,7 +102,7 @@ class FileConverter(ABC):
             self._post_processed_content = obsidian_image_link_formatter.processed_content
 
     def write_post_processed_content(self):
-        self.logger.info(f"writign new file {self._file.stem + self._out_put_extension}")
+        self.logger.info(f"Writing new file {self._file.stem + self._out_put_extension}")
         output_path = self._file.parent / (self._file.stem + self._out_put_extension)
         output_path.write_text(self._post_processed_content, encoding="utf-8")
 

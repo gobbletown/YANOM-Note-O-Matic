@@ -1,5 +1,4 @@
 from configparser import ConfigParser
-import inspect
 import logging
 from pathlib import Path
 import sys
@@ -12,10 +11,6 @@ import conversion_settings
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
 
 
 def what_class_is_this(obj):
@@ -130,7 +125,6 @@ class ConfigData(ConfigParser):
                 raise ConfigException(f'Missing section {section} in the config ini file')
 
             for key, values in keys.items():
-                # if key not in self[section] or self[section][key] == '':
                 if key not in self[section]:
                     raise ConfigException(f'Missing erntry for {key} under section {section} in the config ini file')
 
@@ -323,15 +317,3 @@ class ConfigData(ConfigParser):
     def __repr__(self):
         display_dict = str({section: dict(self[section]) for section in self.sections()})
         return str(f'{self.__class__.__name__}{display_dict}')
-
-
-if __name__ == '__main__':
-    # for testing
-    my_config = ConfigData('config.ini', 'gfm', allow_no_value=True)
-    # my_config.conversion_settings = 'test.py'
-    # my_config.conversion_settings = True
-    # my_config.write_config_file()
-    # my_config.default_config.set_quick_set_settings("gfm")
-    # my_config.write_config_file()
-    # my_config.read_config_file()
-    print("Done")

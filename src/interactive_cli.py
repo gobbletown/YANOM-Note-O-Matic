@@ -56,7 +56,7 @@ class InquireCommandLineInterface(ABC):
 
 class StartUpCommandLineInterface(InquireCommandLineInterface):
     """
-    Command line interface to run on program stratup.
+    Command line interface to run on program startup.
 
     Returns a configured child of ConversionSettings class
     """
@@ -109,7 +109,6 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                     self.__ask_and_set_metadata_schema()
                 else:
                     self.__ask_and_set_tag_prefix()
-
 
     def __ask_html_conversion_options(self):
         self.__ask_and_set_conversion_quick_setting()
@@ -192,7 +191,6 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         ordered_list.insert(0, ordered_list.pop(ordered_list.index(self._default_settings.export_format)))
         if self._current_conversion_settings.conversion_input == 'html':
             ordered_list.remove('html')
-
 
         export_format_prompt = {
             'type': 'list',

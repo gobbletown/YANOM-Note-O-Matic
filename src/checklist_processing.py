@@ -67,10 +67,6 @@ class ChecklistItem:
     def markdown_item_text(self):
         return self._markdown_item_text
 
-    @property
-    def clean_html(self):
-        return self._clean_html
-
 
 class ChecklistProcessor(ABC):
     def __init__(self, html):

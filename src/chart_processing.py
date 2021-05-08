@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import ast
-import inspect
 import io
 import logging
 import re
@@ -16,10 +15,6 @@ from sn_attachment import ChartStringNSAttachment, ChartImageNSAttachment
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
 
 
 def what_class_is_this(obj):
@@ -70,7 +65,7 @@ class Chart(ABC):
     def make_html_chart_data_table(self):
         self._html_chart_data_table = self._df.to_html(formatters={'percent': '{:,.2f}'.format})
         self._html_chart_data_table = self._html_chart_data_table.replace('\n', '')
-        self._html_chart_data_table = re.sub(">\s*<", '><', self._html_chart_data_table)
+        self._html_chart_data_table = re.sub(r">\s*<", '><', self._html_chart_data_table)
         self._html_chart_data_table = add_strong_between_tags('<th>', '</th>', self._html_chart_data_table)
 
     def make_csv_chart_data_string(self):

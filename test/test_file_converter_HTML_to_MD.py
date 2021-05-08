@@ -31,7 +31,7 @@ class TestHTMLToMDConverter(unittest.TestCase):
         self.file_converter.pre_process_content()
         self.file_converter.convert_content()
         self.file_converter.post_process_content()
-        self.assertEqual('- [x] Check 1\n- [ ] Check 2\n<img src="filepath/image.png" width="600" />\n\n', self.file_converter._post_processed_content, 'post processing failed' )
+        self.assertEqual('- [x] Check 1\n- [ ] Check 2\n<img src="filepath/image.png" width="600" />\n\n', self.file_converter._post_processed_content, 'post processing failed')
 
         self.file_converter._file_content = '<head><meta title="this is test2"/><meta not_valid="not_in_schema"/></head><p><input checked="" type="checkbox"/>Check 1</p><p><input type="checkbox"/>Check 2</p><img src="filepath/image.png" width="600">'
         self.file_converter._metadata_schema = ['title']
@@ -39,7 +39,7 @@ class TestHTMLToMDConverter(unittest.TestCase):
         self.file_converter.pre_process_content()
         self.file_converter.convert_content()
         self.file_converter.post_process_content()
-        self.assertEqual('---\ntitle: this is test2\n---\n\n- [x] Check 1\n- [ ] Check 2\n![|600](filepath/image.png)\n', self.file_converter._post_processed_content, 'post processing failed' )
+        self.assertEqual('---\ntitle: this is test2\n---\n\n- [x] Check 1\n- [ ] Check 2\n![|600](filepath/image.png)\n', self.file_converter._post_processed_content, 'post processing failed')
 
     def test_parse_metadata_if_required(self):
         self.file_converter._conversion_settings.export_format = 'obsidian'
@@ -68,4 +68,3 @@ class TestHTMLToMDConverter(unittest.TestCase):
         self.file_converter._pre_processed_content = '<head><meta title="this is test2"/><meta creation_time="test-meta-content"/></head>'
         self.file_converter.parse_metadata_if_required()
         self.assertEqual({}, self.file_converter._metadata_processor.metadata, 'meta data not parsed correctly')
-

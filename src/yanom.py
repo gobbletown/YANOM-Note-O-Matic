@@ -4,7 +4,6 @@ import inspect
 import logging
 import logging.handlers as handlers
 import os
-from pathlib import Path
 import sys
 from timer import Timer
 
@@ -91,7 +90,7 @@ class NotesConvertor:
         self.logger.info("Processing Completed - exiting normally")
 
     def convert_markdown(self):
-        with Timer(name="md_conversion", logger=root_logger.info, silent=self.conversion_settings.silent):
+        with Timer(name="md_conversion", logger=root_logger.info, silent=bool(self.conversion_settings.silent)):
             file_extension = 'md'
             md_files_to_convert = self.generate_file_list(file_extension)
             self.exit_if_no_files_found(md_files_to_convert, file_extension)
@@ -126,7 +125,7 @@ class NotesConvertor:
         self._note_page_count = file_count
 
     def convert_html(self):
-        with Timer(name="html_conversion", logger=root_logger.info, silent=self.conversion_settings.silent):
+        with Timer(name="html_conversion", logger=root_logger.info, silent=bool(self.conversion_settings.silent)):
             file_extension = 'html'
             html_files_to_convert = self.generate_file_list(file_extension)
             self.exit_if_no_files_found(html_files_to_convert, file_extension)
@@ -147,7 +146,7 @@ class NotesConvertor:
         self.nsx_backups = [NSXFile(file, self.conversion_settings, self.pandoc_converter) for file in nsx_files_to_convert]
 
     def process_nsx_files(self):
-        with Timer(name="nsx_conversion", logger=root_logger.info, silent=self.conversion_settings.silent):
+        with Timer(name="nsx_conversion", logger=root_logger.info, silent=bool(self.conversion_settings.silent)):
             for nsx_file in self.nsx_backups:
                 nsx_file.process_nsx_file()
                 self.update_processing_stats(nsx_file)
@@ -173,7 +172,6 @@ class NotesConvertor:
         root_logger.info("Starting interactive command line tool")
         self.run_interactive_command_line_interface()
         return
-
 
     def add_file_paths_from_command_line_to_settings(self):
         self.conversion_settings.source = self.command_line.args['source']

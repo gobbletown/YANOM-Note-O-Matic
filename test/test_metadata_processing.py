@@ -215,9 +215,9 @@ class TestMetaDataProcessor(unittest.TestCase):
         self.metadata_processor._metadata = {}
         self.metadata_processor._metadata_schema = ['tags']
         raw_metadata = {'tags': ["Tag1",
-                                                          "Tag1/Sub Tag1",
-                                                          "Tag1/Sub Tag1/Sub Sub Tag1",
-                                                          "Tag2"]}
+                                 "Tag1/Sub Tag1",
+                                 "Tag1/Sub Tag1/Sub Sub Tag1",
+                                 "Tag2"]}
         expected_result = {'tags': ["Tag1",
                                     "Sub-Tag1",
                                     "Sub-Sub-Tag1",
@@ -372,7 +372,7 @@ class TestMetaDataProcessor(unittest.TestCase):
     def test_parse_md_metadata(self):
         test_data_sets = [
             ('Hello',
-             ['title', 'tag', 'ctime','mtime'],
+             ['title', 'tag', 'ctime', 'mtime'],
              'Hello',
              'no meta data, content was incorrect',
              {},

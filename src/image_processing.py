@@ -74,13 +74,13 @@ class ObsidianImageTagFormatter:
             return
 
         for image in images:
-            width = re.search('!\[\w*\|(\d*)]\(.*?\)', image).group(1)
+            width = re.search(r'!\[\w*\|(\d*)]\(.*?\)', image).group(1)
 
-            file_path = re.match('!\[\w*\|\d*]\((.*?)\)', image).group(1)
+            file_path = re.match(r'!\[\w*\|\d*]\((.*?)\)', image).group(1)
 
             new_image_tag = f'<img src="{file_path}" width="{width}">'
 
             self._processed_content = self._processed_content.replace(image, new_image_tag)
 
     def find_obsidian_image_links(self):
-        return re.findall('!\[\w*\|\d*]\(.*?\)', self._processed_content)
+        return re.findall(r'!\[\w*\|\d*]\(.*?\)', self._processed_content)

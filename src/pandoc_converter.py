@@ -2,11 +2,9 @@ import distutils.version
 import inspect
 import logging
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
-import tempfile
 
 from globals import APP_NAME
 
@@ -87,7 +85,8 @@ class PandocConverter:
 
     def convert_using_strings(self, input_data, name):
         try:
-            out = subprocess.run(self.pandoc_options, input=input_data, capture_output=True, encoding='utf-8', text=True, timeout=20)
+            out = subprocess.run(self.pandoc_options, input=input_data, capture_output=True,
+                                 encoding='utf-8', text=True, timeout=20)
             if out.returncode > 0:
                 self.logger.error(f"Pandoc Return code={out.returncode}, error={out.stderr}")
             return out.stdout
@@ -119,17 +118,3 @@ class PandocConverter:
         if not self.conversion_settings.silent:
             print(msg)
             print("Attempting to continue...")
-
-    @staticmethod  # orphan method delete nect code cleaning
-    def create_temporary_files():
-        output_file = tempfile.NamedTemporaryFile(delete=False)
-        input_file = tempfile.NamedTemporaryFile(delete=False)
-        return output_file, input_file
-
-
-if __name__ == '__main__':
-    pc = PandocConverter('md')
-    result = pc.convert_using_strings("Hello pandoc", "test_note_title")
-    print(result)
-    result = pc.convert_using_fies("Goodbye pandoc", "test_note_title_2")
-    print(result)

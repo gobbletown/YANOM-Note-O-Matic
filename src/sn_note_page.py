@@ -1,4 +1,3 @@
-import inspect
 import logging
 import time
 
@@ -9,12 +8,9 @@ from nsx_pre_processing import NoteStationPreProcessing
 import sn_attachment
 from sn_note_writer import NoteWriter
 
+
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
 
 
 def what_class_is_this(obj):
@@ -50,11 +46,11 @@ class NotePage:
         self._pre_processor = None
         self._post_processor = None
 
-
     def format_ctime_and_mtime_if_required(self):
-        if self._conversion_settings.front_matter_format != 'none' or self._conversion_settings.creation_time_in_exported_file_name is True:
-            self._note_json['ctime'] =  time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['ctime']))
-            self._note_json['mtime'] =  time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['mtime']))
+        if self._conversion_settings.front_matter_format != 'none' \
+                or self._conversion_settings.creation_time_in_exported_file_name is True:
+            self._note_json['ctime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['ctime']))
+            self._note_json['mtime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['mtime']))
             pass
 
     def process_note(self):
@@ -87,7 +83,7 @@ class NotePage:
         return self._image_count, self._attachment_count
 
     def process_attachments(self):
-        self.logger.info('Process attachemnts')
+        self.logger.info('Process attachments')
         for attachment_id in self._attachments:
             self._attachments[attachment_id].process_attachment()
 
@@ -132,7 +128,7 @@ class NotePage:
 
     @property
     def title(self):
-        return self._title    \
+        return self._title
 
     @property
     def original_title(self):

@@ -87,7 +87,7 @@ class MetaDataProcessor:
 
     @staticmethod
     def clean_tag_string(tags):
-        """Split a tag string into a list of tags and remove any spaces left from the comma seperated list"""
+        """Split a tag string into a list of tags and remove any spaces left from the comma separated list"""
 
         new_tags = []
         tag_list = tags.split(",")
@@ -98,7 +98,7 @@ class MetaDataProcessor:
     def remove_tag_spaces_if_required(self):
         if self._spaces_in_tags:
             return
-        self.logger.info(f"Removing soaces fomr 'tags'")
+        self.logger.info(f"Removing spaces from 'tags'")
         if 'tags' in self._metadata:
             self._metadata['tags'] = [tag.replace(' ', '-') for tag in self._metadata['tags']]
         if 'tag' in self._metadata:

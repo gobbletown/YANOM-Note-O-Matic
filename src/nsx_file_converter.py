@@ -4,7 +4,6 @@ from pathlib import Path
 
 from globals import APP_NAME, DATA_DIR
 from helper_functions import find_working_directory
-from pandoc_converter import PandocConverter
 from sn_notebook import Notebook
 from sn_note_page import NotePage
 from sn_note_writer import NoteWriter
@@ -87,8 +86,8 @@ class NSXFile:
 
     def create_export_folder_if_not_exist(self):
         self.logger.info(f"Creating export folder if it does not exist")
-        current_woring_directory, message = find_working_directory()
-        target_path = Path(current_woring_directory, DATA_DIR,
+        current_working_directory, message = find_working_directory()
+        target_path = Path(current_working_directory, DATA_DIR,
                            self._conversion_settings.export_folder_name)
 
         target_path.mkdir(exist_ok=True)
@@ -120,7 +119,7 @@ class NSXFile:
         self._note_writer = NoteWriter(self._conversion_settings)
 
     def create_attachments(self):
-        self.logger.info(f"Creating attachemnt objects")
+        self.logger.info(f"Creating attachment objects")
         for note_page_id in self._note_pages:
             image_count, attachment_count = self._note_pages[note_page_id].create_attachments()
             self._image_count += image_count

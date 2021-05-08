@@ -1,8 +1,5 @@
-import inspect
-import logging
-import os
-
 import argparse
+import logging
 
 from globals import VERSION, APP_NAME
 import conversion_settings
@@ -10,10 +7,6 @@ import conversion_settings
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
 
 
 def what_class_is_this(obj):
@@ -61,7 +54,8 @@ class CommandLineParsing:
         settings_from_group.add_argument("-i", "--ini", action="store_true",
                                          help="Use config.ini for conversion settings.")
         settings_from_group.add_argument("-c", "--cli", action="store_true",
-                                         help="Use interactive command line interface to choose options and settings. This is the default if no argument is provided.")
+                                         help="Use interactive command line interface to choose options and settings. "
+                                              "This is the default if no argument is provided.")
 
 
 if __name__ == '__main__':

@@ -117,7 +117,6 @@ class NoteStationPreProcessing(PreProcessing):
         self._pre_processed_content = self._pre_processed_content.replace('</li><ol><li>', '<ol><li>')
         self._pre_processed_content = self._pre_processed_content.replace('</li></ol><li>', '</li></ol></li><li>')
 
-
     def __fix_unordered_list(self):
         self.logger.info(f"Cleaning bullet lists")
         self._pre_processed_content = self._pre_processed_content.replace('</li><ul><li>', '<ul><li>')
@@ -175,7 +174,7 @@ class NoteStationPreProcessing(PreProcessing):
         self.logger.info(f"Generating meta-data")
         self._metadata_processor = MetaDataProcessor(self._note.conversion_settings)
         self._metadata_processor.parse_dict_metadata(self._note.note_json)
-        self._pre_processed_content = f'<head><title> </title></head>{self._pre_processed_content}'  # add head and title to add meta data to
+        self._pre_processed_content = f'<head><title> </title></head>{self._pre_processed_content}'
         self._pre_processed_content = self._metadata_processor.add_metadata_html_to_content(self._pre_processed_content)
 
     def __generate_links_to_other_note_pages(self):

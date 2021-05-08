@@ -66,7 +66,7 @@ class SNLinksToOtherNotes:
 
         def __generate_new_link(self):
             self.logger.info("Creating inter note links")
-            if self._note_page.parent_notebook == self._href_note.parent_notebook:  # check if link is to a note in the same notebook
+            if self._note_page.parent_notebook == self._href_note.parent_notebook:
                 self._new_link = f'<a href="{self._href_note.file_name}">{self._href_note.title}</a>'
             self._new_link = f'<a href="../{self._href_note.notebook_folder_name}/{self._href_note.file_name}">{self._href_note.title}</a>'
 
@@ -118,7 +118,7 @@ class SNLinksToOtherNotes:
 
     def __match_link_title_to_a_note(self):
         """
-        For each of the link text values from a note page find all the occurences of note pages of the same name.
+        For each of the link text values from a note page find all the occurrences of note pages of the same name.
         Creating a list containing IntraPageLink objects for each one.
         The IntraPage Link object handles the creation of a new valid link.
 
@@ -134,9 +134,9 @@ class SNLinksToOtherNotes:
         """
         Match renamed links to links already identified
 
-        A renamed link will not have a display text string that matches a note name.  However the unseable href
+        A renamed link will not have a display text string that matches a note name.  However the unusable href
         will not be changed when the text was edited.  If that href link has already been matched to a note page
-        because that link was not edited then we can use the bad href to mathc the link to the real note page.
+        because that link was not edited then we can use the bad href to math the link to the real note page.
 
         """
         for raw_link in self._raw_note_links:

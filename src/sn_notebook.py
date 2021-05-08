@@ -26,7 +26,7 @@ class Notebook:
         self.nsx_file = nsx_file
         self.notebook_id = notebook_id
         self.conversion_settings = self.nsx_file.conversion_settings
-        self.notebook_json = ''
+        self.notebook_json = dict
         if self.notebook_id == 'recycle_bin':
             self.title = 'recycle_bin'
         if self.notebook_id != 'recycle_bin':
@@ -88,6 +88,5 @@ class Notebook:
         self.full_path_to_notebook = target_path
 
     def create_attachment_folder(self):
-        self.logger.info(f"Creating attachemnt")
+        self.logger.info(f"Creating attachment")
         Path(self.full_path_to_notebook, self.conversion_settings.attachment_folder_name).mkdir()
-

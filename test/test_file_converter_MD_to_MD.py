@@ -119,7 +119,6 @@ class TestMDToMDConverter(unittest.TestCase):
             self.assertFalse(Path(d.path, 'does_not_exist-old.md').exists(), 'failed to manage a not existing file name')
             self.assertFalse(Path(d.path, 'does_not_exist-old-1.md').exists(), 'failed to manage a not existing file name')
 
-
     def test_pre_process_obsidian_image_links_if_required(self):
         test_strings = [
             ('obsidian',
