@@ -7,10 +7,7 @@ RUN pip install --no-cache-dir pyinstaller
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY --chown=app:app . .
-RUN python setup.py install
-RUN pip install -e .
-
-ENV PATH="/home/app/.local/bin:${PATH}"
+RUN python setup.py install && pip install -e .
 COPY --chown=app:app dockerfiles/yanom-dev-deb10-slim-buster/yanom.spec /app/src/
 RUN cd src && \
     rm -rf /app/src/dist && rm -rf /app/src/build && \
@@ -19,6 +16,6 @@ RUN cd src && \
     cp /app/src/data/config.ini /app/yanom/data && \
     cd /app && \
     chown -R app yanom && \
-    tar -zcvf yanom1-debian-slim-buster.tar.gz yanom
+    tar -zcvf yanom1.0.0-debian10-slim-buster.tar.gz yanom
 USER app
 CMD bash

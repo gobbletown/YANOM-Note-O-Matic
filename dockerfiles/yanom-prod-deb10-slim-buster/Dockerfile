@@ -9,8 +9,8 @@ RUN apt-get update --yes && \
 FROM base as intermediate
 RUN adduser --disabled-password --gecos '' app
 WORKDIR /app
-COPY --chown=app:app dist/Debian-Linux/Debian10-slim-buster/yanom1-debian-slim-buster.tar.gz /app
-RUN tar -xvf yanom1-debian-slim-buster.tar.gz && rm -f yanom1-debian-slim-buster.tar.gz  && chown -R app /app/yanom
+COPY --chown=app:app dist/yanom1.0.0-debian10-slim-buster.tar.gz /app
+RUN tar -xvf yanom1.0.0-debian10-slim-buster.tar.gz && rm -f yanom1.0.0-debian10-slim-buster.tar.gz  && chown -R app /app/yanom
 
 
 FROM base
