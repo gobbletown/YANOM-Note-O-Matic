@@ -1,4 +1,4 @@
-![coverage 29%](https://img.shields.io/badge/coverage-29%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)  ![](https://img.shields.io/github/pipenv/locked/python-version/kevindurston21/YANOM-Note-O-Matic)
+![coverage 29%](https://img.shields.io/badge/coverage-29%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
 
 # YANOM Note-O-Matic wiki
 YANOM - stands for Yet Another Note-O-Matic. 
@@ -59,8 +59,17 @@ The packaged versions include the required python environment.
 
 Both packaged and source code versions require Pandoc.  [Pandoc](https://pandoc.org/installing.html) v1.16 or higher should be used and ideally 2.11 or higher as that is where most testing has been done. 
 
+### Using the pre built packaged vesoins for Debina linux, windows and Mac OSX
+Packaged versions of YANOM are available.  Please see the wiki for how to install ans use them.
 
-### Installing
+Also please note the Mac OSX package si slow to start and can take 15 or more seconds to launch, this is said to be caused by OSX security scaning the package every time it is run.  Thh docker image is a much faster option for OSX.
+
+### Using the docker image
+A docker image has been created and is available on [docker hub](https://hub.docker.com/r/thehistorianandthegeek/yanom).  This has pandoc pre-installed, and the docker image is the simplest way to quickly use YANOM and cleanly remove it and pandoc after use.
+
+FOrfurther informatoin on the duse of the YANOM docker image please check the [wiki page](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/Installing YANOM using Docker.md)
+
+### Installing form source code
 
 Download the source code from [git hub](https://github.com/kevindurston21/YANOM-Note-O-Matic) 
 
@@ -104,7 +113,7 @@ The generated html files are then converted back into a Markdown format.
 
 Deploying soucre code to a live environment is addressed in the [wiki](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki)
 
-Deployment of packages is acheived using pyinstaller.  For details see the [deployment page in the wiki](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki)
+Deployment of packages is acheived using pyinstaller.  For details see the [wiki](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki)
 
 ## Contributing
 Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)for details on our code of conduct.

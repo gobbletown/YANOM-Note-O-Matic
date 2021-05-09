@@ -250,7 +250,7 @@ class ConfigData(ConfigParser):
             'conversion_inputs': {
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_conversion_inputs)}': None,
                 '    #  nsx = synology Note Station Export file': None,
-                '    #  html = simple html based notes pages, no complex CSS or html code': None,
+                '    #  html = simple html based notes pages, no complex CSS or javascript': None,
                 '    #  markdown =  text files in markdown format': None,
                 'conversion_input': self._conversion_settings.conversion_input
             },
@@ -260,7 +260,7 @@ class ConfigData(ConfigParser):
             },
             'quick_settings': {
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_export_formats)}': None,
-                '    # use manual to use manual settings below': None,
+                '    # use manual to use the manual settings in the sections below': None,
                 '    # NOTE if an option other than - manual - is used the rest of the ': None,
                 '    # settings in this file will be set automatically': None,
                 '    #': None,
@@ -274,7 +274,7 @@ class ConfigData(ConfigParser):
                 "export_format": self._conversion_settings.export_format
             },
             'meta_data_options': {
-                '    # Note if front_matter_format sets the presence and type of a section with metadata ': None,
+                '    # Note: front_matter_format sets the presence and type of the section with metadata ': None,
                 '    #retrieved from the source': None,
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_front_matter_formats)}': None,
                 '    # no entry will result in no front matter section': None,
@@ -283,19 +283,20 @@ class ConfigData(ConfigParser):
                 '    # restrict the retrieved metadata keys. for example ': None,
                 '    # title, tags    will return those two if they are found': None,
                 '    # If left blank any meta data found will be used': None,
-                '    # The available keys in an nsx file are title, ctime, mtime, tag': None,
+                '    # The useful available keys in an nsx file are title, ctime, mtime, tag': None,
                 'metadata_schema': ",".join(self._conversion_settings.metadata_schema),
                 '    # tag prefix is a character you wish to be added to the front of any tag values ': None,
-                '    # retrieved from metadata.  NOTE only used if front_matter_format is none': None,
+                '    # retrieved from metadata.  NOTE this is only used if front_matter_format is none': None,
                 'tag_prefix': self._conversion_settings.tag_prefix,
                 '    # spaces_in_tags if True will maintain spaces in tag words, if False spaces are replaced by a dash -': None,
                 'spaces_in_tags': self._conversion_settings.spaces_in_tags,
                 '    # split tags will split grouped tags into individual tags if True': None,
                 '    # "Tag1", "Tag1/Sub Tag2"  will become "Tag1", "Sub Tag2"': None,
+                '    # grouped tags are only split where a "/" charcter is found': None,
                 'split_tags': self._conversion_settings.split_tags
             },
             'table_options': {
-                '  #  These two options apply to NSX files ONLY': None,
+                '  #  These two table options apply to NSX files ONLY': None,
                 'first_row_as_header': self._conversion_settings.first_row_as_header,
                 'first_column_as_header': self._conversion_settings.first_column_as_header
             },
@@ -306,7 +307,7 @@ class ConfigData(ConfigParser):
 
                 'creation_time_in_exported_file_name': self._conversion_settings.creation_time_in_exported_file_name,
                 '    # creation time in file name only applies to NSX files.': None,
-                '    # If True creation time will be added as prefix to file name': None
+                '    # If True creation time as `yyyymmddhhmm-` will be added as prefix to file name': None
             }
         }
 

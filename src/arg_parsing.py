@@ -56,9 +56,3 @@ class CommandLineParsing:
         settings_from_group.add_argument("-c", "--cli", action="store_true",
                                          help="Use interactive command line interface to choose options and settings. "
                                               "This is the default if no argument is provided.")
-
-
-if __name__ == '__main__':
-    args = CommandLineParsing()
-    print(args.args)
-    print(args.conversion_setting)

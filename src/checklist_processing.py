@@ -169,11 +169,7 @@ class NSXInputMDOutputChecklistProcessor(ChecklistProcessor):
 
     def find_all_checklist_items(self):
         self.logger.info("Searching for checklist items")
-        checked = self._soup.select(
-            'input[class="syno-notestation-editor-checkbox syno-notestation-editor-checkbox-checked"]')
-        unchecked = self._soup.select('input[class="syno-notestation-editor-checkbox"]')
-
-        return checked + unchecked
+        return self._soup.find_all(class_="syno-notestation-editor-checkbox")
 
     @staticmethod
     def find_checked_status(tag):
@@ -190,6 +186,3 @@ class NSXInputHTMLOutputChecklistProcessor(NSXInputMDOutputChecklistProcessor):
             tag['checked'] = ''
         tag['type'] = 'checkbox'
 
-
-if __name__ == '__main__':
-    pass

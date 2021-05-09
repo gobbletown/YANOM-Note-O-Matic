@@ -387,8 +387,3 @@ class InvalidConfigFileCommandLineInterface(InquireCommandLineInterface):
         if answer['what_to_do'] == 'Create a default configuration':
             return 'default'
         return 'exit'
-
-
-if __name__ == '__main__':
-    cli = StartUpCommandLineInterface(conversion_settings.please.provide('obsidian'))
-    cli.run_cli()
