@@ -3,10 +3,12 @@ import inspect
 import logging
 import re
 
+
 from chart_processing import NSXChartProcessor
 from checklist_processing import NSXInputMDOutputChecklistProcessor, NSXInputHTMLOutputChecklistProcessor
 from globals import APP_NAME
 from helper_functions import add_strong_between_tags, change_html_tags
+from iframe_processing import pre_process_iframes_from_html
 from image_processing import ImageTag
 from metadata_processing import MetaDataProcessor
 from sn_attachment import FileNSAttachment
@@ -51,6 +53,7 @@ class NoteStationPreProcessing(PreProcessing):
         self._image_tags = {}
         self._image_tag_processors = []
         self._image_ref_to_image_path = {}
+        self._iframes_dict = {}
         self._checklist_processor = None
         self._charts = []
         self._metadata_processor = None
@@ -73,10 +76,17 @@ class NoteStationPreProcessing(PreProcessing):
     def checklist_processor(self):
         return self._checklist_processor
 
+    @property
+    def iframes_dict(self):
+        return self._iframes_dict
+
     def pre_process_note_page(self):
         self.logger.info(f"Pre processing of note page {self._note.title}")
         self.__create_image_tag_processors()
         self.__update_content_with_new_img_tags()
+        if self._note.conversion_settings.export_format != 'pandoc_markdown_strict' \
+                and self._note.conversion_settings.export_format != 'html':
+            self._process_iframes()
         self.__clean_excessive_divs()
         self.__fix_ordered_list()
         self.__fix_unordered_list()
@@ -91,6 +101,9 @@ class NoteStationPreProcessing(PreProcessing):
             self.__generate_metadata()
         self.__generate_links_to_other_note_pages()
         self.__add_attachment_links()
+
+    def _process_iframes(self):
+        self.pre_processed_content, self._iframes_dict = pre_process_iframes_from_html(self.pre_processed_content)
 
     def __create_image_tag_processors(self):
         self.logger.info(f"Cleaning image tags")

@@ -2,13 +2,21 @@ from checklist_processing import HTMLInputMDOutputChecklistProcessor
 from file_converter_abstract import FileConverter
 from metadata_processing import MetaDataProcessor
 
+from iframe_processing import pre_process_iframes_from_html, post_process_iframes_to_markdown
+
 
 class HTMLToMDConverter(FileConverter):
+    def __init__(self, conversion_settings, files_to_convert):
+        super().__init__(conversion_settings, files_to_convert)
+        self._iframes_dict = {}
+
     def pre_process_content(self):
         self._checklist_processor = HTMLInputMDOutputChecklistProcessor(self._file_content)
         self._pre_processed_content = self._checklist_processor.processed_html
         self._pre_processed_content = self.update_note_links(self._pre_processed_content, 'html', 'md')
         self.parse_metadata_if_required()
+        self._pre_processed_content, self._iframes_dict = pre_process_iframes_from_html(self._pre_processed_content)
+        self.rename_target_file_if_already_exists()
 
     def parse_metadata_if_required(self):
         if self._conversion_settings.export_format == 'pandoc_markdown':
@@ -22,6 +30,7 @@ class HTMLToMDConverter(FileConverter):
         self.post_process_obsidian_image_links_if_required()
         self.add_check_lists()
         self.add_meta_data_if_required()
+        self._post_processed_content = post_process_iframes_to_markdown(self._post_processed_content, self._iframes_dict)
         self.add_one_last_line_break()
 
     def add_check_lists(self):

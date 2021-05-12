@@ -3,6 +3,7 @@ import inspect
 import logging
 
 from globals import APP_NAME
+from iframe_processing import post_process_iframes_to_markdown
 from image_processing import ObsidianImageTagFormatter
 
 
@@ -41,6 +42,8 @@ class NoteStationPostProcessing(PostProcessing):
         if self._conversion_settings.front_matter_format != 'none':
             self.__add_meta_data()
         self.__add_check_lists()
+        if self._note.conversion_settings.export_format != 'pandoc_markdown_strict':
+            self.__add_iframes()
         self.__format_images_links()
         self.__add_one_last_line_break()
 
@@ -50,8 +53,13 @@ class NoteStationPostProcessing(PostProcessing):
             self._post_processed_content = self._pre_processor.metadata_processor.add_metadata_md_to_content(self._post_processed_content)
 
     def __add_check_lists(self):
-        self.logger.info(f"Adding checklists to note page")
-        self._post_processed_content = self._note.pre_processor.checklist_processor.add_checklist_items_to(self._post_processed_content)
+        if self._note.pre_processor.checklist_processor.list_of_checklist_items:
+            self._post_processed_content = self._note.pre_processor.checklist_processor.add_checklist_items_to(self._post_processed_content)
+
+    def __add_iframes(self):
+        if self._pre_processor.iframes_dict:
+            self.logger.info(f"Adding iframes to note page")
+            self._post_processed_content = post_process_iframes_to_markdown(self._post_processed_content, self._pre_processor.iframes_dict)
 
     def __format_images_links(self):
         self.logger.info(f"Formatting image links for Obsidian")
