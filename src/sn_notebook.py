@@ -40,6 +40,8 @@ class Notebook:
 
     def fetch_notebook_data(self):
         self.notebook_json = self.nsx_file.zipfile_reader.read_json_data(self.notebook_id)
+        if self.notebook_json['title'] == "":  # The notebook with no title is called 'My Notes' in note station
+            self.notebook_json['title'] = "My Notebook"
 
     def process_notebook_pages(self):
         self.logger.info(f"Processing note book {self.title} - {self.notebook_id}")

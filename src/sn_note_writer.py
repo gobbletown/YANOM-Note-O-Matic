@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 
 from globals import APP_NAME, DATA_DIR
@@ -29,9 +30,18 @@ class NoteWriter:
         self.logger.info(message)
 
     def store_file(self, note_page):
-        self.logger.info(f"Storing note '{note_page.title}' as '{self.output_file_name}' "
+        self.logger.info(f"Storing note '{note_page.title}' as '{note_page.file_name}' "
                          f"in notebook folder '{note_page.notebook_folder_name}'")
-        Path(note_page.full_path).write_text(note_page.converted_content, 'utf-8')
+        try:
+            Path(note_page.full_path).write_text(note_page.converted_content, 'utf-8')
+        except Exception as e:
+            self.logger.error(f"Failed to write note '{note_page.title}' as '{note_page.file_name}' "
+                             f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)}")
+            if not self.conversion_settings.silent:
+                print(f"Failed to note '{note_page.title}' as '{note_page.file_name}' "
+                             f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)} ")
+            sys.exit(0)
+
 
     def generate_output_path_and_set_note_file_name(self, note_page):
         self.logger.info(f"Generate output path for '{note_page.title}'")
