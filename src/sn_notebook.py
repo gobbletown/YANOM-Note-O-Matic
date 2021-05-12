@@ -2,6 +2,8 @@ import inspect
 import logging
 from pathlib import Path
 
+from alive_progress import alive_bar
+
 from globals import APP_NAME, DATA_DIR
 from helper_functions import generate_clean_path, find_working_directory
 from sn_note_page import NotePage
@@ -46,8 +48,17 @@ class Notebook:
     def process_notebook_pages(self):
         self.logger.info(f"Processing note book {self.title} - {self.notebook_id}")
 
-        for note_page in self.note_pages:
-            note_page.process_note()
+        if self.conversion_settings.silent:
+            for note_page in self.note_pages:
+                note_page.process_note()
+
+            return
+
+        print(f"Processing '{self.title}' Notebook")
+        with alive_bar(len(self.note_pages), bar='blocks') as bar:
+            for note_page in self.note_pages:
+                note_page.process_note()
+                bar()
 
     def add_note_page_and_set_parent_notebook(self, note_page: NotePage):
         self.logger.info(f"Adding note '{note_page.title}' - {note_page.note_id} "

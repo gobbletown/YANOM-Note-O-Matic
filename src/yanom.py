@@ -7,6 +7,8 @@ import os
 import sys
 from timer import Timer
 
+from alive_progress import alive_bar
+
 from config_data import ConfigData
 from globals import APP_NAME, DATA_DIR
 from interactive_cli import StartUpCommandLineInterface
@@ -118,9 +120,13 @@ class NotesConvertor:
 
     def process_files(self, files_to_convert, file_converter):
         file_count = 0
-        for file in files_to_convert:
-            file_converter.convert(file)
-            file_count += 1
+
+        print(f"Processing note pages")
+        with alive_bar(len(files_to_convert), bar='blocks') as bar:
+            for file in files_to_convert:
+                file_converter.convert(file)
+                file_count += 1
+                bar()
 
         self._note_page_count = file_count
 
@@ -211,7 +217,6 @@ class NotesConvertor:
 
     def output_results_if_not_silent_mode(self):
         if not self.conversion_settings.silent:
-            print("Hello. I'm done")
             self.print_result_if_any(self._note_book_count, 'Note book')
             self.print_result_if_any(self._note_page_count, 'Note page')
             self.print_result_if_any(self._image_count, 'Image')

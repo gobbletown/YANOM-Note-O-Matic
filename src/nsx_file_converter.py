@@ -2,6 +2,8 @@ import inspect
 import logging
 from pathlib import Path
 
+from alive_progress import alive_bar
+
 from globals import APP_NAME, DATA_DIR
 from helper_functions import find_working_directory
 from sn_notebook import Notebook
@@ -100,20 +102,47 @@ class NSXFile:
 
     def add_note_pages(self):
         self.logger.info(f"Creating note page objects")
-        self._note_pages = {
-            note_id: NotePage(self, note_id)
-            for note_id in self._note_page_ids
-        }
-        self._note_page_count += len(self._note_pages)
+
+        if self.conversion_settings.silent:
+            self._note_pages = {
+                note_id: NotePage(self, note_id)
+                for note_id in self._note_page_ids
+            }
+            self._note_page_count += len(self._note_pages)
+
+            return
+
+        print("Finding note pages")
+        with alive_bar(len(self._note_page_ids), bar='blocks') as bar:
+            for note_id in self._note_page_ids:
+                note_page = NotePage(self, note_id)
+                self._note_pages[note_id] = note_page
+                bar()
+
+            self._note_page_count += len(self._note_pages)
 
     def add_note_pages_to_notebooks(self):
         self.logger.info(f"Add note pages to notebooks")
+
+        # if self.conversion_settings.silent:
         for note_page_id in self._note_pages:
             current_parent_id = self._note_pages[note_page_id].get_parent_notebook_id()
             if current_parent_id in self._notebooks:
                 self._notebooks[current_parent_id].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
             else:
                 self._notebooks['recycle_bin'].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
+
+            # return
+
+        # print(f"Filing notes into correct notebooks")
+        # with alive_bar(len(self.note_pages), bar='blocks') as bar:
+        #     for note_page_id in self._note_pages:
+        #         current_parent_id = self._note_pages[note_page_id].get_parent_notebook_id()
+        #         if current_parent_id in self._notebooks:
+        #             self._notebooks[current_parent_id].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
+        #         else:
+        #             self._notebooks['recycle_bin'].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
+        #         bar()
 
     def create_note_writer(self):
         self._note_writer = NoteWriter(self._conversion_settings)
