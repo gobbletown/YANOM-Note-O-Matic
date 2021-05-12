@@ -24,7 +24,7 @@ class ImageTag:
 
     def __set_width(self):
         if 'width="' in self._raw_tag:
-            width = re.findall('width="[0-9]*"', self._raw_tag)
+            width = re.findall(r'width="([0-9]*)[^"]*"', self._raw_tag)
             self._width = width[0]
 
     @property

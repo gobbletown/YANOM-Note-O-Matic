@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 
 from globals import VERSION, APP_NAME
 import conversion_settings
@@ -18,13 +19,14 @@ class CommandLineParsing:
     Read command line arguments, and generate conversion settings based on these values
 
     """
-    def __init__(self):
+
+    def __init__(self, args=sys.argv[1:]):
         self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
         self.logger.setLevel(logging.DEBUG)
         self._parser = argparse.ArgumentParser(description="YANOM Note-O-Matic notes convertor")
         self.__configure_parser()
         self.logger.info("Parsing command line arguments")
-        self._args = self._parser.parse_args()
+        self._args = self._parser.parse_args(args)
         self.logger.info(f"command line arguments are {self._args}")
         self._conversion_setting = conversion_settings.please.provide('manual')
 
@@ -56,3 +58,7 @@ class CommandLineParsing:
         settings_from_group.add_argument("-c", "--cli", action="store_true",
                                          help="Use interactive command line interface to choose options and settings. "
                                               "This is the default if no argument is provided.")
+
+    def parse_args(self, args):
+        self._args = self._parser.parse_args(args)
+        pass
