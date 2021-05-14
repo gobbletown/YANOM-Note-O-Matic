@@ -5,9 +5,10 @@ import re
 import string
 import sys
 import unicodedata
+from typing import Tuple
 
 
-def find_working_directory():
+def find_working_directory() -> Tuple[Path, str]:
     """
     This function helps fetch the current working directory when a program may be run in a frozen pyinstaller bundle or
     in a python environment.

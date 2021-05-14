@@ -1,29 +1,20 @@
-import inspect
 import logging
 
 from bs4 import BeautifulSoup
 import frontmatter
 from frontmatter import YAMLHandler, TOMLHandler, JSONHandler
 
-from globals import APP_NAME
+import config
 
 
 def what_module_is_this():
     return __name__
 
 
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class MetaDataProcessor:
     def __init__(self, conversion_settings):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._conversion_settings = conversion_settings
         self._split_tags = conversion_settings.split_tags
         self._spaces_in_tags = conversion_settings.split_tags
@@ -33,12 +24,12 @@ class MetaDataProcessor:
         self._tags = None
 
     def parse_html_metadata(self, html_metadata_source):
-        self.logger.info(f"Parsing HTML meta-data")
+        self.logger.debug(f"Parsing HTML meta-data")
         soup = BeautifulSoup(html_metadata_source, 'html.parser')
 
         head = soup.find('head')
         if head is None:
-            self.logger.info('No <head> section in html skipping meta data parsing')
+            self.logger.debug('No <head> section in html skipping meta data parsing')
             self._metadata = {}
             return
 
@@ -51,17 +42,17 @@ class MetaDataProcessor:
         self.format_tag_metadata_if_required()
 
     def parse_dict_metadata(self, metadata_dict):
-        self.logger.info(f"Parsing a dictionary of meta-data")
+        self.logger.debug(f"Parsing a dictionary of meta-data")
         for item in self._metadata_schema:
             if item in metadata_dict.keys():
                 self._metadata[item] = metadata_dict[item]
             else:
-                self.logger.info('Meta key {item} not found')
+                self.logger.debug('Meta key {item} not found')
 
         self.format_tag_metadata_if_required()
 
     def parse_md_metadata(self, md_string):
-        self.logger.info(f"Parsing markdown front matter meta-data")
+        self.logger.debug(f"Parsing markdown front matter meta-data")
         metadata, content = frontmatter.parse(md_string)
         if self._metadata_schema == ['']:
             self._metadata = {key: value for key, value in metadata.items()}
@@ -71,7 +62,7 @@ class MetaDataProcessor:
         return content
 
     def format_tag_metadata_if_required(self):
-        self.logger.info(f"Formatting meta-data 'tags'")
+        self.logger.debug(f"Formatting meta-data 'tags'")
         if 'tags' in self._metadata.keys() or 'tag' in self._metadata.keys():
             self.convert_tag_sting_to_tag_list()
             self.split_tags_if_required()
@@ -98,7 +89,7 @@ class MetaDataProcessor:
     def remove_tag_spaces_if_required(self):
         if self._spaces_in_tags:
             return
-        self.logger.info(f"Removing spaces from 'tags'")
+        self.logger.debug(f"Removing spaces from 'tags'")
         if 'tags' in self._metadata:
             self._metadata['tags'] = [tag.replace(' ', '-') for tag in self._metadata['tags']]
         if 'tag' in self._metadata:
@@ -107,7 +98,7 @@ class MetaDataProcessor:
     def split_tags_if_required(self):
         if not self._split_tags:
             return
-        self.logger.info(f"Splitting 'tags'")
+        self.logger.debug(f"Splitting 'tags'")
         if 'tags' in self._metadata:
             set_tags = {tag for tag_split in self._metadata['tags'] for tag in tag_split.split('/')}
             self._metadata['tags'] = [tag for tag in set_tags]
@@ -126,7 +117,7 @@ class MetaDataProcessor:
             self._metadata['tag'] = [tag for tag in set_tags]
 
     def add_metadata_md_to_content(self, content):
-        self.logger.info(f"Add front matter meta-data to markdown page")
+        self.logger.debug(f"Add front matter meta-data to markdown page")
         if self._conversion_settings.front_matter_format == 'none':
             return content
 
@@ -152,7 +143,7 @@ class MetaDataProcessor:
         return content
 
     def add_text_metadata_to_content(self, content):
-        self.logger.info(f"Add plain text meta-data to page")
+        self.logger.debug(f"Add plain text meta-data to page")
         if self._conversion_settings.markdown_conversion_input == 'markdown':
             return content
 
@@ -175,13 +166,13 @@ class MetaDataProcessor:
         return f'{text_meta_data}\n\n{content}'
 
     def add_tag_prefix(self, tags):
-        self.logger.info(f"Add tag prefix")
+        self.logger.debug(f"Add tag prefix")
         tags = [f'{self._tag_prefix}{tag}' for tag in tags]
 
         return tags
 
     def add_metadata_html_to_content(self, content):
-        self.logger.info(f"Add meta-data to html header")
+        self.logger.debug(f"Add meta-data to html header")
         if self._conversion_settings.markdown_conversion_input == 'markdown':
             return content
 
@@ -193,7 +184,7 @@ class MetaDataProcessor:
 
         head = soup.find('head')
         if head is None:
-            self.logger.info("No <head> in html, skipping meta data insert")
+            self.logger.debug("No <head> in html, skipping meta data insert")
             return content
 
         for key, value in self._metadata.items():

@@ -1,242 +1,115 @@
 #!/usr/bin/env python3
-from arg_parsing import CommandLineParsing
-import inspect
-import logging
+""" Parse command line arguments, configure root loggers and initialise the note conversion process """
 import logging.handlers as handlers
 import os
+
+import argparse
+import logging
 import sys
-from timer import Timer
 
-from alive_progress import alive_bar
-
-from config_data import ConfigData
-from globals import APP_NAME, DATA_DIR
-from interactive_cli import StartUpCommandLineInterface
-from nsx_file_converter import NSXFile
-from pandoc_converter import PandocConverter
-import conversion_settings
-from conversion_settings import ConversionSettings
-from file_converter_HTML_to_MD import HTMLToMDConverter
-from file_converter_MD_to_HTML import MDToHTMLConverter
-from file_converter_MD_to_MD import MDToMDConverter
-
-os.makedirs(f"{DATA_DIR}/logs/", exist_ok=True)
-
-log_filename = f"{DATA_DIR}/logs/normal.log"
-error_log_filename = f"{DATA_DIR}/logs/error.log"
-
-root_logger = logging.getLogger()
-root_logger.setLevel(logging.DEBUG)
-
-file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-
-logHandler = handlers.RotatingFileHandler(log_filename, maxBytes=2 * 1024 * 1024, backupCount=5)
-logHandler.setLevel(logging.INFO)
-logHandler.setFormatter(file_formatter)
-
-errorLogHandler = handlers.RotatingFileHandler(error_log_filename, maxBytes=2 * 1024 * 1024, backupCount=5)
-errorLogHandler.setLevel(logging.ERROR)
-errorLogHandler.setFormatter(file_formatter)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.CRITICAL)
-
-root_logger.addHandler(logHandler)
-root_logger.addHandler(errorLogHandler)
-root_logger.addHandler(console_handler)
-
-
-class ConfigException(Exception):
-    pass
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
+import config
+from helper_functions import find_working_directory
+from notes_converter import NotesConvertor
 
 
 def what_module_is_this():
     return __name__
 
 
-def what_class_is_this(obj):
-    return obj.__class__.__name__
+def command_line_parser(command_line_args):
+    parser = argparse.ArgumentParser(description="YANOM Note-O-Matic notes convertor")
+
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s Version {}'.format(config.VERSION))
+    parser.add_argument("-s", "--silent", action="store_true",
+                        help="No output to console. No interactive command line interface for settings.")
+    parser.add_argument('--source', nargs='?', default='',
+                        help='Sub directory of data directory containing one or more files to process, '
+                             'or the name of a single file.  '
+                             'For example "source my_html_file.html" or "source my_nsx_files"  '
+                             'If not provided will search and use data folder AND any sub folders.')
+    parser.add_argument("-l", "--log", default='INFO',
+                        help="Set the level of program logging. Default = INFO. "
+                             "Choices are INFO, DEBUG, WARNING, ERROR, CRITICAL"
+                             "Example --log debug or --log INFO")
+    group = parser.add_argument_group('Mutually exclusive options. ',
+                                      'To use the interactive command line tool for settings '
+                                      'DO NOT use -s or -i')
+    settings_from_group = group.add_mutually_exclusive_group()
+    settings_from_group.add_argument("-i", "--ini", action="store_true",
+                                     help="Use config.ini for conversion settings.")
+    settings_from_group.add_argument("-c", "--cli", action="store_true",
+                                     help="Use interactive command line interface to choose options and settings. "
+                                          "This is the default if no argument is provided.")
+
+    return vars(parser.parse_args(command_line_args))
 
 
-class NotesConvertor:
-    """
-    A class to intialise and organise the conversion of notes files into alternative output formats
-    """
+def set_logging_level(log_level: str):
+    levels = {
+        'critical': logging.CRITICAL,
+        'error': logging.ERROR,
+        'warn': logging.WARNING,
+        'warning': logging.WARNING,
+        'info': logging.INFO,
+        'debug': logging.DEBUG,
+        '': config.logger_level
+    }
+    new_level = levels.get(log_level.lower(), None)
 
-    def __init__(self):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.info(f'{what_method_is_this()} - Program startup')
-        self._note_page_count = 0
-        self._note_book_count = 0
-        self._image_count = 0
-        self._attachment_count = 0
-        self.conversion_settings = ConversionSettings
-        self.nsx_backups = None
-        self.pandoc_converter = None
-        self.command_line = CommandLineParsing()
-        self.config_data = ConfigData(f"{DATA_DIR}/config.ini", 'gfm', allow_no_value=True)
-        self.evaluate_command_line_arguments()
-        if self.conversion_settings.conversion_input == 'html':
-            self.convert_html()
-        elif self.conversion_settings.conversion_input == 'markdown':
-            self.convert_markdown()
-        else:
-            self.convert_nsx()
+    if new_level is None:
+        try:
+            raise ValueError(f'Invalid log level on command line: "{log_level}"')
+        except Exception as exc:
+            sys.exit(exc)
 
-        self.output_results_if_not_silent_mode()
-        self.log_results()
-        self.logger.info("Processing Completed - exiting normally")
+    config.set_logger_level(new_level)
+    pass
 
-    def convert_markdown(self):
-        with Timer(name="md_conversion", logger=root_logger.info, silent=bool(self.conversion_settings.silent)):
-            file_extension = 'md'
-            md_files_to_convert = self.generate_file_list(file_extension)
-            self.exit_if_no_files_found(md_files_to_convert, file_extension)
 
-            if self.conversion_settings.export_format == 'html':
-                md_file_converter = MDToHTMLConverter(self.conversion_settings, md_files_to_convert)
-            else:
-                md_file_converter = MDToMDConverter(self.conversion_settings, md_files_to_convert)
+def setup_logging(working_path):
+    os.makedirs(f"{working_path}/{config.DATA_DIR}/logs", exist_ok=True)
 
-            self.process_files(md_files_to_convert, md_file_converter)
+    log_filename = f"{working_path}/{config.DATA_DIR}/logs/normal.log"
+    error_log_filename = f"{working_path}/{config.DATA_DIR}/logs/error.log"
+    debug_log_filename = f"{working_path}/{config.DATA_DIR}/logs/debug.log"
 
-    def generate_file_list(self, file_extension):
-        if not self.conversion_settings.source.is_file():
-            file_list_generator = self.conversion_settings.source.rglob(f'*.{file_extension}')
-            file_list = [item for item in file_list_generator]
-            return file_list
-        return [self.conversion_settings.source]
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
 
-    def exit_if_no_files_found(self, files_to_convert, file_extension):
-        if not files_to_convert:
-            root_logger.info(f"No .{file_extension} files found at path {self.conversion_settings.source}. Exiting program")
-            if not self.conversion_settings.silent:
-                print(f'No .{file_extension} files found at {self.conversion_settings.source}')
-            sys.exit(0)
+    file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 
-    def process_files(self, files_to_convert, file_converter):
-        file_count = 0
+    logHandler = handlers.RotatingFileHandler(log_filename, maxBytes=2 * 1024 * 1024, backupCount=5)
+    logHandler.setLevel(logging.INFO)
+    logHandler.setFormatter(file_formatter)
 
-        print(f"Processing note pages")
-        with alive_bar(len(files_to_convert), bar='blocks') as bar:
-            for file in files_to_convert:
-                file_converter.convert(file)
-                file_count += 1
-                bar()
+    errorLogHandler = handlers.RotatingFileHandler(error_log_filename, maxBytes=2 * 1024 * 1024, backupCount=5)
+    errorLogHandler.setLevel(logging.ERROR)
+    errorLogHandler.setFormatter(file_formatter)
 
-        self._note_page_count = file_count
+    if config.logger_level == logging.DEBUG:
+        debugLogHandler = handlers.RotatingFileHandler(debug_log_filename, maxBytes=2 * 1024 * 1024, backupCount=5)
+        debugLogHandler.setLevel(logging.DEBUG)
+        debugLogHandler.setFormatter(file_formatter)
+        root_logger.addHandler(debugLogHandler)
 
-    def convert_html(self):
-        with Timer(name="html_conversion", logger=root_logger.info, silent=bool(self.conversion_settings.silent)):
-            file_extension = 'html'
-            html_files_to_convert = self.generate_file_list(file_extension)
-            self.exit_if_no_files_found(html_files_to_convert, file_extension)
-            html_file_converter = HTMLToMDConverter(self.conversion_settings, html_files_to_convert)
-            self.process_files(html_files_to_convert, html_file_converter)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.CRITICAL)
 
-    def convert_nsx(self):
-        self.fetch_nsx_backups()
-        self.process_nsx_files()
+    root_logger.addHandler(console_handler)
+    root_logger.addHandler(logHandler)
+    root_logger.addHandler(errorLogHandler)
 
-    def fetch_nsx_backups(self):
-        file_extension = 'nsx'
-        nsx_files_to_convert = self.generate_file_list(file_extension)
 
-        self.exit_if_no_files_found(nsx_files_to_convert, file_extension)
-
-        self.pandoc_converter = PandocConverter(self.conversion_settings)
-        self.nsx_backups = [NSXFile(file, self.conversion_settings, self.pandoc_converter) for file in nsx_files_to_convert]
-
-    def process_nsx_files(self):
-        with Timer(name="nsx_conversion", logger=root_logger.info, silent=bool(self.conversion_settings.silent)):
-            for nsx_file in self.nsx_backups:
-                nsx_file.process_nsx_file()
-                self.update_processing_stats(nsx_file)
-
-    def update_processing_stats(self, nsx_file):
-        self._note_page_count += nsx_file.note_page_count
-        self._note_book_count += nsx_file.note_book_count
-        self._image_count += nsx_file.image_count
-        self._attachment_count += nsx_file.attachment_count
-
-    def evaluate_command_line_arguments(self):
-
-        if self.command_line.args['ini']:
-            self.configure_for_ini_settings()
-            return
-
-        if self.command_line.args['silent']:
-            root_logger.warning(f"Command line option -s  --silent used without -i.  "
-                                f"Unable to use Interactive command line due to silence request.  "
-                                f"Exiting program")
-            sys.exit(0)
-
-        root_logger.info("Starting interactive command line tool")
-        self.run_interactive_command_line_interface()
-        return
-
-    def add_file_paths_from_command_line_to_settings(self):
-        self.conversion_settings.source = self.command_line.args['source']
-        self.conversion_settings.export_folder_name = self.command_line.args['export_folder']
-        self.conversion_settings.attachment_folder_name = self.command_line.args['attachments']
-
-    def run_interactive_command_line_interface(self):
-        command_line_interface = StartUpCommandLineInterface(self.command_line.conversion_setting)
-        self.conversion_settings = command_line_interface.run_cli()
-        self.conversion_settings.source = self.command_line.args['source']
-        self.config_data.conversion_settings = self.conversion_settings  # this will save the setting in the ini file
-        self.logger.info("Using conversion settings from interactive command line tool")
-
-    def run_gui(self):
-        root_logger.info("Using gui if it was coded....")
-        if not self.command_line.args['silent']:
-            print("gui")  # run gui
-
-    def configure_for_ini_settings(self):
-        # every time I look at his I wonder if values somebody enters after -i on the command line should be used...
-        # No they should not.  they have chosen to use ini file and all the settings they need should be in it as
-        # they have chosen to use the ini file so ignore any  other options they enter
-        root_logger.info("Using settings from config  ini file")
-        self.conversion_settings = self.config_data.conversion_settings
-
-    def configure_for_manual_settings(self):
-        self.conversion_settings = self.command_line.conversion_setting
-        self.config_data.conversion_settings = self.conversion_settings
-
-    def configure_for_quick_setting(self):
-        # for a quick setting the source folder provided on the command
-        # line will be used if provided as argument
-        root_logger.info(f"Using quick settings for {self.command_line.args['quickset']}")
-        self.conversion_settings = conversion_settings.please.provide(self.command_line.args['quickset'])
-        self.add_file_paths_from_command_line_to_settings()
-        self.config_data.conversion_settings = self.conversion_settings
-
-    def output_results_if_not_silent_mode(self):
-        if not self.conversion_settings.silent:
-            self.print_result_if_any(self._note_book_count, 'Note book')
-            self.print_result_if_any(self._note_page_count, 'Note page')
-            self.print_result_if_any(self._image_count, 'Image')
-            self.print_result_if_any(self._attachment_count, 'Attachment')
-
-    @staticmethod
-    def print_result_if_any(conversion_count, message):
-        if conversion_count == 0:
-            return
-        plural = ''
-        if conversion_count > 1:
-            plural = 's'
-        print(f'{conversion_count} {message}{plural}')
-
-    def log_results(self):
-        self.logger.info(f"{self._note_book_count} Note books")
-        self.logger.info(f"{self._note_page_count} Note Pages")
-        self.logger.info(f"{self._image_count} Images")
-        self.logger.info(f"{self._attachment_count} Attachments")
+def main(command_line_sys_argv=sys.argv):
+    args = command_line_parser(command_line_sys_argv[1:])
+    set_logging_level(args['log'])
+    working_directory, message = find_working_directory()
+    setup_logging(working_directory)
+    logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}')
+    logger.debug(message)
+    return args
 
 
 if __name__ == '__main__':
-    notes_converter = NotesConvertor()
+    command_line_args = main()
+    notes_converter = NotesConvertor(command_line_args)

@@ -139,3 +139,4 @@ dmypy.json
 
 /src/data/notes/
 /src/data/test.nsx
+/cov_html/

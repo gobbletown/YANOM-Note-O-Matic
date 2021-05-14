@@ -1,22 +1,13 @@
 from abc import ABC, abstractmethod
-import inspect
 import logging
 
-from globals import APP_NAME
+import config
 from iframe_processing import post_process_iframes_to_markdown
 from image_processing import ObsidianImageTagFormatter
 
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
 
 
 class PostProcessing(ABC):
@@ -29,8 +20,8 @@ class PostProcessing(ABC):
 
 class NoteStationPostProcessing(PostProcessing):
     def __init__(self, note):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._note = note
         self._conversion_settings = note.conversion_settings
         self._yaml_header = ''
@@ -48,22 +39,23 @@ class NoteStationPostProcessing(PostProcessing):
         self.__add_one_last_line_break()
 
     def __add_meta_data(self):
-        self.logger.info(f"Adding meta-data to page")
         if self._note.conversion_settings.front_matter_format != 'none':
+            self.logger.debug(f"Adding meta-data to page")
             self._post_processed_content = self._pre_processor.metadata_processor.add_metadata_md_to_content(self._post_processed_content)
 
     def __add_check_lists(self):
         if self._note.pre_processor.checklist_processor.list_of_checklist_items:
+            self.logger.debug(f"Adding chceklists to page")
             self._post_processed_content = self._note.pre_processor.checklist_processor.add_checklist_items_to(self._post_processed_content)
 
     def __add_iframes(self):
         if self._pre_processor.iframes_dict:
-            self.logger.info(f"Adding iframes to note page")
+            self.logger.debug(f"Adding iframes to note page")
             self._post_processed_content = post_process_iframes_to_markdown(self._post_processed_content, self._pre_processor.iframes_dict)
 
     def __format_images_links(self):
-        self.logger.info(f"Formatting image links for Obsidian")
         if self._conversion_settings.export_format == 'obsidian':
+            self.logger.debug(f"Formatting image links for Obsidian")
             obsidian_image_link_formatter = ObsidianImageTagFormatter(self._post_processed_content, 'obsidian')
             self._post_processed_content = obsidian_image_link_formatter.processed_content
 

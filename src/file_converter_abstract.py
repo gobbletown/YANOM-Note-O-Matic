@@ -5,7 +5,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-from globals import APP_NAME
+import config
 from image_processing import ObsidianImageTagFormatter
 from pandoc_converter import PandocConverter
 
@@ -14,14 +14,10 @@ def what_module_is_this():
     return __name__
 
 
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class FileConverter(ABC):
     def __init__(self, conversion_settings, files_to_convert):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._file = None
         self._files_to_convert = files_to_convert
         self._file_content = ''
@@ -55,7 +51,7 @@ class FileConverter(ABC):
         pass
 
     def update_note_links(self, content, source_extension='', target_extension=''):
-        # create a basic file name filter to rename only those files that are being modified by yanom
+        # create a basic file name filter to rename only those files that are being modified
         # only compares file names not full paths.. so limited but will be enough for many cases
         links_that_can_be_renamed = [Path(file).stem for file in self._files_to_convert]
 
@@ -91,13 +87,13 @@ class FileConverter(ABC):
 
     def pre_process_obsidian_image_links_if_required(self):
         if self._conversion_settings.markdown_conversion_input == 'obsidian':
-            self.logger.info(f"Pre process obsidian image links")
+            self.logger.debug(f"Pre process obsidian image links")
             obsidian_image_link_formatter = ObsidianImageTagFormatter(self._pre_processed_content, 'gfm')
             self._pre_processed_content = obsidian_image_link_formatter.processed_content
 
     def post_process_obsidian_image_links_if_required(self):
         if self._conversion_settings.export_format == 'obsidian':
-            self.logger.info(f"Post process obsidian image links")
+            self.logger.debug(f"Post process obsidian image links")
             obsidian_image_link_formatter = ObsidianImageTagFormatter(self._post_processed_content, 'obsidian')
             self._post_processed_content = obsidian_image_link_formatter.processed_content
 

@@ -1,20 +1,11 @@
-import inspect
 import logging
 import re
 
-from globals import APP_NAME
+import config
 
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
 
 
 class SNLinksToOtherNotes:
@@ -31,8 +22,8 @@ class SNLinksToOtherNotes:
     """
 
     def __init__(self, note_page, content, nsx_file):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._note_page = note_page
         self._content = content
         self._nsx_file = nsx_file
@@ -53,8 +44,8 @@ class SNLinksToOtherNotes:
         """
 
         def __init__(self, raw_link, note, href_note):
-            self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-            self.logger.setLevel(logging.DEBUG)
+            self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+            self.logger.setLevel(config.logger_level)
             self._raw_link = raw_link
             self._href_text = ''
             self._href_link_value = re.findall('<a href=\"(.*)\"', raw_link)[0]
@@ -65,7 +56,7 @@ class SNLinksToOtherNotes:
             self.__generate_new_link()
 
         def __generate_new_link(self):
-            self.logger.info("Creating inter note links")
+            self.logger.debug("Creating inter note links")
             if self._note_page.parent_notebook == self._href_note.parent_notebook:
                 self._new_link = f'<a href="{self._href_note.file_name}">{self._href_note.title}</a>'
             self._new_link = f'<a href="../{self._href_note.notebook_folder_name}/{self._href_note.file_name}">{self._href_note.title}</a>'
@@ -113,7 +104,7 @@ class SNLinksToOtherNotes:
         """
         self._all_note_pages = [(note.original_title, note)
                                 for note in self._nsx_file.note_pages.values()
-                                if not note.parent_notebook == 'recycle_bin'  # ignore items in recycle bin
+                                if not note.parent_notebook == 'recycle-bin'  # ignore items in recycle bin
                                 ]
 
     def __match_link_title_to_a_note(self):
@@ -142,7 +133,7 @@ class SNLinksToOtherNotes:
         for raw_link in self._raw_note_links:
             new_replacement_links = {}
             if raw_link not in self._replacement_links.keys():  # then it is a renamed link
-                self.logger.info(f"Attempting to create links for renamed links")
+                self.logger.debug(f"Attempting to create links for renamed links")
                 # search already found replacement links for this links href value and if found give it a new link
                 for replacement_links in self._replacement_links.values():
                     if re.findall('<a href=\"(.*)\"', raw_link)[0] == replacement_links[0].href_link_value:
@@ -153,7 +144,7 @@ class SNLinksToOtherNotes:
             self._replacement_links = {**self._replacement_links, **new_replacement_links}
 
     def __update_content(self):
-        self.logger.info("Adding inter note links to page")
+        self.logger.debug("Adding inter note links to page")
         for raw_link, replacement_links in self._replacement_links.items():
             self._content = self._content.replace(raw_link, self.__generate_html_code_for_new_links(replacement_links))
 

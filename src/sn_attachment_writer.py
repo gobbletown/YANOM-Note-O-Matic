@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from globals import APP_NAME, DATA_DIR
+import config
 from helper_functions import generate_new_filename, find_working_directory
 import sn_attachment
 
@@ -10,15 +10,10 @@ def what_module_is_this():
     return __name__
 
 
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class AttachmentWriter:
     def __init__(self, nsx_file):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
-        self.logger.info(f'{__name__} - Creating an instance of {what_class_is_this(self)}')
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self.nsx_file = nsx_file
         self._current_directory_path = None
         self._output_folder = nsx_file.conversion_settings.export_folder_name
@@ -33,20 +28,20 @@ class AttachmentWriter:
 
     def find_current_directory_path(self):
         self._current_directory_path, message = find_working_directory()
-        self.logger.info(message)
+        self.logger.debug(message)
 
     def store_nsx_attachment(self, attachment):
         self.generate_relative_path(attachment)
         self.generate_output_path(attachment)
 
-        self.logger.info(f"Storing attachment {attachment.file_name} as {self._output_file_name}")
+        self.logger.debug(f"Storing attachment {attachment.file_name} as {self._output_file_name}")
         Path(self._output_file_path).write_bytes(self.nsx_file.fetch_attachment_file(attachment.filename_inside_nsx))
 
     def store_chart_attachment(self, attachment):
         self.generate_relative_path(attachment)
         self.generate_output_path(attachment)
 
-        self.logger.info(f"Storing attachment {attachment.file_name} as {self._output_file_name}")
+        self.logger.debug(f"Storing attachment {attachment.file_name} as {self._output_file_name}")
         if isinstance(attachment, sn_attachment.ChartStringNSAttachment):
             Path(self._output_file_path).write_text(attachment.chart_file_like_object)
             return
@@ -57,7 +52,7 @@ class AttachmentWriter:
         self._path_relative_to_notebook = Path(self._attachment_folder, attachment.file_name)
 
     def generate_output_path(self, attachment):
-        path = Path(self._current_directory_path, DATA_DIR, self._output_folder,
+        path = Path(self._current_directory_path, config.DATA_DIR, self._output_folder,
                     attachment.notebook_folder_name,
                     self._path_relative_to_notebook)
 

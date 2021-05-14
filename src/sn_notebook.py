@@ -1,10 +1,9 @@
-import inspect
 import logging
 from pathlib import Path
 
 from alive_progress import alive_bar
 
-from globals import APP_NAME, DATA_DIR
+import config
 from helper_functions import generate_clean_path, find_working_directory
 from sn_note_page import NotePage
 
@@ -13,25 +12,17 @@ def what_module_is_this():
     return __name__
 
 
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class Notebook:
     def __init__(self, nsx_file, notebook_id):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self.nsx_file = nsx_file
         self.notebook_id = notebook_id
         self.conversion_settings = self.nsx_file.conversion_settings
         self.notebook_json = dict
-        if self.notebook_id == 'recycle_bin':
-            self.title = 'recycle_bin'
-        if self.notebook_id != 'recycle_bin':
+        if self.notebook_id == 'recycle-bin':
+            self.title = 'recycle-bin'
+        if self.notebook_id != 'recycle-bin':
             self.fetch_notebook_data()
             self.title = self.notebook_json['title']
         self.folder_name = ''
@@ -61,8 +52,8 @@ class Notebook:
                 bar()
 
     def add_note_page_and_set_parent_notebook(self, note_page: NotePage):
-        self.logger.info(f"Adding note '{note_page.title}' - {note_page.note_id} "
-                         f"to Notebook '{self.title}' - {self.notebook_id}")
+        self.logger.debug(f"Adding note '{note_page.title}' - {note_page.note_id} "
+                          f"to Notebook '{self.title}' - {self.notebook_id}")
 
         note_page.notebook_folder_name = self.folder_name
         note_page.parent_notebook = self.notebook_id
@@ -81,18 +72,18 @@ class Notebook:
         self.create_attachment_folder()
 
     def create_notebook_folder(self):
-        self.logger.info(f"Creating notebook folder for {self.title}")
+        self.logger.debug(f"Creating notebook folder for {self.title}")
         current_directory_path, message = find_working_directory()
-        self.logger.info(message)
+        self.logger.debug(message)
 
         n = 0
-        target_path = Path(current_directory_path, DATA_DIR,
+        target_path = Path(current_directory_path, config.DATA_DIR,
                            self.nsx_file.conversion_settings.export_folder_name,
                            self.folder_name)
 
         while target_path.exists():
             n += 1
-            target_path = Path(current_directory_path, DATA_DIR,
+            target_path = Path(current_directory_path, config.DATA_DIR,
                                self.nsx_file.conversion_settings.export_folder_name,
                                f"{self.folder_name}-{n}")
 
@@ -101,5 +92,5 @@ class Notebook:
         self.full_path_to_notebook = target_path
 
     def create_attachment_folder(self):
-        self.logger.info(f"Creating attachment")
+        self.logger.debug(f"Creating attachment")
         Path(self.full_path_to_notebook, self.conversion_settings.attachment_folder_name).mkdir()

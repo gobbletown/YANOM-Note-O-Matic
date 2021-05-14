@@ -2,7 +2,7 @@ import logging
 import sys
 from pathlib import Path
 
-from globals import APP_NAME, DATA_DIR
+import config
 from helper_functions import generate_clean_path, find_working_directory
 
 
@@ -10,14 +10,10 @@ def what_module_is_this():
     return __name__
 
 
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class NoteWriter:
     def __init__(self, conversion_settings):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self.conversion_settings = conversion_settings
         self.current_directory_path = None
         self.output_folder = conversion_settings.export_folder_name
@@ -27,24 +23,23 @@ class NoteWriter:
 
     def find_current_directory_path(self):
         self.current_directory_path, message = find_working_directory()
-        self.logger.info(message)
+        self.logger.debug(message)
 
     def store_file(self, note_page):
-        self.logger.info(f"Storing note '{note_page.title}' as '{note_page.file_name}' "
-                         f"in notebook folder '{note_page.notebook_folder_name}'")
+        self.logger.debug(f"Storing note '{note_page.title}' as '{note_page.file_name}' "
+                          f"in notebook folder '{note_page.notebook_folder_name}'")
         try:
             Path(note_page.full_path).write_text(note_page.converted_content, 'utf-8')
         except Exception as e:
             self.logger.error(f"Failed to write note '{note_page.title}' as '{note_page.file_name}' "
-                             f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)}")
+                              f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)}")
             if not self.conversion_settings.silent:
                 print(f"Failed to note '{note_page.title}' as '{note_page.file_name}' "
-                             f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)} ")
+                      f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)} ")
             sys.exit(0)
 
-
     def generate_output_path_and_set_note_file_name(self, note_page):
-        self.logger.info(f"Generate output path for '{note_page.title}'")
+        self.logger.debug(f"Generate output path for '{note_page.title}'")
         dirty_filename = note_page.title
 
         if self.conversion_settings.creation_time_in_exported_file_name:
@@ -57,16 +52,18 @@ class NoteWriter:
 
         self.output_file_name = (generate_clean_path(dirty_filename))
         n = 0
-        target_path = Path(self.current_directory_path, DATA_DIR, self.output_folder,
+        target_path = Path(self.current_directory_path, config.DATA_DIR, self.output_folder,
                            note_page.notebook_folder_name, self.output_file_name)
         while target_path.exists():
             n += 1
-            target_path = Path(self.current_directory_path, DATA_DIR, self.output_folder, note_page.notebook_folder_name,
+            target_path = Path(self.current_directory_path, config.DATA_DIR, self.output_folder,
+                               note_page.notebook_folder_name,
                                f"{Path(self.output_file_name).stem}-{n}{Path(self.output_file_name).suffix}")
 
         self.output_file_name = target_path.name
         self.output_full_path = target_path
-        self.logger.info(f"Path for '{note_page.title}' is {self.output_full_path}, file name will be {self.output_file_name}")
+        self.logger.debug(
+            f"Path for '{note_page.title}' is {self.output_full_path}, file name will be {self.output_file_name}")
 
     def get_output_full_path(self):
         return self.output_full_path

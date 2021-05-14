@@ -1,7 +1,7 @@
 import logging
 import time
 
-from globals import APP_NAME
+import config
 from helper_functions import generate_clean_path
 from nsx_post_processing import NoteStationPostProcessing
 from nsx_pre_processing import NoteStationPreProcessing
@@ -13,14 +13,10 @@ def what_module_is_this():
     return __name__
 
 
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class NotePage:
     def __init__(self, nsx_file, note_id, ):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._nsx_file = nsx_file
         self._zipfile_reader = nsx_file.zipfile_reader
         self._note_writer = nsx_file.note_writer
@@ -62,7 +58,7 @@ class NotePage:
         if not self.conversion_settings.export_format == 'html':
             self.post_process_content()
         self._note_writer.store_file(self)
-        self.logger.info(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
+        self.logger.debug(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
 
     def generate_filenames_and_paths(self):
         self._note_writer.generate_output_path_and_set_note_file_name(self)
@@ -83,7 +79,7 @@ class NotePage:
         return self._image_count, self._attachment_count
 
     def process_attachments(self):
-        self.logger.info('Process attachments')
+        self.logger.debug('Process attachments')
         for attachment_id in self._attachments:
             self._attachments[attachment_id].process_attachment()
 
@@ -96,7 +92,7 @@ class NotePage:
             self._converted_content = self._pre_processed_content
             return
 
-        self.logger.info(f"Converting content of '{self._title}' - {self._note_id}")
+        self.logger.debug(f"Converting content of '{self._title}' - {self._note_id}")
         self._converted_content = self._pandoc_converter.convert_using_strings(self._pre_processed_content, self._title)
 
     def create_file_writer(self):

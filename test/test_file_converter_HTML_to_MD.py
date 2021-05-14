@@ -19,6 +19,7 @@ class TestHTMLToMDConverter(unittest.TestCase):
     def test_pre_process_content(self):
         self.file_converter._file_content = '<head><meta title="this is test2"/><meta not_valid="not_in_schema"/></head><p><input checked="" type="checkbox"/>Check 1</p><p><input type="checkbox"/>Check 2</p><p><a href="/a_folder/test_html_file.html">html file</a></p>'
         self.file_converter._metadata_schema = ['title']
+        self.file_converter._file = Path('a-file.html')
         self.file_converter.pre_process_content()
         self.assertTrue('checklist-placeholder-id' in self.file_converter._pre_processed_content, 'Failed to insert checklist placeholders')
         self.assertTrue('<p><a href="/a_folder/test_html_file.md">html file</a></p>' in self.file_converter._pre_processed_content, 'Failed to change link extension placeholders')
@@ -27,6 +28,7 @@ class TestHTMLToMDConverter(unittest.TestCase):
     def test_post_process_content(self):
         self.file_converter._file_content = '<head><meta title="this is test2"/><meta not_valid="not_in_schema"/></head><p><input checked="" type="checkbox"/>Check 1</p><p><input type="checkbox"/>Check 2</p><img src="filepath/image.png" width="600">'
         self.file_converter._metadata_schema = ['title']
+        self.file_converter._file = Path('a-file.html')
         self.file_converter._conversion_settings.export_format = 'pandoc_markdown'
         self.file_converter.pre_process_content()
         self.file_converter.convert_content()
@@ -35,6 +37,7 @@ class TestHTMLToMDConverter(unittest.TestCase):
 
         self.file_converter._file_content = '<head><meta title="this is test2"/><meta not_valid="not_in_schema"/></head><p><input checked="" type="checkbox"/>Check 1</p><p><input type="checkbox"/>Check 2</p><img src="filepath/image.png" width="600">'
         self.file_converter._metadata_schema = ['title']
+        self.file_converter._file = Path('a-file.html')
         self.file_converter._conversion_settings.export_format = 'obsidian'
         self.file_converter.pre_process_content()
         self.file_converter.convert_content()

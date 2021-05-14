@@ -1,4 +1,0 @@
-APP_NAME = 'YANOM'
-APP_SUB_NAME = 'Note-O-Matic'
-VERSION = 1.0
-DATA_DIR = 'data'

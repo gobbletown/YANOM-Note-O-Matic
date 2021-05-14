@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-import inspect
 import logging
 
 from pyfiglet import Figlet
 from PyInquirer import style_from_dict, Token, prompt, Separator
 
-from globals import APP_NAME, APP_SUB_NAME
+import config
 import conversion_settings
 from conversion_settings import ManualConversionSettings
 
@@ -14,18 +13,10 @@ def what_module_is_this():
     return __name__
 
 
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 def show_app_title():
-    print(Figlet().renderText(APP_NAME))
+    print(Figlet().renderText(config.APP_NAME))
     f = Figlet(font='slant')
-    print(f.renderText(APP_SUB_NAME))
+    print(f.renderText(config.APP_SUB_NAME))
 
 
 class InquireCommandLineInterface(ABC):
@@ -62,13 +53,13 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
     """
     def __init__(self, config_ini_conversion_settings):
         super(StartUpCommandLineInterface, self).__init__()
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._default_settings = config_ini_conversion_settings
         self._current_conversion_settings = conversion_settings.please.provide('manual')
 
     def run_cli(self):
-        self.logger.info("Running start up interactive command line")
+        self.logger.debug("Running start up interactive command line")
         show_app_title()
 
         self.__ask_and_set_conversion_input()
@@ -120,7 +111,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                 self.__ask_and_set_metadata_schema()
 
     def __nothing_to_convert(self):
-        self.logger.info('Input and output formats are the same nothing to convert. Exiting.')
+        self.logger.warning('Input and output formats are the same nothing to convert. Exiting.')
         if not self._default_settings.silent:
             print('Input and output formats are the same nothing to convert. Exiting.')
         exit(0)

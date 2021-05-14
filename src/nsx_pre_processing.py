@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
-import inspect
 import logging
 import re
 
 
 from chart_processing import NSXChartProcessor
 from checklist_processing import NSXInputMDOutputChecklistProcessor, NSXInputHTMLOutputChecklistProcessor
-from globals import APP_NAME
+import config
 from helper_functions import add_strong_between_tags, change_html_tags
 from iframe_processing import pre_process_iframes_from_html
 from image_processing import ImageTag
@@ -17,14 +16,6 @@ from sn_inter_note_link_processing import SNLinksToOtherNotes
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
 
 
 class PreProcessing(ABC):
@@ -44,8 +35,8 @@ class NoteStationPreProcessing(PreProcessing):
     """
 
     def __init__(self, note):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._note = note
         self._pre_processed_content = note.raw_content
         self._attachments = note.attachments
@@ -81,7 +72,7 @@ class NoteStationPreProcessing(PreProcessing):
         return self._iframes_dict
 
     def pre_process_note_page(self):
-        self.logger.info(f"Pre processing of note page {self._note.title}")
+        self.logger.debug(f"Pre processing of note page {self._note.title}")
         self.__create_image_tag_processors()
         self.__update_content_with_new_img_tags()
         if self._note.conversion_settings.export_format != 'pandoc_markdown_strict' \
@@ -106,7 +97,7 @@ class NoteStationPreProcessing(PreProcessing):
         self.pre_processed_content, self._iframes_dict = pre_process_iframes_from_html(self.pre_processed_content)
 
     def __create_image_tag_processors(self):
-        self.logger.info(f"Cleaning image tags")
+        self.logger.debug(f"Cleaning image tags")
         raw_image_tags = re.findall('<img class=[^>]*syno-notestation-image-object[^>]*src=[^>]*ref=[^>]*>',
                                     self._pre_processed_content)
         self._image_tag_processors = [ImageTag(tag, self._attachments) for tag in raw_image_tags]
@@ -120,23 +111,23 @@ class NoteStationPreProcessing(PreProcessing):
         """
         Replace all the div's with p's
         """
-        self.logger.info(f"Cleaning html <div")
+        self.logger.debug(f"Cleaning html <div")
         self._pre_processed_content = self._pre_processed_content.replace('<div></div>', '<p></p>')
         self._pre_processed_content = self._pre_processed_content.replace('<div', '<p')
         self._pre_processed_content = self._pre_processed_content.replace('</div', '</p')
 
     def __fix_ordered_list(self):
-        self.logger.info(f"Cleaning number lists")
+        self.logger.debug(f"Cleaning number lists")
         self._pre_processed_content = self._pre_processed_content.replace('</li><ol><li>', '<ol><li>')
         self._pre_processed_content = self._pre_processed_content.replace('</li></ol><li>', '</li></ol></li><li>')
 
     def __fix_unordered_list(self):
-        self.logger.info(f"Cleaning bullet lists")
+        self.logger.debug(f"Cleaning bullet lists")
         self._pre_processed_content = self._pre_processed_content.replace('</li><ul><li>', '<ul><li>')
         self._pre_processed_content = self._pre_processed_content.replace('</li></ul><li>', '</li></ul></li><li>')
 
     def __fix_check_lists(self):
-        self.logger.info(f"Cleaning check lists")
+        self.logger.debug(f"Cleaning check lists")
 
         if self._note.conversion_settings.export_format == 'html':
             self._checklist_processor = NSXInputHTMLOutputChecklistProcessor(self._pre_processed_content)
@@ -147,14 +138,14 @@ class NoteStationPreProcessing(PreProcessing):
         pass
 
     def __extract_and_generate_chart(self):
-        self.logger.info(f"Cleaning charts")
+        self.logger.debug(f"Cleaning charts")
 
         chart_processor = NSXChartProcessor(self._note, self._pre_processed_content)
 
         self._pre_processed_content = chart_processor.processed_html
 
     def __fix_table_headers(self):
-        self.logger.info(f"Cleaning table headers")
+        self.logger.debug(f"Cleaning table headers")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
 
         for table in tables:
@@ -166,7 +157,7 @@ class NoteStationPreProcessing(PreProcessing):
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
     def __first_column_in_table_as_header_if_required(self):
-        self.logger.info(f"Make tables first column bold")
+        self.logger.debug(f"Make tables first column bold")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
 
         for table in tables:
@@ -175,7 +166,7 @@ class NoteStationPreProcessing(PreProcessing):
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
     def __add_boarder_to_tables(self):
-        self.logger.info(f"Adding boarders to tables")
+        self.logger.debug(f"Adding boarders to tables")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
 
         for table in tables:
@@ -184,19 +175,19 @@ class NoteStationPreProcessing(PreProcessing):
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
     def __generate_metadata(self):
-        self.logger.info(f"Generating meta-data")
+        self.logger.debug(f"Generating meta-data")
         self._metadata_processor = MetaDataProcessor(self._note.conversion_settings)
         self._metadata_processor.parse_dict_metadata(self._note.note_json)
         self._pre_processed_content = f'<head><title> </title></head>{self._pre_processed_content}'
         self._pre_processed_content = self._metadata_processor.add_metadata_html_to_content(self._pre_processed_content)
 
     def __generate_links_to_other_note_pages(self):
-        self.logger.info(f"Creating links between pages")
+        self.logger.debug(f"Creating links between pages")
         link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file)
         self.pre_processed_content = link_generator.content
 
     def __add_attachment_links(self):
-        self.logger.info(f"Add attachment links to page content")
+        self.logger.debug(f"Add attachment links to page content")
         attachments = [attachment
                        for attachment in self._note.attachments.values()
                        if isinstance(attachment, FileNSAttachment)

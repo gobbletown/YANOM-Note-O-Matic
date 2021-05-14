@@ -1,30 +1,21 @@
 import distutils.version
-import inspect
 import logging
 import os
 import shutil
 import subprocess
 import sys
 
-from globals import APP_NAME
+import config
 
 
 def what_module_is_this():
     return __name__
 
 
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class PandocConverter:
     def __init__(self, conversion_settings):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self.conversion_settings = conversion_settings
         self.output_file_format = self.conversion_settings.export_format
         self.pandoc_version = None
@@ -47,17 +38,17 @@ class PandocConverter:
             self.pandoc_version = self.pandoc_version.stdout[7:].split('\n', 1)[0].strip()
             if not self.conversion_settings.silent:
                 print('Found pandoc ' + str(self.pandoc_version))
-            self.logger.info(f"Found pandoc version {str(self.pandoc_version)}")
+            self.logger.debug(f"Found pandoc version {str(self.pandoc_version)}")
 
         except subprocess.CalledProcessError as e:
-            self.logger.error(f"Exiting as unable to find pandoc\n{e}")
+            self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
             if not self.conversion_settings.silent:
-                print("Error testing for pandoc please check pandoc installation and see *.log files.")
+                print("Unable to locate pandoc please check pandoc installation and see *.log files.")
                 print("Exiting.")
             sys.exit(0)
 
     def generate_pandoc_options(self):
-        self.logger.info(
+        self.logger.debug(
             f"Pandoc configured for export format - '{self.pandoc_conversion_options[self.output_file_format]}'")
         input_format = self.calculate_input_format()
         self.pandoc_options = ['pandoc', '-f', input_format, '-s', '-t',
@@ -91,7 +82,7 @@ class PandocConverter:
                 self.logger.error(f"Pandoc Return code={out.returncode}, error={out.stderr}")
             return out.stdout
         except subprocess.CalledProcessError:
-            self.logger.error(f" unable to convert note {name} in method {what_method_is_this()}")
+            self.logger.error(f"Unable to convert note {name}")
             self.error_handling(name)
 
         return 'Error converting data'

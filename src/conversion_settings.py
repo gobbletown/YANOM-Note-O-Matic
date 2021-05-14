@@ -3,28 +3,19 @@ Provide classes for provision of conversion settings for manual or specific pre 
 
 """
 from abc import abstractmethod
-import inspect
 import logging
 from pathlib import Path
 import sys
 
 from custom_inherit import DocInheritMeta
 
-from globals import APP_NAME, DATA_DIR
+import config
 from helper_functions import generate_clean_path, find_working_directory
 import object_factory
 
 
 def what_module_is_this():
     return __name__
-
-
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
 
 
 class ConversionSettingsError(Exception):
@@ -143,8 +134,8 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     def __init__(self):
         # if you change any of the following values changes are likely to affect the quick settings child classes
         # and the ConfigFileValidationSettings class
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._valid_conversion_inputs = list(self.validation_values['conversion_inputs']['conversion_input'])
         self._valid_markdown_conversion_inputs = list(self.validation_values['markdown_conversion_inputs']['markdown_conversion_input'])
         self._valid_quick_settings = list(self.validation_values['quick_settings']['quick_setting'])
@@ -244,14 +235,15 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     def source(self, value):
         if value == '':
             self._source, message = find_working_directory()
-            self._source = Path(self._source, DATA_DIR)
-            self.logger.error(f"Using {self._source} as source directory")
+            self._source = Path(self._source, config.DATA_DIR)
+            self.logger.debug(f"Using {self._source} as source directory")
         elif Path(value).exists():
             self._source = Path(value)
         else:
-            self.logger.error(f"Invalid source location - {value} - Check command line argument OR config.ini entry - Exiting program")
+            msg = f"Invalid source location - {value} - Check command line argument OR config.ini entry - Exiting program"
+            self.logger.error(msg)
             if not self.silent:
-                sys.exit(f"Invalid source location - {value} - Check command line argument OR config.ini entry. Exiting program")
+                sys.exit(msg)
 
     @property
     def conversion_input(self):
@@ -393,7 +385,7 @@ class ManualConversionSettings(ConversionSettings):
 
     def set_settings(self):
         """Set initial conversion settings for a manual conversion setting"""
-        self.logger.info("Manual conversion settings")
+        self.logger.debug("Manual conversion settings")
         self.quick_setting = 'manual'
         self.front_matter_format = 'none'
         self.metadata_schema = []
@@ -411,7 +403,7 @@ class QOwnNotesConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("QOwnNotes Setting conversion settings")
+        self.logger.debug("QOwnNotes Setting conversion settings")
         self.quick_setting = 'q_own_notes'
         self.export_format = 'q_own_notes'
         self.front_matter_format = 'yaml'
@@ -426,7 +418,7 @@ class GfmConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("GFM conversion settings")
+        self.logger.debug("GFM conversion settings")
         self.quick_setting = 'gfm'
         self.front_matter_format = 'yaml'
         self.metadata_schema = []
@@ -440,7 +432,7 @@ class ObsidianConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("Obsidian conversion settings")
+        self.logger.debug("Obsidian conversion settings")
         self.quick_setting = 'obsidian'
         self.export_format = 'obsidian'
         self.front_matter_format = 'yaml'
@@ -455,7 +447,7 @@ class CommonmarkConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("Commonmark conversion settings")
+        self.logger.debug("Commonmark conversion settings")
         self.quick_setting = 'commonmark'
         self.export_format = 'commonmark'
         self.front_matter_format = 'yaml'
@@ -470,7 +462,7 @@ class PandocMarkdownConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("Pandoc markdown conversion settings")
+        self.logger.debug("Pandoc markdown conversion settings")
         self.quick_setting = 'pandoc_markdown'
         self.export_format = 'pandoc_markdown'
         self.metadata_schema = []
@@ -484,7 +476,7 @@ class MultiMarkdownConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("MultiMarkdown conversion settings")
+        self.logger.debug("MultiMarkdown conversion settings")
         self.quick_setting = 'multimarkdown'
         self.export_format = 'multimarkdown'
         self.metadata_schema = []
@@ -498,7 +490,7 @@ class PandocMarkdownStrictConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("Pandoc Markdown Strict Setting conversion settings")
+        self.logger.debug("Pandoc Markdown Strict Setting conversion settings")
         self.quick_setting = 'pandoc_markdown_strict'
         self.export_format = 'pandoc_markdown_strict'
         self.metadata_schema = []
@@ -512,7 +504,7 @@ class HTMLConversionSettings(ConversionSettings):
     """
 
     def set_settings(self):
-        self.logger.info("HTML conversion settings")
+        self.logger.debug("HTML conversion settings")
         self.export_format = 'html'
         self.quick_setting = 'html'
         self.front_matter_format = 'yaml'

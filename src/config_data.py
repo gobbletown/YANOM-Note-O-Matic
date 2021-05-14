@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 import sys
 
-from globals import APP_NAME
+import config
 from interactive_cli import InvalidConfigFileCommandLineInterface
 from conversion_settings import ConversionSettings
 import conversion_settings
@@ -11,14 +11,6 @@ import conversion_settings
 
 def what_module_is_this():
     return __name__
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
-class ConfigException(Exception):
-    pass
 
 
 class ConfigData(ConfigParser):
@@ -42,8 +34,8 @@ class ConfigData(ConfigParser):
     def __init__(self, config_file, default_quick_setting, **kwargs):
         super().__init__(**kwargs)
         # Note: allow_no_value=True  allows for #comments in the ini file
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._config_file = config_file
         self._default_quick_setting = default_quick_setting
         self._conversion_settings = conversion_settings.please.provide('manual')
@@ -101,15 +93,15 @@ class ConfigData(ConfigParser):
         self.logger.debug("attempting to validate config file")
         try:
             self.__validate_config()
-            self.logger.info("config file validated")
-        except ConfigException as e:
+            self.logger.debug("config file validated")
+        except ValueError as e:
             self.logger.warning(f"Config file invalid \n{e}")
 
             ask_what_to_do = InvalidConfigFileCommandLineInterface()
             what_to_do = ask_what_to_do.run_cli()
             if what_to_do == 'exit':
                 sys.exit(0)
-            self.logger.info("User chose to create default file")
+            self.logger.info("User chose to create a default file")
 
             self.load_and_save_config_from_conversion_quick_setting_string(self._default_quick_setting)
 
@@ -122,15 +114,15 @@ class ConfigData(ConfigParser):
         """
         for section, keys in self._validation_values.items():
             if section not in self:
-                raise ConfigException(f'Missing section {section} in the config ini file')
+                raise ValueError(f'Missing section {section} in the config ini file')
 
             for key, values in keys.items():
                 if key not in self[section]:
-                    raise ConfigException(f'Missing erntry for {key} under section {section} in the config ini file')
+                    raise ValueError(f'Missing entry for {key} under section {section} in the config ini file')
 
                 if values:
                     if self[section][key] not in values:
-                        raise ConfigException(f'Invalid value of "{self[section][key]}" for {key} under section {section} in the config file')
+                        raise ValueError(f'Invalid value of "{self[section][key]}" for {key} under section {section} in the config file')
 
     def __generate_conversion_settings_from_parsed_config_file_data(self):
         """
@@ -197,7 +189,7 @@ class ConfigData(ConfigParser):
 
     def load_and_save_config_from_conversion_settings_obj(self, settings: ConversionSettings):
         """
-        Generate a config data set and save updtaed config file
+        Generate a config data set and save updated config file
         Parameters
         ----------
         settings
@@ -292,7 +284,7 @@ class ConfigData(ConfigParser):
                 'spaces_in_tags': self._conversion_settings.spaces_in_tags,
                 '    # split tags will split grouped tags into individual tags if True': None,
                 '    # "Tag1", "Tag1/Sub Tag2"  will become "Tag1", "Sub Tag2"': None,
-                '    # grouped tags are only split where a "/" charcter is found': None,
+                '    # grouped tags are only split where a "/" character is found': None,
                 'split_tags': self._conversion_settings.split_tags
             },
             'table_options': {

@@ -1,10 +1,9 @@
-import inspect
 import logging
 from pathlib import Path
 
 from alive_progress import alive_bar
 
-from globals import APP_NAME, DATA_DIR
+import config
 from helper_functions import find_working_directory
 from sn_notebook import Notebook
 from sn_note_page import NotePage
@@ -16,19 +15,11 @@ def what_module_is_this():
     return __name__
 
 
-def what_method_is_this():
-    return inspect.currentframe().f_back.f_code.co_name
-
-
-def what_class_is_this(obj):
-    return obj.__class__.__name__
-
-
 class NSXFile:
 
     def __init__(self, file, conversion_settings, pandoc_converter):
-        self.logger = logging.getLogger(f'{APP_NAME}.{what_module_is_this()}.{what_class_is_this(self)}')
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
+        self.logger.setLevel(config.logger_level)
         self._conversion_settings = conversion_settings
         self._nsx_file_name = file
         self._zipfile_reader = NSXZipFileReader(self._nsx_file_name)
@@ -83,25 +74,25 @@ class NSXFile:
         self._note_book_count += len(self._notebooks)
 
     def add_recycle_bin_notebook(self):
-        self.logger.info(f"Creating recycle bin notebook")
-        self._notebooks['recycle_bin'] = Notebook(self, 'recycle_bin')
+        self.logger.debug(f"Creating recycle bin notebook")
+        self._notebooks['recycle-bin'] = Notebook(self, 'recycle-bin')
 
     def create_export_folder_if_not_exist(self):
-        self.logger.info(f"Creating export folder if it does not exist")
+        self.logger.debug(f"Creating export folder if it does not exist")
         current_working_directory, message = find_working_directory()
-        target_path = Path(current_working_directory, DATA_DIR,
+        target_path = Path(current_working_directory, config.DATA_DIR,
                            self._conversion_settings.export_folder_name)
 
         target_path.mkdir(exist_ok=True)
         self._conversion_settings.export_folder_name = target_path.stem
 
     def create_folders(self):
-        self.logger.info(f"Creating folders for notebooks")
+        self.logger.debug(f"Creating folders for notebooks")
         for notebooks_id in self._notebooks:
             self._notebooks[notebooks_id].create_folders()
 
     def add_note_pages(self):
-        self.logger.info(f"Creating note page objects")
+        self.logger.debug(f"Creating note page objects")
 
         if self.conversion_settings.silent:
             self._note_pages = {
@@ -124,31 +115,18 @@ class NSXFile:
     def add_note_pages_to_notebooks(self):
         self.logger.info(f"Add note pages to notebooks")
 
-        # if self.conversion_settings.silent:
         for note_page_id in self._note_pages:
             current_parent_id = self._note_pages[note_page_id].get_parent_notebook_id()
             if current_parent_id in self._notebooks:
                 self._notebooks[current_parent_id].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
             else:
-                self._notebooks['recycle_bin'].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
-
-            # return
-
-        # print(f"Filing notes into correct notebooks")
-        # with alive_bar(len(self.note_pages), bar='blocks') as bar:
-        #     for note_page_id in self._note_pages:
-        #         current_parent_id = self._note_pages[note_page_id].get_parent_notebook_id()
-        #         if current_parent_id in self._notebooks:
-        #             self._notebooks[current_parent_id].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
-        #         else:
-        #             self._notebooks['recycle_bin'].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
-        #         bar()
+                self._notebooks['recycle-bin'].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
 
     def create_note_writer(self):
         self._note_writer = NoteWriter(self._conversion_settings)
 
     def create_attachments(self):
-        self.logger.info(f"Creating attachment objects")
+        self.logger.debug(f"Creating attachment objects")
         for note_page_id in self._note_pages:
             image_count, attachment_count = self._note_pages[note_page_id].create_attachments()
             self._image_count += image_count
