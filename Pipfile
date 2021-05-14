@@ -20,5 +20,7 @@ alive-progress = "*"
 testfixtures = "*"
 coverage = "*"
 pyinstaller = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [requires]
