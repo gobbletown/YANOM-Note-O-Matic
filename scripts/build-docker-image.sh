@@ -38,13 +38,13 @@ docker image rm $DEV_IMAGE:latest
 ## remove the docker ignore file
 rm .dockerignore
 ## Build and push docker production image
-docker build --build-arg APP_TAR=$APP_TAR -t $DOCKER_REPO/$APP_NAME:"$BUILD_NUMBER" -t $DOCKER_REPO/$APP_NAME:latest -f $PROD_DOCKERFILE_PATH/Dockerfile .
+docker build --build-arg APP_TAR=$APP_TAR -t $DOCKER_REPO/$APP_NAME:"$VERSION-$BUILD_NUMBER" -t $DOCKER_REPO/$APP_NAME:latest -f $PROD_DOCKERFILE_PATH/Dockerfile .
 if [ "$1" ] && [ "$1" == "push" ]
 then
   docker push $DOCKER_REPO/$APP_NAME:latest
   if [ "$BUILD_NUMBER" -gt 0 ]
   then
-    docker push $DOCKER_REPO/$APP_NAME:"$BUILD_NUMBER"
+    docker push $DOCKER_REPO/$APP_NAME:"$VERSION-$BUILD_NUMBER"
   fi
 fi
 if [ "$1" ] && [ "$1" == "test" ]
