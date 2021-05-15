@@ -36,13 +36,13 @@ class PandocConverter:
         try:
             self.pandoc_version = subprocess.run(['pandoc', '-v'], capture_output=True, text=True, timeout=3)
             self.pandoc_version = self.pandoc_version.stdout[7:].split('\n', 1)[0].strip()
-            if not self.conversion_settings.silent:
+            if not config.silent:
                 print('Found pandoc ' + str(self.pandoc_version))
             self.logger.debug(f"Found pandoc version {str(self.pandoc_version)}")
 
         except subprocess.CalledProcessError as e:
             self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
-            if not self.conversion_settings.silent:
+            if not config.silent:
                 print("Unable to locate pandoc please check pandoc installation and see *.log files.")
                 print("Exiting.")
             sys.exit(0)
@@ -99,13 +99,13 @@ class PandocConverter:
     def check_pandoc_is_installed_if_not_exit_program(self):
         if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
             logging.info("Pandoc program not found - exiting")
-            if not self.conversion_settings.silent:
+            if not config.silent:
                 print("Can't find pandoc. Please install pandoc or place it to the directory, where the script is.")
             sys.exit(1)
 
     def error_handling(self, note_title):
         msg = f"Error converting note {note_title} for pandoc please check nsx_converter.log and pandoc installation."
         logging.error(msg)
-        if not self.conversion_settings.silent:
+        if not config.silent:
             print(msg)
             print("Attempting to continue...")

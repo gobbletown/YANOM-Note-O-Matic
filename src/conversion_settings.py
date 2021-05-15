@@ -32,7 +32,7 @@ class ConversionSettingProvider(object_factory.ObjectFactory):
     Yields
     ------
     Child of ConversionSettings
-        Requested child object is generated based on request string value.
+        Requested child object is generated based on request string provided_source.
 
     """
 
@@ -62,8 +62,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         Also are the values used in an object generator to create child classes
     _valid_export_formats : list of strings
         Export format names used to trigger specific conversion behaviour in style of file type
-    _silent : bool
-        Run program with no output to command line
     _source : pathlib.Path
         Directory to search for nsx files or path to specific nsx file
     _conversion_input : str
@@ -88,6 +86,11 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         Path object for the sub-directory name within the export folder to place images and attachments
     _creation_time_in_exported_file_name: bool
         Include the note creation time on the end of the file name
+    _working_directory: Path
+        The base working directory for the program execution. This is not stored in ini files it is used for program
+        execution only
+    _source_absolute_path: Path
+        An absolute path to the source files
 
     Methods
     -------
@@ -97,9 +100,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     """
     # These values are used here and in config_data
     validation_values = {
-        'execution_mode': {
-            'silent': ('True', 'False')
-        },
         'conversion_inputs': {
             'conversion_input': ('nsx', 'html', 'markdown')
         },
@@ -132,8 +132,8 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     }
 
     def __init__(self):
-        # if you change any of the following values changes are likely to affect the quick settings child classes
-        # and the ConfigFileValidationSettings class
+        # if you change any of the following values changes are likely to affect the quick settings method
+        # and the validation_values class variable
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self._valid_conversion_inputs = list(self.validation_values['conversion_inputs']['conversion_input'])
@@ -141,7 +141,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._valid_quick_settings = list(self.validation_values['quick_settings']['quick_setting'])
         self._valid_export_formats = list(self.validation_values['export_formats']['export_format'])
         self._valid_front_matter_formats = list(self.validation_values['meta_data_options']['metadata_front_matter_format'])
-        self._silent = False
         self._source = ''
         self._conversion_input = 'nsx'
         self._markdown_conversion_input = 'gfm'
@@ -157,6 +156,9 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._export_folder_name = 'notes'
         self._attachment_folder_name = 'attachments'
         self._creation_time_in_exported_file_name = False
+        self._working_directory, environment_message = find_working_directory()
+        self.logger.debug(environment_message)
+        self._source_absolute_path = None
         self.set_settings()
 
     def __str__(self):
@@ -165,7 +167,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"valid_quick_settings='{self.valid_quick_settings}', " \
                f"valid_export_formats='{self.valid_export_formats}', " \
                f"valid_front_matter_formats]'{self.valid_front_matter_formats}', " \
-               f"silent={self.silent}, conversion_input={self._conversion_input}, " \
                f"markdown_conversion_input='{self._markdown_conversion_input}, quick_setting='{self.quick_setting}', " \
                f"export_format='{self.export_format}', " \
                f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
@@ -183,7 +184,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"valid_quick_settings='{self.valid_quick_settings}', " \
                f"valid_export_formats='{self.valid_export_formats}', " \
                f"valid_front_matter_formats]'{self.valid_front_matter_formats}', " \
-               f"silent={self.silent}, conversion_input={self._conversion_input}, " \
                f"markdown_conversion_input='{self._markdown_conversion_input}, quick_setting='{self.quick_setting}', " \
                f"export_format='{self.export_format}', " \
                f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
@@ -220,30 +220,34 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         return self._valid_front_matter_formats
 
     @property
-    def silent(self):
-        return self._silent
-
-    @silent.setter
-    def silent(self, value: bool):
-        self._silent = value
-
-    @property
     def source(self):
         return self._source
 
     @source.setter
-    def source(self, value):
-        if value == '':
-            self._source, message = find_working_directory()
-            self._source = Path(self._source, config.DATA_DIR)
-            self.logger.debug(f"Using {self._source} as source directory")
-        elif Path(value).exists():
-            self._source = Path(value)
-        else:
-            msg = f"Invalid source location - {value} - Check command line argument OR config.ini entry - Exiting program"
-            self.logger.error(msg)
-            if not self.silent:
-                sys.exit(msg)
+    def source(self, provided_source):
+
+        if provided_source == '':
+            provided_source = Path(self._working_directory, config.DATA_DIR)
+            provided_source.mkdir(parents=True, exist_ok=True)
+            self.logger.debug(f"Using relative path {config.DATA_DIR} as source directory")
+            self._source = provided_source
+            self._source_absolute_path = Path(self._working_directory, config.DATA_DIR)
+            return
+
+        if Path(self._working_directory, config.DATA_DIR, provided_source).exists():
+            self._source = Path(provided_source)
+            self.logger.debug(f"Using relative path {self._source} as source")
+            self._source_absolute_path = Path(self._working_directory, config.DATA_DIR, provided_source)
+            return
+
+        msg = f"Invalid source location - {provided_source} - Check command line argument OR config.ini entry - Exiting program"
+        if not config.silent:
+            print(msg)
+        self.logger.error(msg)
+        sys.exit(1)
+
+
+
 
     @property
     def conversion_input(self):
@@ -273,7 +277,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
             self._quick_setting = value
             return
         else:
-            raise ValueError(f"Invalid value for quick setting. "
+            raise ValueError(f"Invalid provided_source for quick setting. "
                              f"Attempted to use {value}, valid values are {self.valid_quick_settings}")
 
     @property
@@ -285,7 +289,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         if value in self.valid_export_formats:
             self._export_format = value
         else:
-            raise ValueError(f"Invalid value for export format. "
+            raise ValueError(f"Invalid provided_source for export format. "
                              f"Attempted to use {value}, valid values are {self.valid_export_formats}")
 
     @property
@@ -374,6 +378,14 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     @creation_time_in_exported_file_name.setter
     def creation_time_in_exported_file_name(self, value: bool):
         self._creation_time_in_exported_file_name = value
+
+    @property
+    def working_directory(self):
+        return self._working_directory
+
+    @property
+    def source_absolute_path(self):
+        return self._source_absolute_path
 
 
 class ManualConversionSettings(ConversionSettings):

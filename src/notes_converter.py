@@ -9,7 +9,6 @@ import config
 from interactive_cli import StartUpCommandLineInterface
 from nsx_file_converter import NSXFile
 from pandoc_converter import PandocConverter
-import conversion_settings
 from file_converter_HTML_to_MD import HTMLToMDConverter
 from file_converter_MD_to_HTML import MDToHTMLConverter
 from file_converter_MD_to_MD import MDToMDConverter
@@ -57,7 +56,7 @@ class NotesConvertor:
         self.logger.info("Processing Completed - exiting normally")
 
     def convert_markdown(self):
-        with Timer(name="md_conversion", logger=self.logger.info, silent=bool(self.conversion_settings.silent)):
+        with Timer(name="md_conversion", logger=self.logger.info, silent=bool(config.silent)):
             file_extension = 'md'
             md_files_to_convert = self.generate_file_list(file_extension)
             self.exit_if_no_files_found(md_files_to_convert, file_extension)
@@ -71,15 +70,16 @@ class NotesConvertor:
 
     def generate_file_list(self, file_extension):
         if not self.conversion_settings.source.is_file():
-            file_list_generator = self.conversion_settings.source.rglob(f'*.{file_extension}')
+            file_list_generator = self.conversion_settings.source_absolute_path.rglob(f'*.{file_extension}')
             file_list = [item for item in file_list_generator]
             return file_list
+
         return [self.conversion_settings.source]
 
     def exit_if_no_files_found(self, files_to_convert, file_extension):
         if not files_to_convert:
             self.logger.info(f"No .{file_extension} files found at path {self.conversion_settings.source}. Exiting program")
-            if not self.conversion_settings.silent:
+            if not config.silent:
                 print(f'No .{file_extension} files found at {self.conversion_settings.source}')
             sys.exit(0)
 
@@ -96,7 +96,7 @@ class NotesConvertor:
         self._note_page_count = file_count
 
     def convert_html(self):
-        with Timer(name="html_conversion", logger=self.logger.info, silent=bool(self.conversion_settings.silent)):
+        with Timer(name="html_conversion", logger=self.logger.info, silent=bool(config.silent)):
             file_extension = 'html'
             html_files_to_convert = self.generate_file_list(file_extension)
             self.exit_if_no_files_found(html_files_to_convert, file_extension)
@@ -117,7 +117,7 @@ class NotesConvertor:
         self.nsx_backups = [NSXFile(file, self.conversion_settings, self.pandoc_converter) for file in nsx_files_to_convert]
 
     def process_nsx_files(self):
-        with Timer(name="nsx_conversion", logger=self.logger.info, silent=bool(self.conversion_settings.silent)):
+        with Timer(name="nsx_conversion", logger=self.logger.info, silent=bool(config.silent)):
             for nsx_file in self.nsx_backups:
                 nsx_file.process_nsx_file()
                 self.update_processing_stats(nsx_file)
@@ -128,43 +128,14 @@ class NotesConvertor:
         self._image_count += nsx_file.image_count
         self._attachment_count += nsx_file.attachment_count
 
-    def __set_global_logger_level(self):
-        if self.command_line_args['log']:
-            levels = {
-                'critical': logging.CRITICAL,
-                'error': logging.ERROR,
-                'warn': logging.WARNING,
-                'warning': logging.WARNING,
-                'info': logging.INFO,
-                'debug': logging.DEBUG
-            }
-            new_level = levels.get(self.command_line_args['log'].lower(), None)
-            if new_level is None:
-                raise ValueError(f'Invalid log level on command line: {self.command_line_args["log"]}')
-
-            config.set_logger_level(new_level)
-            pass
-
     def evaluate_command_line_arguments(self):
         self.configure_for_ini_settings()
 
-        if self.command_line_args['ini']:
+        if self.command_line_args['silent'] or self.command_line_args['ini']:
             return
-
-        if self.command_line_args['silent']:
-            self.logger.warning(f"Command line option -s  --silent used without -i.  "
-                                f"Unable to use Interactive command line due to silence request.  "
-                                f"Exiting program")
-            sys.exit(0)
 
         self.logger.debug("Starting interactive command line tool")
         self.run_interactive_command_line_interface()
-        return
-
-    def add_file_paths_from_command_line_to_settings(self):
-        self.conversion_settings.source = self.command_line_args['source']
-        self.conversion_settings.export_folder_name = self.command_line_args['export_folder']
-        self.conversion_settings.attachment_folder_name = self.command_line_args['attachments']
 
     def run_interactive_command_line_interface(self):
         command_line_interface = StartUpCommandLineInterface(self.conversion_settings)
@@ -174,26 +145,11 @@ class NotesConvertor:
         self.logger.info("Using conversion settings from interactive command line tool")
 
     def configure_for_ini_settings(self):
-        # every time I look at his I wonder if values somebody enters after -i on the command line should be used...
-        # No they should not.  they have chosen to use ini file and all the settings they need should be in it as
-        # they have chosen to use the ini file so ignore any  other options they enter
         self.logger.info("Using settings from config  ini file")
         self.conversion_settings = self.config_data.conversion_settings
 
-    def configure_for_manual_settings(self):
-        self.conversion_settings = conversion_settings.please.provide('manual')
-        self.config_data.conversion_settings = self.conversion_settings
-
-    def configure_for_quick_setting(self):
-        # for a quick setting the source folder provided on the command
-        # line will be used if provided as argument
-        self.logger.info(f"Using quick settings for {self.command_line_args['quickset']}")
-        self.conversion_settings = conversion_settings.please.provide(self.command_line_args['quickset'])
-        self.add_file_paths_from_command_line_to_settings()
-        self.config_data.conversion_settings = self.conversion_settings
-
     def output_results_if_not_silent_mode(self):
-        if not self.conversion_settings.silent:
+        if not config.silent:
             self.print_result_if_any(self._note_book_count, 'Note book')
             self.print_result_if_any(self._note_page_count, 'Note page')
             self.print_result_if_any(self._image_count, 'Image')

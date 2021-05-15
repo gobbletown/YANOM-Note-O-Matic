@@ -87,7 +87,8 @@ class ConfigData(ConfigParser):
 
     def __validate_config_file(self):
         """
-        Validate config data.  Errors in the data prompt user to create a new default configuration or exit the program
+        Validate config data read from config.ini.  Errors in the data will trigger a prompt user
+        asking to create a new default configuration or exit the program.
 
         """
         self.logger.debug("attempting to validate config file")
@@ -109,7 +110,7 @@ class ConfigData(ConfigParser):
         """
         Validate the current Config Data for any errors by comparing to a set of validation values.
 
-        Errors will raise a ConfigException
+        Errors will raise a ValueError
 
         """
         for section, keys in self._validation_values.items():
@@ -129,7 +130,6 @@ class ConfigData(ConfigParser):
         Transcribe the values in a ConversionSettings object into the ConfigParser format used by this class
 
         """
-        self._conversion_settings.silent = self.getboolean('execution_mode', 'silent')
         self._conversion_settings.conversion_input = self['conversion_inputs']['conversion_input']
         self._conversion_settings.markdown_conversion_input = \
             self['markdown_conversion_inputs']['markdown_conversion_input']
@@ -157,7 +157,7 @@ class ConfigData(ConfigParser):
         """
         Read config file. If file is missing generate a new one.
 
-        If config file is missing generate a ConversionSettings child object for the default conversion value
+        If config file is missing generate a ConversionSettings child object for the default conversion values
         and use that to generate a config data set.
 
         """
@@ -168,7 +168,7 @@ class ConfigData(ConfigParser):
             self.logger.info(f'Data read from INI file is {self.__repr__()}')
         else:
             self.logger.info('config.ini missing, generating new file and settings set to default.')
-            if not self.conversion_settings.silent:
+            if not config.silent:
                 print("config.ini missing, generating new file.")
             self.conversion_settings = self._default_quick_setting
 
@@ -224,6 +224,7 @@ class ConfigData(ConfigParser):
 
     def __generate_conversion_dict(self):
         """
+        Generate a dictionary of the current conversion settings.
 
         Returns
         -------
@@ -234,11 +235,6 @@ class ConfigData(ConfigParser):
         # comments are treated as 'values' with no value (value is set to None) i.e. they are dict entries
         # where the key is the #comment string and the value is None
         return {
-            'execution_mode': {
-                '    # silent mode stops any output to the command line during execution': None,
-                '    # and disables the interactive command line interface.  True or False': None,
-                'silent': False
-            },
             'conversion_inputs': {
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_conversion_inputs)}': None,
                 '    #  nsx = synology Note Station Export file': None,

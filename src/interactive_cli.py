@@ -57,6 +57,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self.logger.setLevel(config.logger_level)
         self._default_settings = config_ini_conversion_settings
         self._current_conversion_settings = conversion_settings.please.provide('manual')
+        pass
 
     def run_cli(self):
         self.logger.debug("Running start up interactive command line")
@@ -112,7 +113,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
     def __nothing_to_convert(self):
         self.logger.warning('Input and output formats are the same nothing to convert. Exiting.')
-        if not self._default_settings.silent:
+        if not config.silent:
             print('Input and output formats are the same nothing to convert. Exiting.')
         exit(0)
 

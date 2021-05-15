@@ -39,7 +39,7 @@ class Notebook:
     def process_notebook_pages(self):
         self.logger.info(f"Processing note book {self.title} - {self.notebook_id}")
 
-        if self.conversion_settings.silent:
+        if config.silent:
             for note_page in self.note_pages:
                 note_page.process_note()
 
@@ -73,8 +73,7 @@ class Notebook:
 
     def create_notebook_folder(self):
         self.logger.debug(f"Creating notebook folder for {self.title}")
-        current_directory_path, message = find_working_directory()
-        self.logger.debug(message)
+        current_directory_path = self.conversion_settings.working_directory
 
         n = 0
         target_path = Path(current_directory_path, config.DATA_DIR,

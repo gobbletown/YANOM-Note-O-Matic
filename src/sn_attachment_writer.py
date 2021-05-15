@@ -15,7 +15,7 @@ class AttachmentWriter:
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self.nsx_file = nsx_file
-        self._current_directory_path = None
+        self._working_directory_path = nsx_file.conversion_settings.working_directory
         self._output_folder = nsx_file.conversion_settings.export_folder_name
         self._attachment_folder = nsx_file.conversion_settings.attachment_folder_name
         self._notebook_folder = None
@@ -24,11 +24,6 @@ class AttachmentWriter:
         self._path_relative_to_notebook = None
         self._output_file_path = None
         self._relative_path = None
-        self.find_current_directory_path()
-
-    def find_current_directory_path(self):
-        self._current_directory_path, message = find_working_directory()
-        self.logger.debug(message)
 
     def store_nsx_attachment(self, attachment):
         self.generate_relative_path(attachment)
@@ -52,7 +47,7 @@ class AttachmentWriter:
         self._path_relative_to_notebook = Path(self._attachment_folder, attachment.file_name)
 
     def generate_output_path(self, attachment):
-        path = Path(self._current_directory_path, config.DATA_DIR, self._output_folder,
+        path = Path(self._working_directory_path, config.DATA_DIR, self._output_folder,
                     attachment.notebook_folder_name,
                     self._path_relative_to_notebook)
 

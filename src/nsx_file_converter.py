@@ -79,8 +79,8 @@ class NSXFile:
 
     def create_export_folder_if_not_exist(self):
         self.logger.debug(f"Creating export folder if it does not exist")
-        current_working_directory, message = find_working_directory()
-        target_path = Path(current_working_directory, config.DATA_DIR,
+
+        target_path = Path(self.conversion_settings.working_directory, config.DATA_DIR,
                            self._conversion_settings.export_folder_name)
 
         target_path.mkdir(exist_ok=True)
@@ -94,7 +94,7 @@ class NSXFile:
     def add_note_pages(self):
         self.logger.debug(f"Creating note page objects")
 
-        if self.conversion_settings.silent:
+        if config.silent:
             self._note_pages = {
                 note_id: NotePage(self, note_id)
                 for note_id in self._note_page_ids

@@ -16,17 +16,19 @@ def what_module_is_this():
     return __name__
 
 
-def command_line_parser(command_line_args):
+def command_line_parser(args):
     parser = argparse.ArgumentParser(description="YANOM Note-O-Matic notes convertor")
 
     parser.add_argument('-v', '--version', action='version', version='%(prog)s Version {}'.format(config.VERSION))
     parser.add_argument("-s", "--silent", action="store_true",
-                        help="No output to console. No interactive command line interface for settings.")
+                        help="No output to console. WILL also use ini file settings.")
     parser.add_argument('--source', nargs='?', default='',
-                        help='Sub directory of data directory containing one or more files to process, '
+                        help='Sub directory of "data" directory containing one or more files to process, '
                              'or the name of a single file.  '
-                             'For example "source my_html_file.html" or "source my_nsx_files"  '
-                             'If not provided will search and use data folder AND any sub folders.')
+                             'For example "--source my_html_file.html" or "--source my_nsx_files"  '
+                             'If not provided will search and use data folder AND any sub folders.'
+                             'When --source is provided it WILL override config.ini setting when '
+                             'used with the -i option')
     parser.add_argument("-l", "--log", default='INFO',
                         help="Set the level of program logging. Default = INFO. "
                              "Choices are INFO, DEBUG, WARNING, ERROR, CRITICAL"
@@ -41,7 +43,7 @@ def command_line_parser(command_line_args):
                                      help="Use interactive command line interface to choose options and settings. "
                                           "This is the default if no argument is provided.")
 
-    return vars(parser.parse_args(command_line_args))
+    return vars(parser.parse_args(args))
 
 
 def set_logging_level(log_level: str):
@@ -103,10 +105,13 @@ def setup_logging(working_path):
 def main(command_line_sys_argv=sys.argv):
     args = command_line_parser(command_line_sys_argv[1:])
     set_logging_level(args['log'])
-    working_directory, message = find_working_directory()
+    config.set_silent(args['silent'])
+    if args['silent'] or args['ini']:
+        config.set_ini(True)
+    working_directory, working_directory_message = find_working_directory()
     setup_logging(working_directory)
     logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}')
-    logger.debug(message)
+    logger.debug(working_directory_message)
     return args
 
 

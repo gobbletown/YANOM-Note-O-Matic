@@ -15,15 +15,11 @@ class NoteWriter:
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self.conversion_settings = conversion_settings
-        self.current_directory_path = None
+        self.working_directory = conversion_settings.working_directory
         self.output_folder = conversion_settings.export_folder_name
         self.output_full_path = None
         self.output_file_name = None
-        self.find_current_directory_path()
 
-    def find_current_directory_path(self):
-        self.current_directory_path, message = find_working_directory()
-        self.logger.debug(message)
 
     def store_file(self, note_page):
         self.logger.debug(f"Storing note '{note_page.title}' as '{note_page.file_name}' "
@@ -33,7 +29,7 @@ class NoteWriter:
         except Exception as e:
             self.logger.error(f"Failed to write note '{note_page.title}' as '{note_page.file_name}' "
                               f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)}")
-            if not self.conversion_settings.silent:
+            if not config.silent:
                 print(f"Failed to note '{note_page.title}' as '{note_page.file_name}' "
                       f"in notebook folder '{note_page.notebook_folder_name}'\n {str(e)} ")
             sys.exit(0)
@@ -52,11 +48,11 @@ class NoteWriter:
 
         self.output_file_name = (generate_clean_path(dirty_filename))
         n = 0
-        target_path = Path(self.current_directory_path, config.DATA_DIR, self.output_folder,
+        target_path = Path(self.working_directory, config.DATA_DIR, self.output_folder,
                            note_page.notebook_folder_name, self.output_file_name)
         while target_path.exists():
             n += 1
-            target_path = Path(self.current_directory_path, config.DATA_DIR, self.output_folder,
+            target_path = Path(self.working_directory, config.DATA_DIR, self.output_folder,
                                note_page.notebook_folder_name,
                                f"{Path(self.output_file_name).stem}-{n}{Path(self.output_file_name).suffix}")
 
