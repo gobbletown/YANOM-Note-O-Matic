@@ -117,7 +117,7 @@ A docker image has been created and is available on [docker hub](https://hub.doc
 
 For further information on the duse of the YANOM docker image please check the [wiki page](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/Installing YANOM using Docker.md)
 
-### Installing form source code
+### Installing from source code
 
 Download the source code from [git hub](https://github.com/kevindurston21/YANOM-Note-O-Matic) 
 
