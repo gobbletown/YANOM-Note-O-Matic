@@ -1,12 +1,13 @@
 import logging
 import time
+from pathlib import Path
 
 import config
 from helper_functions import generate_clean_path
 from nsx_post_processing import NoteStationPostProcessing
 from nsx_pre_processing import NoteStationPreProcessing
 import sn_attachment
-from sn_note_writer import NoteWriter
+import sn_note_writer
 
 
 def what_module_is_this():
@@ -19,10 +20,8 @@ class NotePage:
         self.logger.setLevel(config.logger_level)
         self._nsx_file = nsx_file
         self._zipfile_reader = nsx_file.zipfile_reader
-        self._note_writer = nsx_file.note_writer
         self._pandoc_converter = nsx_file.pandoc_converter
         self._conversion_settings = nsx_file.conversion_settings
-        self._note_writer = nsx_file.note_writer
         self._note_id = note_id
         self._note_json = nsx_file.fetch_json_data(note_id)
         self._title = self._note_json['title']
@@ -57,12 +56,13 @@ class NotePage:
         self.convert_data()
         if not self.conversion_settings.export_format == 'html':
             self.post_process_content()
-        self._note_writer.store_file(self)
+        sn_note_writer.store_file(self._full_path, self._converted_content)
         self.logger.debug(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
 
     def generate_filenames_and_paths(self):
-        self._note_writer.generate_output_path_and_set_note_file_name(self)
-        self.update_paths_and_filenames()
+        full_path_to_file = sn_note_writer.generate_output_path(self._title, self._notebook_folder_name,
+                                                                self._conversion_settings)
+        self.update_paths_and_filenames(full_path_to_file)
 
     def get_parent_notebook_id(self):
         return self._parent_notebook
@@ -95,12 +95,9 @@ class NotePage:
         self.logger.debug(f"Converting content of '{self._title}' - {self._note_id}")
         self._converted_content = self._pandoc_converter.convert_using_strings(self._pre_processed_content, self._title)
 
-    def create_file_writer(self):
-        self._note_writer = NoteWriter(self._conversion_settings)
-
-    def update_paths_and_filenames(self):
-        self._file_name = self._note_writer.get_output_file_name()
-        self._full_path = self._note_writer.get_output_full_path()
+    def update_paths_and_filenames(self, full_path_to_file: Path):
+        self._file_name = full_path_to_file.name
+        self._full_path = full_path_to_file
 
     def post_process_content(self):
         self._post_processor = NoteStationPostProcessing(self)

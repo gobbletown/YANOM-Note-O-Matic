@@ -11,7 +11,7 @@ and this project follows something close to [Semantic Versioning](https://semver
 ## Unreleased
 > These unreleased features are on the develop branch
 
-None
+- Code refactoring
 
 ## [1.1.0] - 2021-05-14
 ### Added

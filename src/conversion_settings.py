@@ -383,6 +383,10 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
     def working_directory(self):
         return self._working_directory
 
+    @working_directory.setter
+    def working_directory(self, path):
+        self._working_directory = Path(path)
+
     @property
     def source_absolute_path(self):
         return self._source_absolute_path

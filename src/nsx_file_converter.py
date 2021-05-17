@@ -4,10 +4,8 @@ from pathlib import Path
 from alive_progress import alive_bar
 
 import config
-from helper_functions import find_working_directory
 from sn_notebook import Notebook
 from sn_note_page import NotePage
-from sn_note_writer import NoteWriter
 from sn_zipfile_reader import NSXZipFileReader
 
 
@@ -28,7 +26,6 @@ class NSXFile:
         self._note_page_ids = None
         self._notebooks = {}
         self._note_pages = {}
-        self._note_writer = None
         self._note_page_count = 0
         self._note_book_count = 0
         self._image_count = 0
@@ -37,7 +34,6 @@ class NSXFile:
 
     def process_nsx_file(self):
         self.logger.info(f"Processing {self._nsx_file_name}")
-        self.create_note_writer()
         self._nsx_json_data = self.fetch_json_data('config.json')
         self._notebook_ids = self._nsx_json_data['notebook']
         self._note_page_ids = self._nsx_json_data['note']
@@ -122,8 +118,6 @@ class NSXFile:
             else:
                 self._notebooks['recycle-bin'].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
 
-    def create_note_writer(self):
-        self._note_writer = NoteWriter(self._conversion_settings)
 
     def create_attachments(self):
         self.logger.debug(f"Creating attachment objects")
@@ -152,9 +146,6 @@ class NSXFile:
     def zipfile_reader(self):
         return self._zipfile_reader
 
-    @property
-    def note_writer(self):
-        return self._note_writer
 
     @property
     def pandoc_converter(self):

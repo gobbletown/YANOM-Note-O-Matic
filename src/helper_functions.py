@@ -65,6 +65,31 @@ def generate_clean_path(value, allow_unicode=False):
     return Path(parts[0])
 
 
+def find_valid_full_file_path(path_to_file: Path) -> Path:
+    """
+    Test if file exists and add an incrementing number to the file name until a valid file name is found.
+
+    Parameters
+    ----------
+    path_to_file:
+        PAth object of the absolute path to a file
+
+    Returns
+    -------
+    path_to_file
+        Path object of the absolute path for the new incremented file name
+    """
+    n = 0
+    path_to_folder = path_to_file.parent
+    stem = path_to_file.stem
+    while path_to_file.exists():
+        n += 1
+        path_to_file = Path(path_to_folder, f"{stem}-{n}{path_to_file.suffix}")
+
+    return path_to_file
+
+
+
 def get_random_string(length):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
