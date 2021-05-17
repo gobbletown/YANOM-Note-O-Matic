@@ -5,8 +5,10 @@
 # First argument is either `push` or `test` push pushes built production image to docker hub if already logged in
 # if `test` is used then images are NOT pushed to docker hub and a container is run using a data directory with the
 # path of `~/yanom-data`.  If the directory `~/yanom-data` does not exist it will be created
+# if `push` is used the `dev` image and container are removed
+#
 # Second argument is a docker build number this is a positive value or if left blank it will use version `0`
-# NOTE if also using `push` it will NOT push a number tag only a latest tag to docker hub
+# NOTE if using `push` it will NOT push a number tag only a latest tag will be pushed to docker hub
 APP_NAME="yanom"
 VERSION="1.1.0"
 APP_TAR="yanom-$VERSION-debian10-slim-buster.tar.gz"
@@ -32,8 +34,11 @@ docker ps -aq --filter "name=$DEV_IMAGE" | grep -q . && docker stop $DEV_IMAGE &
 docker build --build-arg APP_TAR=$APP_TAR -t $DEV_IMAGE:latest -f $DEV_DOCKERFILE_PATH/Dockerfile .
 docker container create --name $DEV_IMAGE $DEV_IMAGE:latest
 docker cp $DEV_IMAGE:/app/$APP_TAR $PROD_DIST_PATH
-docker rm -f $DEV_IMAGE
-docker image rm $DEV_IMAGE:latest
+if [ "$1" ] && [ "$1" == "push" ]
+then
+  docker rm -f $DEV_IMAGE
+  docker image rm $DEV_IMAGE:latest
+fi
 
 ## remove the docker ignore file
 rm .dockerignore
