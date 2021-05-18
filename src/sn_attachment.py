@@ -1,20 +1,16 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 
-from helper_functions import generate_clean_path
-import sn_attachment_writer
+import config
+from file_writer import store_file
+import helper_functions
 
 
-class Attachment(ABC):
+class NSAttachment(ABC):
     def __init__(self, note, attachment_id):
         self._attachment_id = attachment_id
-        self._note = note
-
-
-class NSAttachment(Attachment):
-    def __init__(self, note, attachment_id):
-        super(NSAttachment, self).__init__(note, attachment_id)
-        self._nsx_file = self._note.nsx_file
-        self._json = self._note.note_json
+        self._nsx_file = note.nsx_file
+        self._json = note.note_json
         self._notebook_folder_name = note.notebook_folder_name
         self._conversion_settings = self._nsx_file.conversion_settings
         self._file_name = ''
@@ -22,29 +18,46 @@ class NSAttachment(Attachment):
         self._full_path = ''
         self._filename_inside_nsx = ''
         self._html_link = ''
+        self._attachment_folder_name = self._nsx_file.conversion_settings.attachment_folder_name
 
     @abstractmethod
     def create_html_link(self):
         pass
 
     @abstractmethod
-    def clean_name(self):
+    def create_file_name(self):
         pass
 
     def process_attachment(self):
-        self.clean_name()
+        self.create_file_name()
+        self.generate_relative_path_to_notebook()
+        self.generate_absolute_path()
+        self.change_file_name_if_already_exists()
         self.store_attachment()
         self.create_html_link()
 
-    def store_attachment(self):
-        attachment_writer = sn_attachment_writer.AttachmentWriter(self._nsx_file)
-        attachment_writer.store_nsx_attachment(self)
-        self.get_updated_files_and_folders_from(attachment_writer)
+    @abstractmethod
+    def get_content_to_save(self):
+        pass
 
-    def get_updated_files_and_folders_from(self, attachment_writer):
-        self._file_name = attachment_writer.output_file_name
-        self._full_path = attachment_writer.output_file_path
-        self._path_relative_to_notebook = attachment_writer.relative_path
+    def store_attachment(self):
+        store_file(self._full_path, self.get_content_to_save())
+
+    def generate_relative_path_to_notebook(self):
+        self._path_relative_to_notebook = Path(self._conversion_settings.attachment_folder_name, self._file_name)
+
+    def generate_absolute_path(self):
+        self._full_path = Path(self._conversion_settings.working_directory, config.DATA_DIR,
+                               self._conversion_settings.export_folder_name,
+                               self._notebook_folder_name,
+                               self._path_relative_to_notebook)
+
+    def change_file_name_if_already_exists(self):
+        while self._full_path.is_file():
+            self._full_path = helper_functions.add_random_value_to_file_name(self._full_path)
+
+        self._file_name = self._full_path.name
+        self._path_relative_to_notebook = (Path(self._conversion_settings.attachment_folder_name, self._file_name))
 
     @property
     def notebook_folder_name(self):
@@ -90,9 +103,12 @@ class ImageNSAttachment(NSAttachment):
     def create_html_link(self):
         self._html_link = f'<img src="{self._file_name}" '
 
-    def clean_name(self):
+    def create_file_name(self):
         self._name = self._name.replace('ns_attach_image_', '')
-        self._file_name = generate_clean_path(self._name)
+        self._file_name = helper_functions.generate_clean_path(self._name)
+
+    def get_content_to_save(self):
+        return self._nsx_file.fetch_attachment_file(self.filename_inside_nsx)
 
 
 class FileNSAttachment(NSAttachment):
@@ -104,8 +120,11 @@ class FileNSAttachment(NSAttachment):
     def create_html_link(self):
         self._html_link = f'<a href="{self._path_relative_to_notebook}">{self.file_name}</a>'
 
-    def clean_name(self):
-        self._file_name = generate_clean_path(self._name)
+    def create_file_name(self):
+        self._file_name = helper_functions.generate_clean_path(self._name)
+
+    def get_content_to_save(self):
+        return self._nsx_file.fetch_attachment_file(self.filename_inside_nsx)
 
 
 class ChartNSAttachment(NSAttachment):
@@ -114,23 +133,16 @@ class ChartNSAttachment(NSAttachment):
         super().__init__(note, attachment_id)
         self._chart_file_like_object = chart_file_like_object
         self._file_name = attachment_id
-        self.process_attachment()
 
-    def process_attachment(self):
-        self.store_attachments()
-        self.create_html_link()
-
-    def store_attachments(self):
-        attachment_writer = sn_attachment_writer.AttachmentWriter(self._nsx_file)
-        attachment_writer.store_chart_attachment(self)
-        self.get_updated_files_and_folders_from(attachment_writer)
+    def get_content_to_save(self):
+        pass
 
     @abstractmethod
     def create_html_link(self):
         pass
 
-    def clean_name(self):
-        pass
+    def create_file_name(self):
+        self._file_name = helper_functions.generate_clean_path(self._attachment_id)
 
     @property
     def chart_file_like_object(self):
@@ -141,7 +153,13 @@ class ChartImageNSAttachment(ChartNSAttachment):
     def create_html_link(self):
         self.html_link = f"<img src='{self.path_relative_to_notebook}'>"
 
+    def get_content_to_save(self):
+        return self.chart_file_like_object
+
 
 class ChartStringNSAttachment(ChartNSAttachment):
     def create_html_link(self):
         self.html_link = f"<a href='{self.path_relative_to_notebook}'>Chart data file</a>"
+
+    def get_content_to_save(self):
+        return self.chart_file_like_object

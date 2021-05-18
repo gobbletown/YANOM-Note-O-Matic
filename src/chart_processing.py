@@ -243,12 +243,14 @@ class ChartProcessor(ABC):
         self.logger.debug("Generate chart csv file")
         self._note.attachments[f"{id(chart)}.csv"] = ChartStringNSAttachment(self._note, f"{id(chart)}.csv",
                                                                              chart.csv_chart_data_string)
+        self._note.attachments[f"{id(chart)}.csv"].process_attachment()
         self._note.attachment_count += 1
 
     def generate_png_attachment(self, chart):
         self.logger.debug("Generate chart image attachemner")
         self._note.attachments[f"{id(chart)}.png"] = ChartImageNSAttachment(self._note, f"{id(chart)}.png",
                                                                             chart.png_img_buffer)
+        self._note.attachments[f"{id(chart)}.png"].process_attachment()
         self._note.image_count += 1
 
 

@@ -95,7 +95,7 @@ def get_random_string(length):
     return ''.join(random.choice(letters) for i in range(length))
 
 
-def generate_new_filename(path):
+def add_random_value_to_file_name(path):
     stem = Path(path).stem
     stem = f"{stem}-{get_random_string(4)}"
     new_filename = f"{stem}{Path(path).suffix}"
