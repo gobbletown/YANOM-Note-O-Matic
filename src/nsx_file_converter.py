@@ -100,7 +100,7 @@ class NSXFile:
 
         if config.silent:
             self._note_pages = {
-                note_id: NotePage(self, note_id)
+                note_id: NotePage(self, note_id, self.fetch_json_data(note_id))
                 for note_id in self._note_page_ids
             }
             self._note_page_count += len(self._note_pages)
@@ -110,7 +110,7 @@ class NSXFile:
         print("Finding note pages")
         with alive_bar(len(self._note_page_ids), bar='blocks') as bar:
             for note_id in self._note_page_ids:
-                note_page = NotePage(self, note_id)
+                note_page = NotePage(self, note_id, self.fetch_json_data(note_id))
                 self._note_pages[note_id] = note_page
                 bar()
 

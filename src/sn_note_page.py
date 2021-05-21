@@ -15,15 +15,14 @@ def what_module_is_this():
 
 
 class NotePage:
-    def __init__(self, nsx_file, note_id, ):
+    def __init__(self, nsx_file, note_id, note_json):
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self._nsx_file = nsx_file
-        # self._zipfile_reader = nsx_file.zipfile_reader
         self._pandoc_converter = nsx_file.pandoc_converter
         self._conversion_settings = nsx_file.conversion_settings
         self._note_id = note_id
-        self._note_json = nsx_file.fetch_json_data(note_id)
+        self._note_json = note_json
         self._title = self._note_json['title']
         self._original_title = self._note_json['title']
         self.__format_ctime_and_mtime_if_required()

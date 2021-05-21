@@ -1,4 +1,4 @@
-import distutils.version
+from packaging import version
 import logging
 import os
 import shutil
@@ -43,7 +43,7 @@ class PandocConverter:
         except subprocess.CalledProcessError as e:
             self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
             if not config.silent:
-                print("Unable to locate pandoc please check pandoc installation and see *.log files.")
+                print("Unable to locate pandoc please check pandoc installation and see log files.")
                 print("Exiting.")
             sys.exit(0)
 
@@ -88,23 +88,26 @@ class PandocConverter:
         return 'Error converting data'
 
     def pandoc_older_than_v_1_16(self):
-        return distutils.version.LooseVersion(self.pandoc_version) < distutils.version.LooseVersion('1.16')
+        return version.parse(self.pandoc_version) < version.parse('1.16')
 
     def pandoc_older_than_v_1_19(self):
-        return distutils.version.LooseVersion(self.pandoc_version) < distutils.version.LooseVersion('1.19')
+        return version.parse(self.pandoc_version) < version.parse('1.19')
 
     def pandoc_older_than_v_2_11_2(self):
-        return distutils.version.LooseVersion(self.pandoc_version) < distutils.version.LooseVersion('2.11.2')
+        return version.parse(self.pandoc_version) < version.parse('2.11.2')
 
-    def check_pandoc_is_installed_if_not_exit_program(self):
+    @staticmethod
+    def check_pandoc_is_installed_if_not_exit_program():
         if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
             logging.info("Pandoc program not found - exiting")
             if not config.silent:
-                print("Can't find pandoc. Please install pandoc or place it to the directory, where the script is.")
+                print("Could not find pandoc. Please install pandoc, "
+                      "or if installed please check it is on your environment path")
             sys.exit(1)
 
-    def error_handling(self, note_title):
-        msg = f"Error converting note {note_title} for pandoc please check nsx_converter.log and pandoc installation."
+    @staticmethod
+    def error_handling(note_title):
+        msg = f"Error converting note {note_title} for pandoc please check log file and pandoc installation."
         logging.error(msg)
         if not config.silent:
             print(msg)
