@@ -13,28 +13,29 @@ def what_module_is_this():
 
 
 class Notebook:
-    def __init__(self, nsx_file, notebook_id):
+    def __init__(self, nsx_file, notebook_id, title):
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self.nsx_file = nsx_file
         self.notebook_id = notebook_id
         self.conversion_settings = self.nsx_file.conversion_settings
         self.notebook_json = dict
-        if self.notebook_id == 'recycle-bin':
-            self.title = 'recycle-bin'
-        if self.notebook_id != 'recycle-bin':
-            self.fetch_notebook_data()
-            self.title = self.notebook_json['title']
+        self.title = title
+        # if self.notebook_id == 'recycle-bin':
+        #     self.title = 'recycle-bin'
+        # if self.notebook_id != 'recycle-bin':
+        #     self.fetch_notebook_data()
+        #     self.title = self.notebook_json['title']
         self.folder_name = ''
         self.create_folder_name()
         self.full_path_to_notebook = ''
         self.note_pages = []
         self.note_titles = []
 
-    def fetch_notebook_data(self):
-        self.notebook_json = self.nsx_file.zipfile_reader.read_json_data(self.notebook_id)
-        if self.notebook_json['title'] == "":  # The notebook with no title is called 'My Notes' in note station
-            self.notebook_json['title'] = "My Notebook"
+    # def fetch_notebook_title(self):
+    #     self.notebook_json = self.nsx_file.zipfile_reader.read_json_data(self.notebook_id)
+    #     if self.notebook_json['title'] == "":  # The notebook with no title is called 'My Notes' in note station
+    #         self.notebook_json['title'] = "My Notebook"
 
     def process_notebook_pages(self):
         self.logger.info(f"Processing note book {self.title} - {self.notebook_id}")

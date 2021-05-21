@@ -64,14 +64,22 @@ class NSXFile:
     def add_notebooks(self):
         self.logger.info(f"Creating Notebooks")
         self._notebooks = {
-            notebook_id: Notebook(self, notebook_id)
+            notebook_id: Notebook(self, notebook_id, self.fetch_notebook_title(notebook_id))
             for notebook_id in self._notebook_ids
         }
+
         self._note_book_count += len(self._notebooks)
+
+    def fetch_notebook_title(self, notebook_id):
+        notebook_title = self.zipfile_reader.read_json_data(notebook_id)['title']
+        if notebook_title == "":  # The notebook with no title is called 'My Notes' in note station
+            notebook_title = "My Notebook"
+
+        return notebook_title
 
     def add_recycle_bin_notebook(self):
         self.logger.debug(f"Creating recycle bin notebook")
-        self._notebooks['recycle-bin'] = Notebook(self, 'recycle-bin')
+        self._notebooks['recycle-bin'] = Notebook(self, 'recycle-bin', 'recycle-bin')
 
     def create_export_folder_if_not_exist(self):
         self.logger.debug(f"Creating export folder if it does not exist")
