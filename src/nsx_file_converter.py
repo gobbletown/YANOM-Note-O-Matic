@@ -6,7 +6,7 @@ from alive_progress import alive_bar
 import config
 from sn_notebook import Notebook
 from sn_note_page import NotePage
-from sn_zipfile_reader import NSXZipFileReader
+import zip_file_reader
 
 
 def what_module_is_this():
@@ -20,7 +20,7 @@ class NSXFile:
         self.logger.setLevel(config.logger_level)
         self._conversion_settings = conversion_settings
         self._nsx_file_name = file
-        self._zipfile_reader = NSXZipFileReader(self._nsx_file_name)
+        # self._zipfile_reader = NSXZipFileReader(self._nsx_file_name)
         self._nsx_json_data = ''
         self._notebook_ids = None
         self._note_page_ids = None
@@ -56,10 +56,10 @@ class NSXFile:
             note_page.generate_filenames_and_paths()
 
     def fetch_json_data(self, data_id):
-        return self._zipfile_reader.read_json_data(data_id)
+        return zip_file_reader.read_json_data(self._nsx_file_name, data_id)
 
     def fetch_attachment_file(self, file_name):
-        return self._zipfile_reader.read_attachment_file(file_name)
+        return zip_file_reader.read_binary_file(self._nsx_file_name, file_name)
 
     def add_notebooks(self):
         self.logger.info(f"Creating Notebooks")
@@ -71,7 +71,7 @@ class NSXFile:
         self._note_book_count += len(self._notebooks)
 
     def fetch_notebook_title(self, notebook_id):
-        notebook_title = self.zipfile_reader.read_json_data(notebook_id)['title']
+        notebook_title = zip_file_reader.read_json_data(self._nsx_file_name, notebook_id)['title']
         if notebook_title == "":  # The notebook with no title is called 'My Notes' in note station
             notebook_title = "My Notebook"
 
@@ -150,9 +150,9 @@ class NSXFile:
     def conversion_settings(self):
         return self._conversion_settings
 
-    @property
-    def zipfile_reader(self):
-        return self._zipfile_reader
+    # @property
+    # def zipfile_reader(self):
+    #     return self._zipfile_reader
 
 
     @property
