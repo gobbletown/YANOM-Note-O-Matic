@@ -3,11 +3,11 @@ import time
 from pathlib import Path
 
 import config
-from helper_functions import generate_clean_path
+import file_writer
+import helper_functions
 from nsx_post_processing import NoteStationPostProcessing
 from nsx_pre_processing import NoteStationPreProcessing
 import sn_attachment
-import sn_note_writer
 
 
 def what_module_is_this():
@@ -19,14 +19,14 @@ class NotePage:
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self._nsx_file = nsx_file
-        self._zipfile_reader = nsx_file.zipfile_reader
+        # self._zipfile_reader = nsx_file.zipfile_reader
         self._pandoc_converter = nsx_file.pandoc_converter
         self._conversion_settings = nsx_file.conversion_settings
         self._note_id = note_id
         self._note_json = nsx_file.fetch_json_data(note_id)
         self._title = self._note_json['title']
         self._original_title = self._note_json['title']
-        self.format_ctime_and_mtime_if_required()
+        self.__format_ctime_and_mtime_if_required()
         self._raw_content = self._note_json['content']
         self._parent_notebook = self._note_json['parent_id']
         self._attachments_json = self._note_json['attachment']
@@ -41,7 +41,7 @@ class NotePage:
         self._pre_processor = None
         self._post_processor = None
 
-    def format_ctime_and_mtime_if_required(self):
+    def __format_ctime_and_mtime_if_required(self):
         if self._conversion_settings.front_matter_format != 'none' \
                 or self._conversion_settings.creation_time_in_exported_file_name is True:
             self._note_json['ctime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['ctime']))
@@ -56,15 +56,34 @@ class NotePage:
         self.convert_data()
         if not self.conversion_settings.export_format == 'html':
             self.post_process_content()
-        sn_note_writer.store_file(self._full_path, self._converted_content)
+        self.store_file()
         self.logger.debug(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
 
-    def generate_filenames_and_paths(self):
-        full_path_to_file = sn_note_writer.generate_output_path(self._title, self._notebook_folder_name,
-                                                                self._conversion_settings)
-        self.update_paths_and_filenames(full_path_to_file)
+    def __create_file_name(self):
+        dirty_filename = self.__append_file_extension()
+        self._file_name = helper_functions.generate_clean_path(dirty_filename)
 
-    def get_parent_notebook_id(self):
+    def __append_file_extension(self):
+        if self._conversion_settings.export_format == 'html':
+            return f"{self._title}.html"
+
+        return f"{self._title}.md"
+
+    def __generate_absolute_path(self):
+        path_to_file = Path(self._conversion_settings.working_directory, config.DATA_DIR,
+                            self._conversion_settings.export_folder_name, self._notebook_folder_name, self._file_name)
+
+        absolute_file_path = helper_functions.find_valid_full_file_path(path_to_file)
+
+        return absolute_file_path
+
+    def generate_filenames_and_paths(self):
+        self.__create_file_name()
+        self._full_path = self.__generate_absolute_path()
+        self._file_name = self._full_path.name
+
+    @property
+    def parent_notebook(self):
         return self._parent_notebook
 
     def create_attachments(self):
@@ -95,10 +114,6 @@ class NotePage:
         self.logger.debug(f"Converting content of '{self._title}' - {self._note_id}")
         self._converted_content = self._pandoc_converter.convert_using_strings(self._pre_processed_content, self._title)
 
-    def update_paths_and_filenames(self, full_path_to_file: Path):
-        self._file_name = full_path_to_file.name
-        self._full_path = full_path_to_file
-
     def post_process_content(self):
         self._post_processor = NoteStationPostProcessing(self)
         self._converted_content = self._post_processor.post_processed_content
@@ -119,6 +134,9 @@ class NotePage:
 
         self._title = this_title
 
+    def store_file(self):
+        file_writer.store_file(self._full_path, self._converted_content)
+
     @property
     def title(self):
         return self._title
@@ -137,7 +155,7 @@ class NotePage:
 
     @notebook_folder_name.setter
     def notebook_folder_name(self, title):
-        self._notebook_folder_name = generate_clean_path(title)
+        self._notebook_folder_name = helper_functions.generate_clean_path(title)
 
     @property
     def file_name(self):
