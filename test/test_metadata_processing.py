@@ -1,11 +1,12 @@
 import unittest
-import src.conversion_settings as quick_settings
+from src.conversion_settings import ConversionSettings
 from src.metadata_processing import MetaDataProcessor
 
 
 class TestMetaDataProcessor(unittest.TestCase):
     def setUp(self) -> None:
-        self.conversion_settings = quick_settings.please.provide('gfm')
+        self.conversion_settings = ConversionSettings()
+        self.conversion_settings.set_quick_setting('gfm')
         self.metadata_processor = MetaDataProcessor(self.conversion_settings)
 
     def test_remove_tag_spaces_if_required(self):

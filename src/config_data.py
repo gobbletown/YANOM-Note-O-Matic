@@ -6,7 +6,6 @@ import sys
 import config
 from interactive_cli import InvalidConfigFileCommandLineInterface
 from conversion_settings import ConversionSettings
-import conversion_settings
 
 
 def what_module_is_this():
@@ -31,14 +30,15 @@ class ConfigData(ConfigParser):
 
     """
 
-    def __init__(self, config_file, default_quick_setting, **kwargs):
+    def __init__(self, config_file, default_quick_setting, silent, **kwargs):
         super().__init__(**kwargs)
         # Note: allow_no_value=True  allows for #comments in the ini file
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self._config_file = config_file
         self._default_quick_setting = default_quick_setting
-        self._conversion_settings = conversion_settings.please.provide('manual')
+        self._conversion_settings = ConversionSettings()
+        self._conversion_settings.set_quick_setting('manual')
         self._validation_values = self._conversion_settings.validation_values
         self.__read_config_file()
         self.__validate_config_file()
@@ -52,7 +52,7 @@ class ConfigData(ConfigParser):
     @conversion_settings.setter
     def conversion_settings(self, value):
         """
-        Receive a conversion setting as a quick setting string of a ConversionSettings object,
+        Receive a conversion setting as a quick setting string or a ConversionSettings object,
         set the _conversion_setting, generate and save config ini file for the setting received.
 
         Parameters
@@ -104,6 +104,7 @@ class ConfigData(ConfigParser):
                 sys.exit(0)
             self.logger.info("User chose to create a default file")
 
+            # self._conversion_settings = ConversionSettings()
             self.load_and_save_config_from_conversion_quick_setting_string(self._default_quick_setting)
 
     def __validate_config(self):
@@ -174,9 +175,7 @@ class ConfigData(ConfigParser):
 
     def load_and_save_config_from_conversion_quick_setting_string(self, setting):
         """
-        Generate a config data set and save the updated config file using a 'setting' value provided as a string
-        that uses a default configuration by generating a child class of ConversionSettings and using that object
-        to set the config values.
+        Generate a config data set and save the updated config file using a 'quick setting' value provided as a string.
 
         Parameters
         ----------
@@ -184,7 +183,7 @@ class ConfigData(ConfigParser):
             string: A key 'quick setting' value
 
         """
-        self._conversion_settings = conversion_settings.please.provide(setting)
+        self._conversion_settings.set_quick_setting(setting)
         self.__load_and_save_settings()
 
     def load_and_save_config_from_conversion_settings_obj(self, settings: ConversionSettings):

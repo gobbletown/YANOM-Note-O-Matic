@@ -106,8 +106,6 @@ def main(command_line_sys_argv=sys.argv):
     args = command_line_parser(command_line_sys_argv[1:])
     set_logging_level(args['log'])
     config.set_silent(args['silent'])
-    if args['silent'] or args['ini']:
-        config.set_ini(True)
     working_directory, working_directory_message = find_working_directory()
     setup_logging(working_directory)
     logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}')

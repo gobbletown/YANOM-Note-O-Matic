@@ -1,5 +1,5 @@
 import unittest
-import src.conversion_settings as quick_settings
+from src.conversion_settings import ConversionSettings
 from src.file_converter_MD_to_MD import MDToMDConverter
 from pathlib import Path
 from testfixtures import TempDirectory
@@ -9,7 +9,8 @@ from src.metadata_processing import MetaDataProcessor
 class TestMDToMDConverter(unittest.TestCase):
 
     def setUp(self):
-        self.conversion_settings = quick_settings.please.provide('gfm')
+        self.conversion_settings = ConversionSettings()
+        self.conversion_settings.set_quick_setting('gfm')
         files_to_convert = [Path('not_existing.md'),
                             Path('some_markdown-old-1.md'),
                             Path('renaming source file failed')]
@@ -263,12 +264,14 @@ class TestMDToMDConverter(unittest.TestCase):
         extension = self.file_converter.set_out_put_file_extension()
         self.assertEqual('.md', extension, 'failed to select correct md extension')
 
-        self.file_converter._conversion_settings = quick_settings.please.provide('html')
+        self.file_converter._conversion_settings = ConversionSettings()
+        self.file_converter._conversion_settings.set_quick_setting('html')
         extension = self.file_converter.set_out_put_file_extension()
         self.assertEqual('.html', extension, 'failed to select correct html extension')
 
     def test_convert(self):
-        self.file_converter._conversion_settings = quick_settings.please.provide('obsidian')
+        self.file_converter._conversion_settings = ConversionSettings()
+        self.file_converter._conversion_settings.set_quick_setting('obsidian')
         with TempDirectory() as d:
             source_file = Path(d.path, 'some_markdown.md')
             source_file.write_text('<img src="filepath/image.png" width="600">')

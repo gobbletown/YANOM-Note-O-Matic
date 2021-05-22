@@ -1,5 +1,5 @@
 import unittest
-import src.conversion_settings as quick_settings
+from src.conversion_settings import ConversionSettings
 from src.file_converter_HTML_to_MD import HTMLToMDConverter
 from pathlib import Path
 from src.metadata_processing import MetaDataProcessor
@@ -8,7 +8,8 @@ from src.metadata_processing import MetaDataProcessor
 class TestHTMLToMDConverter(unittest.TestCase):
 
     def setUp(self):
-        self.conversion_settings = quick_settings.please.provide('gfm')
+        self.conversion_settings = ConversionSettings()
+        self.conversion_settings.set_quick_setting('gfm')
         files_to_convert = [Path('not_existing.md'),
                             Path('some_markdown-old-1.md'),
                             Path('renaming source file failed'),

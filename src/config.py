@@ -6,8 +6,6 @@ global logger_level
 logger_level = 20  # INFO
 global silent
 silent = False
-global ini
-ini = False
 
 
 def set_logger_level(level: int):
@@ -18,8 +16,3 @@ def set_logger_level(level: int):
 def set_silent(silent_mode: bool):
     global silent
     silent = silent_mode
-
-
-def set_ini(use_ini: bool):
-    global ini
-    ini = use_ini

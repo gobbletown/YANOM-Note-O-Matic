@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
+import copy
 import logging
 
 from pyfiglet import Figlet
 from PyInquirer import style_from_dict, Token, prompt, Separator
 
 import config
-import conversion_settings
-from conversion_settings import ManualConversionSettings
 
 
 def what_module_is_this():
@@ -56,7 +55,8 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self._default_settings = config_ini_conversion_settings
-        self._current_conversion_settings = conversion_settings.please.provide('manual')
+        self._current_conversion_settings = copy.deepcopy(self._default_settings)
+        self._current_conversion_settings.set_quick_setting('manual')
         pass
 
     def run_cli(self):
@@ -90,7 +90,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
     def __ask_markdown_conversion_options(self):
         self.__ask_and_set_markdown_input_format()
 
-        if type(self._current_conversion_settings) is ManualConversionSettings:
+        if self._current_conversion_settings.quick_setting == 'manual':
             self.__ask_and_set_export_format()
             if self._current_conversion_settings.export_format == self._current_conversion_settings.markdown_conversion_input:
                 self.__nothing_to_convert()
@@ -105,7 +105,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
     def __ask_html_conversion_options(self):
         self.__ask_and_set_conversion_quick_setting()
 
-        if type(self._current_conversion_settings) is ManualConversionSettings:
+        if self._current_conversion_settings.quick_setting == 'manual':
             self.__ask_and_set_export_format()
             self.__ask_and_set_front_matter_format()
             if self._current_conversion_settings.front_matter_format != 'none':
@@ -140,7 +140,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
     def __ask_nsx_conversion_options(self):
         self.__ask_and_set_conversion_quick_setting()
 
-        if type(self._current_conversion_settings) is ManualConversionSettings:
+        if self._current_conversion_settings.quick_setting == 'manual':
             self.__ask_and_set_export_format()
             if self._current_conversion_settings.export_format != 'html':
                 self.__ask_markdown_metadata_questions()
@@ -172,9 +172,8 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
             'choices': ordered_list
         }
         answer = prompt(quick_setting_prompt, style=self.style)
-        quick_conversion_settings = conversion_settings.please.provide(answer['quick_setting'])
-        quick_conversion_settings.conversion_input = self._current_conversion_settings.conversion_input
-        self._current_conversion_settings = quick_conversion_settings
+        self._current_conversion_settings.set_quick_setting(answer['quick_setting'])
+        self._current_conversion_settings.conversion_input = self._current_conversion_settings.conversion_input
 
     def __ask_and_set_export_format(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists

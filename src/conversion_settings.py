@@ -1,56 +1,27 @@
 """
-Provide classes for provision of conversion settings for manual or specific pre configured sets of conversion settings
+A class for provision of conversion settings for manual or specific pre configured sets of conversion settings
 
+Quick set Functions to set the conversion settings values to values for common or typical conversion jobs.
 """
-from abc import abstractmethod
 import logging
 from pathlib import Path
 import sys
-
-from custom_inherit import DocInheritMeta
+from typing import Literal
 
 import config
 from helper_functions import generate_clean_path, find_working_directory
-import object_factory
 
 
 def what_module_is_this():
     return __name__
 
 
-class ConversionSettingsError(Exception):
-    pass
-
-
-class ConversionSettingProvider(object_factory.ObjectFactory):
-    """
-    ConversionSettingProvider generator
-
-    Used to generate configuration settings for specific 'quick settings' or a manual setting where the user selects
-    all options, manual is also used by the ConfigData class to pass settings from a config.ini file
-
-    Yields
-    ------
-    Child of ConversionSettings
-        Requested child object is generated based on request string provided_source.
-
-    """
-
-    def provide(self, conversion_setting_type, **_ignored):
-        return self.create(conversion_setting_type)
-
-
-class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_class=True)):
+class ConversionSettings:
     """
     Conversion settings required to convert input formats to export formats.
 
-    Child classes implement specific 'quick settings' for pre-known typical formats for files or notes programs,
-    or a user configured conversion setting where a quick setting does not meet a required need.
-
     Attributes
     ----------
-    validation_values : dict
-        a static dictionary that is used by ConfigData class to validate ini files read from disk.
     logger : logger object
         used for program logging
     _valid_conversion_inputs : list of strings
@@ -94,23 +65,32 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
 
     Methods
     -------
-    set_settings()
-        Change attribute values to achieve a specific conversion process
+    set_from_dictionary
+        Change conversion settings from a provided dictionary of settings.
+    set_quick_setting
+        Set conversion settings to predefined template when provided a valid string representing a quick setting
+        key word.
 
     """
-    # These values are used here and in config_data
+
     validation_values = {
         'conversion_inputs': {
             'conversion_input': ('nsx', 'html', 'markdown')
         },
         'markdown_conversion_inputs': {
-            'markdown_conversion_input': ('obsidian', 'gfm', 'commonmark', 'q_own_notes', 'pandoc_markdown_strict', 'pandoc_markdown', 'multimarkdown')
+            'markdown_conversion_input': (
+                'obsidian', 'gfm', 'commonmark', 'q_own_notes', 'pandoc_markdown_strict', 'pandoc_markdown',
+                'multimarkdown')
         },
         'quick_settings': {
-            'quick_setting': ('manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'pandoc_markdown_strict', 'multimarkdown', 'html')
+            'quick_setting': (
+                'manual', 'q_own_notes', 'obsidian', 'gfm', 'commonmark', 'pandoc_markdown', 'pandoc_markdown_strict',
+                'multimarkdown', 'html')
         },
         'export_formats': {
-            'export_format': ('q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'pandoc_markdown_strict', 'multimarkdown', 'html')
+            'export_format': (
+                'q_own_notes', 'obsidian', 'gfm', 'pandoc_markdown', 'commonmark', 'pandoc_markdown_strict',
+                'multimarkdown', 'html')
         },
         'meta_data_options': {
             'metadata_front_matter_format': ('yaml', 'toml', 'json', 'text', 'none'),
@@ -137,10 +117,12 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self._valid_conversion_inputs = list(self.validation_values['conversion_inputs']['conversion_input'])
-        self._valid_markdown_conversion_inputs = list(self.validation_values['markdown_conversion_inputs']['markdown_conversion_input'])
+        self._valid_markdown_conversion_inputs = list(
+            self.validation_values['markdown_conversion_inputs']['markdown_conversion_input'])
         self._valid_quick_settings = list(self.validation_values['quick_settings']['quick_setting'])
         self._valid_export_formats = list(self.validation_values['export_formats']['export_format'])
-        self._valid_front_matter_formats = list(self.validation_values['meta_data_options']['metadata_front_matter_format'])
+        self._valid_front_matter_formats = list(
+            self.validation_values['meta_data_options']['metadata_front_matter_format'])
         self._source = ''
         self._conversion_input = 'nsx'
         self._markdown_conversion_input = 'gfm'
@@ -159,7 +141,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self._working_directory, environment_message = find_working_directory()
         self.logger.debug(environment_message)
         self._source_absolute_path = None
-        self.set_settings()
 
     def __str__(self):
         return f"{self.__class__.__name__}(valid_conversion_inputs={self.valid_conversion_inputs}, " \
@@ -195,9 +176,168 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
                f"attachment_folder_name='{self.attachment_folder_name}', " \
                f"creation_time_in_exported_file_name='{self.creation_time_in_exported_file_name})'"
 
-    @abstractmethod
-    def set_settings(self):
-        pass
+    def set_from_dictionary(self, settings):
+        """Set conversion settings from a dictionary
+
+        Parameters
+        ----------
+        settings dict:
+            Dictionary of any conversion settings where key is a field of the class and value is the value to be used
+            as the setting.  Values are assigned using parameters to allow data validation and any other processing
+            required.  Invalid key values are ignored and a warning is output
+        """
+        for key, value in settings.items():
+            if key in dir(self):
+                setattr(self, key, value)
+                continue
+            msg = f'Invalid key value of {key} provided in dictionary of conversion settings'
+            self.logger.warning(msg)
+            if not config.silent:
+                print(msg)
+
+    lit_valid_quick_setting = Literal['html', 'pandoc_markdown_strict', 'multimarkdown', 'pandoc_markdown',
+                                      'commonmark', 'obsidian', 'gfm', 'q_own_notes', 'manual']
+
+    def set_quick_setting(self, quick_setting: lit_valid_quick_setting):
+        """
+
+        Parameters
+        ----------
+        quick_setting str:
+            String value of a valid quick_setting value.  This key is used to obtain a value representing a method name
+            that is used to set a collection of settings that represent a quick setting
+
+        """
+        quick_settings = {
+            'html': 'quick_set_html_conversion_settings',
+            'pandoc_markdown_strict': 'quick_set_pandoc_markdown_strict_settings',
+            'multimarkdown': 'quick_set_multimarkdown_settings',
+            'pandoc_markdown': 'quick_set_pandoc_markdown_settings',
+            'commonmark': 'quick_set_commonmark_settings',
+            'obsidian': 'quick_set_obsidian_settings',
+            'gfm': 'quick_set_gfm_settings',
+            'q_own_notes': 'quick_set_qownnotes_settings',
+            'manual': 'quick_set_manual_settings'
+        }
+
+        if quick_setting in quick_settings:
+            getattr(self, quick_settings[quick_setting])()
+            return
+
+        msg = f"Invalid quick setting key '{quick_setting}' used"
+        self.logger.error(msg)
+        if not config.silent:
+            print(msg)
+        sys.exit(1)
+
+    def quick_set_manual_settings(self):
+        """
+        Manual conversion settings to convert input formats to export formats.
+
+        Used for user configured selections and ConfigData Class to provide conversions read from ini files.
+        """
+        self.logger.debug("Manual conversion settings")
+        self.quick_setting = 'manual'
+        self.front_matter_format = 'none'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = False
+        self.first_column_as_header = False
+
+    def quick_set_qownnotes_settings(self):
+        """
+        QOwnNotes conversion settings to convert input formats to format suitable for QOwnNotes users.
+        """
+        self.logger.debug("QOwnNotes Setting conversion settings")
+        self.quick_setting = 'q_own_notes'
+        self.export_format = 'q_own_notes'
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+    def quick_set_gfm_settings(self):
+        """
+        Git-flavoured markdown conversion settings to convert input formats to gfm format.
+        """
+        self.logger.debug("GFM conversion settings")
+        self.quick_setting = 'gfm'
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+    def quick_set_obsidian_settings(self):
+        """
+        Obsidian conversion settings to convert input formats to format suitable for Obsidian users.
+        """
+        self.logger.debug("Obsidian conversion settings")
+        self.quick_setting = 'obsidian'
+        self.export_format = 'obsidian'
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+    def quick_set_commonmark_settings(self):
+        """
+        Commonmark conversion settings
+        """
+        self.logger.debug("Commonmark conversion settings")
+        self.quick_setting = 'commonmark'
+        self.export_format = 'commonmark'
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+    def quick_set_pandoc_markdown_settings(self):
+        """
+        Set Pandoc Markdown conversion settings.
+        """
+        self.logger.debug("Pandoc markdown conversion settings")
+        self.quick_setting = 'pandoc_markdown'
+        self.export_format = 'pandoc_markdown'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+    def quick_set_multimarkdown_settings(self):
+        """
+        MultiMarkdown conversion settings.
+        """
+        self.logger.debug("MultiMarkdown conversion settings")
+        self.quick_setting = 'multimarkdown'
+        self.export_format = 'multimarkdown'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+    def quick_set_pandoc_markdown_strict_settings(self):
+        """
+        Set Pandoc Markdown-strict conversion settings.
+        """
+        self.logger.debug("Pandoc Markdown Strict Setting conversion settings")
+        self.quick_setting = 'pandoc_markdown_strict'
+        self.export_format = 'pandoc_markdown_strict'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+
+    def quick_set_html_conversion_settings(self):
+        """
+        Set HTML conversion settings to convert input formats to HTML files plus attachments in a folder.
+        """
+        self.logger.debug("HTML conversion settings")
+        self.export_format = 'html'
+        self.quick_setting = 'html'
+        self.front_matter_format = 'yaml'
+        self.metadata_schema = []
+        if self.conversion_input == 'nsx':
+            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
 
     @property
     def valid_conversion_inputs(self):
@@ -246,9 +386,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         self.logger.error(msg)
         sys.exit(1)
 
-
-
-
     @property
     def conversion_input(self):
         return self._conversion_input
@@ -271,8 +408,6 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
 
     @quick_setting.setter
     def quick_setting(self, value):
-        if value is None:
-            return
         if value in self.valid_quick_settings:
             self._quick_setting = value
             return
@@ -305,7 +440,7 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         if isinstance(value, list):
             self._metadata_schema = value
             return
-        self.logger.warning(f'Invalid creation time key provided {value}')
+        self.logger.warning(f'Invalid metadata schema provided {value} of type {type(value)}')
 
     @property
     def front_matter_format(self):
@@ -313,7 +448,12 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
 
     @front_matter_format.setter
     def front_matter_format(self, value: str):
-        self._front_matter_format = value
+        if value in self._valid_front_matter_formats:
+            self._front_matter_format = value
+            return
+
+        self.logger.warning(f'Invalid front matter format provided {value} continuing '
+                            f'to use {self.front_matter_format}')
 
     @property
     def tag_prefix(self):
@@ -392,150 +532,3 @@ class ConversionSettings(metaclass=DocInheritMeta(style="numpy", abstract_base_c
         return self._source_absolute_path
 
 
-class ManualConversionSettings(ConversionSettings):
-    """
-    Manual conversion settings to convert input formats to export formats.
-
-    Used for user configured selections and ConfigData Class to provide conversions read from ini files.
-    """
-
-    def set_settings(self):
-        """Set initial conversion settings for a manual conversion setting"""
-        self.logger.debug("Manual conversion settings")
-        self.quick_setting = 'manual'
-        self.front_matter_format = 'none'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-        self.spaces_in_tags = False
-        self.split_tags = False
-        self.first_row_as_header = False
-        self.first_column_as_header = False
-
-
-class QOwnNotesConversionSettings(ConversionSettings):
-    """
-    QOwnNotes conversion settings to convert input formats to format suitable for QOwnNotes users.
-    """
-
-    def set_settings(self):
-        self.logger.debug("QOwnNotes Setting conversion settings")
-        self.quick_setting = 'q_own_notes'
-        self.export_format = 'q_own_notes'
-        self.front_matter_format = 'yaml'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-class GfmConversionSettings(ConversionSettings):
-    """
-    Git-flavoured markdown conversion settings to convert input formats to gfm format.
-    """
-
-    def set_settings(self):
-        self.logger.debug("GFM conversion settings")
-        self.quick_setting = 'gfm'
-        self.front_matter_format = 'yaml'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-class ObsidianConversionSettings(ConversionSettings):
-    """
-    Obsidian conversion settings to convert input formats to format suitable for Obsidian users.
-    """
-
-    def set_settings(self):
-        self.logger.debug("Obsidian conversion settings")
-        self.quick_setting = 'obsidian'
-        self.export_format = 'obsidian'
-        self.front_matter_format = 'yaml'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-class CommonmarkConversionSettings(ConversionSettings):
-    """
-    Commonmark conversion settings
-    """
-
-    def set_settings(self):
-        self.logger.debug("Commonmark conversion settings")
-        self.quick_setting = 'commonmark'
-        self.export_format = 'commonmark'
-        self.front_matter_format = 'yaml'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-class PandocMarkdownConversionSettings(ConversionSettings):
-    """
-    Pandoc Markdown conversion settings.
-    """
-
-    def set_settings(self):
-        self.logger.debug("Pandoc markdown conversion settings")
-        self.quick_setting = 'pandoc_markdown'
-        self.export_format = 'pandoc_markdown'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-class MultiMarkdownConversionSettings(ConversionSettings):
-    """
-    MultiMarkdown conversion settings.
-    """
-
-    def set_settings(self):
-        self.logger.debug("MultiMarkdown conversion settings")
-        self.quick_setting = 'multimarkdown'
-        self.export_format = 'multimarkdown'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-class PandocMarkdownStrictConversionSettings(ConversionSettings):
-    """
-     Pandoc Markdown-strict conversion settings.
-    """
-
-    def set_settings(self):
-        self.logger.debug("Pandoc Markdown Strict Setting conversion settings")
-        self.quick_setting = 'pandoc_markdown_strict'
-        self.export_format = 'pandoc_markdown_strict'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-class HTMLConversionSettings(ConversionSettings):
-    """
-    HTML conversion settings to convert input formats to HTML files plus attachments in a folder.
-    """
-
-    def set_settings(self):
-        self.logger.debug("HTML conversion settings")
-        self.export_format = 'html'
-        self.quick_setting = 'html'
-        self.front_matter_format = 'yaml'
-        self.metadata_schema = []
-        if self.conversion_input == 'nsx':
-            self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
-
-
-please = ConversionSettingProvider()
-please.register_builder('manual', ManualConversionSettings)
-please.register_builder('q_own_notes', QOwnNotesConversionSettings)
-please.register_builder('gfm', GfmConversionSettings)
-please.register_builder('obsidian', ObsidianConversionSettings)
-please.register_builder('commonmark', CommonmarkConversionSettings)
-please.register_builder('pandoc_markdown', PandocMarkdownConversionSettings)
-please.register_builder('pandoc_markdown_strict', PandocMarkdownStrictConversionSettings)
-please.register_builder('multimarkdown', MultiMarkdownConversionSettings)
-please.register_builder('html', HTMLConversionSettings)

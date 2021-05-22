@@ -35,7 +35,7 @@ class NotesConvertor:
         self.logger.debug(f"command line ars are - {args}")
         self.logger.info(f'Program startup')
         self.command_line_args = args
-        self.config_data = ConfigData(f"{config.DATA_DIR}/config.ini", 'gfm', allow_no_value=True)
+        self.config_data = ConfigData(f"{config.DATA_DIR}/config.ini", 'gfm', args['silent'], allow_no_value=True)
         self.conversion_settings = None
         self.evaluate_command_line_arguments()
         self._note_page_count = 0
