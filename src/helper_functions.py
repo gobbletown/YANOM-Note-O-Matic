@@ -88,7 +88,7 @@ def find_valid_full_file_path(path_to_file: Path) -> Path:
     return path_to_file
 
 
-def add_random_string_to_file_name(path, length):
+def add_random_string_to_file_name(path, length: int):
     """
     Add a random character sting to a file name.
 
