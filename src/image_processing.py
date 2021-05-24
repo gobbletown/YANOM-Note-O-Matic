@@ -11,18 +11,18 @@ class ImageTag:
         self._ref = ''
         self._width = ''
         self._relative_path = ''
-        self.__set_ref_and_relative_path()
-        self.__set_width()
+        self._set_ref_and_relative_path()
+        self._set_width()
         self._processed_tag = f'<img src="{self._relative_path}" {self._width}>'
         pass
 
-    def __set_ref_and_relative_path(self):
+    def _set_ref_and_relative_path(self):
         for attachment in self._attachments.values():
             if isinstance(attachment, ImageNSAttachment) and attachment.image_ref in self._raw_tag:
                 self._ref = attachment.image_ref
                 self._relative_path = str(attachment.path_relative_to_notebook)
 
-    def __set_width(self):
+    def _set_width(self):
         if 'width="' in self._raw_tag:
             width = re.findall(r'width="([0-9]*)[^"]*"', self._raw_tag)
             self._width = width[0]

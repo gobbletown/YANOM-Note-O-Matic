@@ -63,19 +63,19 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self.logger.debug("Running start up interactive command line")
         show_app_title()
 
-        self.__ask_and_set_conversion_input()
+        self._ask_and_set_conversion_input()
 
         if self._current_conversion_settings.conversion_input == 'markdown':
-            self.__ask_markdown_conversion_options()
+            self._ask_markdown_conversion_options()
         if self._current_conversion_settings.conversion_input == 'html':
-            self.__ask_html_conversion_options()
+            self._ask_html_conversion_options()
         if self._current_conversion_settings.conversion_input == 'nsx':
-            self.__ask_nsx_conversion_options()
+            self._ask_nsx_conversion_options()
 
         self.logger.info(f"Returning settings for {self._current_conversion_settings}")
         return self._current_conversion_settings
 
-    def __ask_and_set_conversion_input(self):
+    def _ask_and_set_conversion_input(self):
         conversion_input_prompt = {
             'type': 'list',
             'name': 'conversion_input',
@@ -87,37 +87,37 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         if answer['conversion_input'] == 'nsx':
             self._current_conversion_settings.metadata_schema = 'title, ctime, mtime, tag'
 
-    def __ask_markdown_conversion_options(self):
-        self.__ask_and_set_markdown_input_format()
+    def _ask_markdown_conversion_options(self):
+        self._ask_and_set_markdown_input_format()
 
         if self._current_conversion_settings.quick_setting == 'manual':
-            self.__ask_and_set_export_format()
+            self._ask_and_set_export_format()
             if self._current_conversion_settings.export_format == self._current_conversion_settings.markdown_conversion_input:
-                self.__nothing_to_convert()
+                self._nothing_to_convert()
             if not self._current_conversion_settings.export_format == 'html':
-                self.__ask_and_set_front_matter_format()
+                self._ask_and_set_front_matter_format()
                 if self._current_conversion_settings.front_matter_format != 'none':
-                    self.__ask_and_set_metadata_details()
-                    self.__ask_and_set_metadata_schema()
+                    self._ask_and_set_metadata_details()
+                    self._ask_and_set_metadata_schema()
                 else:
-                    self.__ask_and_set_tag_prefix()
+                    self._ask_and_set_tag_prefix()
 
-    def __ask_html_conversion_options(self):
-        self.__ask_and_set_conversion_quick_setting()
+    def _ask_html_conversion_options(self):
+        self._ask_and_set_conversion_quick_setting()
 
         if self._current_conversion_settings.quick_setting == 'manual':
-            self.__ask_and_set_export_format()
-            self.__ask_and_set_front_matter_format()
+            self._ask_and_set_export_format()
+            self._ask_and_set_front_matter_format()
             if self._current_conversion_settings.front_matter_format != 'none':
-                self.__ask_and_set_metadata_schema()
+                self._ask_and_set_metadata_schema()
 
-    def __nothing_to_convert(self):
+    def _nothing_to_convert(self):
         self.logger.warning('Input and output formats are the same nothing to convert. Exiting.')
         if not config.silent:
             print('Input and output formats are the same nothing to convert. Exiting.')
         exit(0)
 
-    def __ask_and_set_markdown_input_format(self):
+    def _ask_and_set_markdown_input_format(self):
         markdown_conversion_input = {
             'type': 'list',
             'name': 'markdown_conversion_input',
@@ -127,7 +127,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answer = prompt(markdown_conversion_input, style=self.style)
         self._current_conversion_settings.markdown_conversion_input = answer['markdown_conversion_input']
 
-    def __ask_and_set_front_matter_format(self):
+    def _ask_and_set_front_matter_format(self):
         front_matter_format = {
             'type': 'list',
             'name': 'front_matter_format',
@@ -137,27 +137,28 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answer = prompt(front_matter_format, style=self.style)
         self._current_conversion_settings.front_matter_format = answer['front_matter_format']
 
-    def __ask_nsx_conversion_options(self):
-        self.__ask_and_set_conversion_quick_setting()
+    def _ask_nsx_conversion_options(self):
+        self._ask_and_set_conversion_quick_setting()
 
         if self._current_conversion_settings.quick_setting == 'manual':
-            self.__ask_and_set_export_format()
+            self._ask_and_set_export_format()
             if self._current_conversion_settings.export_format != 'html':
-                self.__ask_markdown_metadata_questions()
-            self.__ask_and_set_table_details()
-            self.__ask_and_set_export_folder_name()
-            self.__ask_and_set_attachment_folder_name()
-            self.__ask_and_set_creation_time_in_file_name()
+                self._ask_markdown_metadata_questions()
+            self._ask_and_set_table_details()
+            self._ask_and_set_chart_options()
+            self._ask_and_set_export_folder_name()
+            self._ask_and_set_attachment_folder_name()
+            self._ask_and_set_creation_time_in_file_name()
 
-    def __ask_markdown_metadata_questions(self):
-        self.__ask_and_set_front_matter_format()
+    def _ask_markdown_metadata_questions(self):
+        self._ask_and_set_front_matter_format()
         if self._current_conversion_settings.front_matter_format != 'none':
-            self.__ask_and_set_metadata_details()
+            self._ask_and_set_metadata_details()
             if self._current_conversion_settings.front_matter_format == 'text':
-                self.__ask_and_set_tag_prefix()
-            self.__ask_and_set_metadata_schema()
+                self._ask_and_set_tag_prefix()
+            self._ask_and_set_metadata_schema()
 
-    def __ask_and_set_conversion_quick_setting(self):
+    def _ask_and_set_conversion_quick_setting(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists
         # in PyInquirer does not work
         ordered_list = self._default_settings.valid_quick_settings.copy()
@@ -175,7 +176,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self._current_conversion_settings.set_quick_setting(answer['quick_setting'])
         self._current_conversion_settings.conversion_input = self._current_conversion_settings.conversion_input
 
-    def __ask_and_set_export_format(self):
+    def _ask_and_set_export_format(self):
         # ordered_list puts current default into the top of the list, this is needed because the default option on lists
         # in PyInquirer does not work
         ordered_list = self._default_settings.valid_export_formats.copy()
@@ -193,14 +194,14 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answer = prompt(export_format_prompt, style=self.style)
         self._current_conversion_settings.export_format = answer['export_format']
 
-    def __set_meta_data_for_html(self):
+    def _set_meta_data_for_html(self):
         self._current_conversion_settings.include_meta_data = True
         self._current_conversion_settings.insert_title = True
         self._current_conversion_settings.insert_creation_time = True
         self._current_conversion_settings.insert_modified_time = True
         self._current_conversion_settings.include_tags = True
 
-    def __ask_and_set_include_metadata(self):
+    def _ask_and_set_include_metadata(self):
         questions = [
             {
                 'type': 'confirm',
@@ -213,7 +214,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answer = prompt(questions, style=self.style)
         self._current_conversion_settings.include_meta_data = answer['include_meta_data']
 
-    def __ask_and_set_metadata_details(self):
+    def _ask_and_set_metadata_details(self):
         questions = [
             {
                 'type': 'checkbox',
@@ -241,7 +242,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         if 'Split tags' in answers['metadata_details']:
             self._current_conversion_settings.split_tags = True
 
-    def __ask_and_set_metadata_schema(self):
+    def _ask_and_set_metadata_schema(self):
         questions = [
             {
                 'type': 'input',
@@ -253,7 +254,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answer = prompt(questions, style=self.style)
         self._current_conversion_settings.metadata_schema = answer['metadata_schema']
 
-    def __ask_and_set_table_details(self):
+    def _ask_and_set_table_details(self):
         questions = [
             {
                 'type': 'checkbox',
@@ -282,7 +283,46 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         if 'First column of table as header column' in answers['table_options']:
             self._current_conversion_settings.first_column_as_header = True
 
-    def __ask_and_set_tag_prefix(self):
+    def _ask_and_set_chart_options(self):
+        questions = [
+            {
+                'type': 'checkbox',
+                'message': 'Select chart options',
+                'name': 'chart_options',
+                'choices': [
+                    Separator('= Chart Options ='),
+                    {
+                        'name': 'Include an image of chart',
+                        'checked': self._default_settings.chart_image
+                    },
+                    {
+                        'name': 'Include a csv file of chart data',
+                        'checked': self._default_settings.chart_csv
+                    },
+                    {
+                        'name': 'Include a data table of chart data',
+                        'checked': self._default_settings.chart_data_table
+                    },
+                ],
+            }
+        ]
+
+        answers = prompt(questions, style=self.style)
+
+        self._current_conversion_settings.chart_image = 'Include an image of chart' in answers['chart_options']
+        self._current_conversion_settings.chart_csv = 'Include a csv file of chart data' in answers['chart_options']
+        self._current_conversion_settings.chart_data_table = 'Include a data table of chart data' in answers['chart_options']
+
+        # if 'Include an image of chart' in answers['chart_options']:
+        #     self._current_conversion_settings.chart_image = True
+        #
+        # if 'Include a csv file of chart data' in answers['chart_options']:
+        #     self._current_conversion_settings.chart_csv = True
+        #
+        # if 'Include a data table of chart data' in answers['chart_options']:
+        #     self._current_conversion_settings.chart_data_table = True
+
+    def _ask_and_set_tag_prefix(self):
         questions = [
             {
                 'type': 'input',
@@ -295,7 +335,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         answer = prompt(questions, style=self.style)
         self._current_conversion_settings.tag_prefix = answer['tag_prefix']
 
-    def __ask_and_set_export_folder_name(self):
+    def _ask_and_set_export_folder_name(self):
         questions = [
             {
                 'type': 'input',
@@ -308,9 +348,9 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self._current_conversion_settings.export_folder_name = answers['export_folder_name']
 
         if str(self._current_conversion_settings.export_folder_name) != answers['export_folder_name']:
-            self.__ask_to_confirm_changed_path_name(self._current_conversion_settings.export_folder_name)
+            self._ask_to_confirm_changed_path_name(self._current_conversion_settings.export_folder_name)
 
-    def __ask_and_set_attachment_folder_name(self):
+    def _ask_and_set_attachment_folder_name(self):
         questions = [
             {
                 'type': 'input',
@@ -323,9 +363,9 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         self._current_conversion_settings.attachment_folder_name = answers['attachment_folder_name']
 
         if str(self._current_conversion_settings.attachment_folder_name) != answers['attachment_folder_name']:
-            self.__ask_to_confirm_changed_path_name(self._current_conversion_settings.attachment_folder_name)
+            self._ask_to_confirm_changed_path_name(self._current_conversion_settings.attachment_folder_name)
 
-    def __ask_to_confirm_changed_path_name(self, new_path):
+    def _ask_to_confirm_changed_path_name(self, new_path):
         message = f"Your submitted folder name has been changed to {new_path}. Do you accept this change?"
         questions = [
             {
@@ -338,9 +378,9 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
         answer = prompt(questions, style=self.style)
         if not answer['accept_change']:
-            self.__ask_and_set_export_folder_name()
+            self._ask_and_set_export_folder_name()
 
-    def __ask_and_set_creation_time_in_file_name(self):
+    def _ask_and_set_creation_time_in_file_name(self):
         questions = [
             {
                 'type': 'confirm',
@@ -364,9 +404,9 @@ class InvalidConfigFileCommandLineInterface(InquireCommandLineInterface):
         super().__init__()
 
     def run_cli(self):
-        return self.__ask_what_to_do()
+        return self._ask_what_to_do()
 
-    def __ask_what_to_do(self):
+    def _ask_what_to_do(self):
         question = {
             'type': 'list',
             'name': 'what_to_do',

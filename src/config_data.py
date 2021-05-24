@@ -40,9 +40,9 @@ class ConfigData(ConfigParser):
         self._conversion_settings = ConversionSettings()
         self._conversion_settings.set_quick_setting('manual')
         self._validation_values = self._conversion_settings.validation_values
-        self.__read_config_file()
-        self.__validate_config_file()
-        self.__generate_conversion_settings_from_parsed_config_file_data()
+        self._read_config_file()
+        self._validate_config_file()
+        self._generate_conversion_settings_from_parsed_config_file_data()
         self.logger.info(f"Settings from config.ini are {self._conversion_settings}")
 
     @property
@@ -62,12 +62,12 @@ class ConfigData(ConfigParser):
 
         """
         if type(value) is str:
-            self.__generate_conversion_settings_using_quick_settings_string(value)
+            self._generate_conversion_settings_using_quick_settings_string(value)
             return
 
-        self.__generate_conversion_settings_using_quick_settings_object(value)
+        self._generate_conversion_settings_using_quick_settings_object(value)
 
-    def __generate_conversion_settings_using_quick_settings_string(self, value):
+    def _generate_conversion_settings_using_quick_settings_string(self, value):
         if value in self._conversion_settings.valid_quick_settings:
             self.load_and_save_config_from_conversion_quick_setting_string(value)
             return
@@ -76,7 +76,7 @@ class ConfigData(ConfigParser):
         raise ValueError(f"Conversion setting parameter must be a valid quick setting string "
                          f"{self._conversion_settings.valid_quick_settings} received '{value}'")
 
-    def __generate_conversion_settings_using_quick_settings_object(self, value):
+    def _generate_conversion_settings_using_quick_settings_object(self, value):
         if isinstance(value, ConversionSettings):
             self.load_and_save_config_from_conversion_settings_obj(value)
             return
@@ -85,7 +85,7 @@ class ConfigData(ConfigParser):
         raise TypeError(f"Conversion setting parameter must be a valid quick setting "
                         f"{self._conversion_settings.valid_quick_settings} string or a ConversionSettings object")
 
-    def __validate_config_file(self):
+    def _validate_config_file(self):
         """
         Validate config data read from config.ini.  Errors in the data will trigger a prompt user
         asking to create a new default configuration or exit the program.
@@ -93,7 +93,7 @@ class ConfigData(ConfigParser):
         """
         self.logger.debug("attempting to validate config file")
         try:
-            self.__validate_config()
+            self._validate_config()
             self.logger.debug("config file validated")
         except ValueError as e:
             self.logger.warning(f"Config file invalid \n{e}")
@@ -107,7 +107,7 @@ class ConfigData(ConfigParser):
             # self._conversion_settings = ConversionSettings()
             self.load_and_save_config_from_conversion_quick_setting_string(self._default_quick_setting)
 
-    def __validate_config(self):
+    def _validate_config(self):
         """
         Validate the current Config Data for any errors by comparing to a set of validation values.
 
@@ -126,7 +126,7 @@ class ConfigData(ConfigParser):
                     if self[section][key] not in values:
                         raise ValueError(f'Invalid value of "{self[section][key]}" for {key} under section {section} in the config file')
 
-    def __generate_conversion_settings_from_parsed_config_file_data(self):
+    def _generate_conversion_settings_from_parsed_config_file_data(self):
         """
         Transcribe the values in a ConversionSettings object into the ConfigParser format used by this class
 
@@ -143,18 +143,21 @@ class ConfigData(ConfigParser):
         self._conversion_settings.split_tags = self.getboolean('meta_data_options', 'split_tags')
         self._conversion_settings.first_row_as_header = self.getboolean('table_options', 'first_row_as_header')
         self._conversion_settings.first_column_as_header = self.getboolean('table_options', 'first_column_as_header')
+        self._conversion_settings.chart_image = self.getboolean('chart_options', 'chart_image')
+        self._conversion_settings.chart_csv = self.getboolean('chart_options', 'chart_csv')
+        self._conversion_settings.chart_data_table = self.getboolean('chart_options', 'chart_data_table')
         self._conversion_settings.source = self['file_options']['source']
         self._conversion_settings.export_folder_name = self['file_options']['export_folder_name']
         self._conversion_settings.attachment_folder_name = self['file_options']['attachment_folder_name']
         self._conversion_settings.creation_time_in_exported_file_name = \
             self.getboolean('file_options', 'creation_time_in_exported_file_name')
 
-    def __write_config_file(self):
+    def _write_config_file(self):
         with open(self._config_file, 'w') as config_file:
             self.write(config_file)
             self.logger.info("Saving configuration file")
 
-    def __read_config_file(self):
+    def _read_config_file(self):
         """
         Read config file. If file is missing generate a new one.
 
@@ -184,7 +187,7 @@ class ConfigData(ConfigParser):
 
         """
         self._conversion_settings.set_quick_setting(setting)
-        self.__load_and_save_settings()
+        self._load_and_save_settings()
 
     def load_and_save_config_from_conversion_settings_obj(self, settings: ConversionSettings):
         """
@@ -196,19 +199,19 @@ class ConfigData(ConfigParser):
 
         """
         self._conversion_settings = settings
-        self.__load_and_save_settings()
+        self._load_and_save_settings()
 
-    def __load_and_save_settings(self):
+    def _load_and_save_settings(self):
         """
         Read a dictionary of config data, formatted for config file generation and store the new config file.
 
         """
-        self.__wipe_current_config()
-        self.read_dict(self.__generate_conversion_dict())
+        self._wipe_current_config()
+        self.read_dict(self._generate_conversion_dict())
         self.logger.info(f"Quick setting {self['quick_settings']['quick_setting']} loaded")
-        self.__write_config_file()
+        self._write_config_file()
 
-    def __wipe_current_config(self):
+    def _wipe_current_config(self):
         """
         Wipe the current config sections.
 
@@ -221,7 +224,7 @@ class ConfigData(ConfigParser):
             self.remove_section(section)
         pass
 
-    def __generate_conversion_dict(self):
+    def _generate_conversion_dict(self):
         """
         Generate a dictionary of the current conversion settings.
 
@@ -286,6 +289,12 @@ class ConfigData(ConfigParser):
                 '  #  These two table options apply to NSX files ONLY': None,
                 'first_row_as_header': self._conversion_settings.first_row_as_header,
                 'first_column_as_header': self._conversion_settings.first_column_as_header
+            },
+            'chart_options': {
+                '  #  These three chart options apply to NSX files ONLY': None,
+                'chart_image': self._conversion_settings.chart_image,
+                'chart_csv': self._conversion_settings.chart_csv,
+                'chart_data_table': self._conversion_settings.chart_data_table
             },
             'file_options': {
                 'source': self._conversion_settings.source,

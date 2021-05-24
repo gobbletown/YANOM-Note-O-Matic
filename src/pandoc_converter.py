@@ -50,25 +50,25 @@ class PandocConverter:
     def generate_pandoc_options(self):
         self.logger.debug(
             f"Pandoc configured for export format - '{self.pandoc_conversion_options[self.output_file_format]}'")
-        input_format = self.calculate_input_format()
+        input_format = self._calculate_input_format()
         self.pandoc_options = ['pandoc', '-f', input_format, '-s', '-t',
                                self.pandoc_conversion_options[self.output_file_format]]
 
-        if self.pandoc_older_than_v_1_16():
+        if self._pandoc_older_than_v_1_16():
             self.pandoc_options = self.pandoc_options + ['--no-wrap']
             return
 
-        if self.pandoc_older_than_v_1_19():
+        if self._pandoc_older_than_v_1_19():
             self.pandoc_options = ['--wrap=none', '-o']
             return
 
-        if self.pandoc_older_than_v_2_11_2():
+        if self._pandoc_older_than_v_2_11_2():
             self.pandoc_options = ['--wrap=none', '--atx-headers']
             return
 
         self.pandoc_options = self.pandoc_options + ['--wrap=none', '--markdown-headings=atx']
 
-    def calculate_input_format(self):
+    def _calculate_input_format(self):
         if self.conversion_settings.conversion_input == 'nsx' or self.conversion_settings.conversion_input == 'html':
             return 'html'
         if self.conversion_settings.conversion_input == 'markdown':
@@ -87,13 +87,13 @@ class PandocConverter:
 
         return 'Error converting data'
 
-    def pandoc_older_than_v_1_16(self):
+    def _pandoc_older_than_v_1_16(self):
         return version.parse(self.pandoc_version) < version.parse('1.16')
 
-    def pandoc_older_than_v_1_19(self):
+    def _pandoc_older_than_v_1_19(self):
         return version.parse(self.pandoc_version) < version.parse('1.19')
 
-    def pandoc_older_than_v_2_11_2(self):
+    def _pandoc_older_than_v_2_11_2(self):
         return version.parse(self.pandoc_version) < version.parse('2.11.2')
 
     @staticmethod

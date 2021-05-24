@@ -103,6 +103,11 @@ class ConversionSettings:
             'first_row_as_header': ('True', 'False'),
             'first_column_as_header': ('True', 'False')
         },
+        'chart_options': {
+            'chart_image': ('True', 'False'),
+            'chart_csv': ('True', 'False'),
+            'chart_data_table': ('True', 'False')
+        },
         'file_options': {
             'source': '',
             'export_folder_name': '',
@@ -135,6 +140,9 @@ class ConversionSettings:
         self._split_tags = False
         self._first_row_as_header = True
         self._first_column_as_header = True
+        self._chart_image = True
+        self._chart_csv = True
+        self._chart_data_table = True
         self._export_folder_name = 'notes'
         self._attachment_folder_name = 'attachments'
         self._creation_time_in_exported_file_name = False
@@ -246,6 +254,9 @@ class ConversionSettings:
         self.split_tags = False
         self.first_row_as_header = False
         self.first_column_as_header = False
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_qownnotes_settings(self):
         """
@@ -258,6 +269,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_gfm_settings(self):
         """
@@ -269,6 +287,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_obsidian_settings(self):
         """
@@ -281,6 +306,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_commonmark_settings(self):
         """
@@ -293,6 +325,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_pandoc_markdown_settings(self):
         """
@@ -304,6 +343,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_multimarkdown_settings(self):
         """
@@ -315,6 +361,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_pandoc_markdown_strict_settings(self):
         """
@@ -326,6 +379,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     def quick_set_html_conversion_settings(self):
         """
@@ -338,6 +398,13 @@ class ConversionSettings:
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
 
     @property
     def valid_conversion_inputs(self):
@@ -531,4 +598,26 @@ class ConversionSettings:
     def source_absolute_path(self):
         return self._source_absolute_path
 
+    @property
+    def chart_image(self):
+        return self._chart_image
 
+    @chart_image.setter
+    def chart_image(self, value: bool):
+        self._chart_image = value
+
+    @property
+    def chart_csv(self):
+        return self._chart_csv
+
+    @chart_csv.setter
+    def chart_csv(self, value: bool):
+        self._chart_csv = value
+
+    @property
+    def chart_data_table(self):
+        return self._chart_data_table
+
+    @chart_data_table.setter
+    def chart_data_table(self, value: bool):
+        self._chart_data_table = value

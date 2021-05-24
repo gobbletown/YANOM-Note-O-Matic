@@ -107,13 +107,13 @@ def add_random_string_to_file_name(path, length: int):
         pathlib.Path object of the new path/filename
     """
     stem = Path(path).stem
-    stem = f"{stem}-{__get_random_string(length)}"
+    stem = f"{stem}-{_get_random_string(length)}"
     new_filename = f"{stem}{Path(path).suffix}"
     path = Path(Path(path).parent, new_filename)
     return path
 
 
-def __get_random_string(length: int):
+def _get_random_string(length: int):
     "Return a string of length random characters.  If length is zero or negative value empty string is returned."
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for _ in range(length))
@@ -140,9 +140,9 @@ def add_strong_between_tags(front_tag, rear_tag, old_html):
         html content with additional strong tags.
 
     """
-    old_values = __find_tags(front_tag, rear_tag, old_html)
+    old_values = _find_tags(front_tag, rear_tag, old_html)
     new_values = [f'<strong>{item}</strong>' for item in old_values]
-    return __update_html_with_changed_tags(front_tag, rear_tag, front_tag, rear_tag,
+    return _update_html_with_changed_tags(front_tag, rear_tag, front_tag, rear_tag,
                                            old_html, old_values, new_values)
 
 
@@ -171,12 +171,12 @@ def change_html_tags(front_tag, rear_tag, new_front_tag, new_rear_tag, old_html)
         html content with replaced tags.
 
     """
-    values = __find_tags(front_tag, rear_tag, old_html)
-    return __update_html_with_changed_tags(front_tag, rear_tag, new_front_tag, new_rear_tag,
+    values = _find_tags(front_tag, rear_tag, old_html)
+    return _update_html_with_changed_tags(front_tag, rear_tag, new_front_tag, new_rear_tag,
                                            old_html, values)
 
 
-def __update_html_with_changed_tags(front_tag, rear_tag, new_front_tag, new_rear_tag,
+def _update_html_with_changed_tags(front_tag, rear_tag, new_front_tag, new_rear_tag,
                                     html, old_values, new_values=None):
     if new_values is None:
         new_values = old_values
@@ -186,6 +186,6 @@ def __update_html_with_changed_tags(front_tag, rear_tag, new_front_tag, new_rear
     return html
 
 
-def __find_tags(front_tag, rear_tag, html):
+def _find_tags(front_tag, rear_tag, html):
     return re.findall(f'{front_tag}([^<]*){rear_tag}', html)
 
