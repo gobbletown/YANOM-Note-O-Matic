@@ -5,7 +5,7 @@
 # AND to be placed in the container for testing
 # Docker image will be created, executable generated and copied out to project dist folder
 APP_NAME="yanom"
-APP_TAR="yanom1.0.0-ubuntu-focal-20.04.tar.gz"
+APP_TAR="yanom1.2.0-ubuntu-focal-20.04.tar.gz"
 DEV_IMAGE="yanom-dev-ubuntu-focal"
 DEV_DOCKERFILE_PATH="dockerfiles/yanom-ubuntu-focal-20210416-dev/Dockerfile"
 PROD_DIST_PATH="dist"

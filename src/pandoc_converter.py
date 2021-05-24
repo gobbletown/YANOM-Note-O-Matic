@@ -43,8 +43,8 @@ class PandocConverter:
             self.pandoc_version = subprocess.run([self._pandoc_path, '-v'], capture_output=True, text=True, timeout=3)
             self.pandoc_version = self.pandoc_version.stdout[7:].split('\n', 1)[0].strip()
             if not config.silent:
-                print('Found pandoc ' + str(self.pandoc_version) + 'at' + self._pandoc_path)
-            self.logger.debug(f"Found pandoc version {str(self.pandoc_version)}")
+                print('Found pandoc ' + str(self.pandoc_version))
+            self.logger.debug(f"Found pandoc version {str(self.pandoc_version)} at {self._pandoc_path}")
 
         except FileNotFoundError as e:
             self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
@@ -128,7 +128,7 @@ class PandocConverter:
 
     @staticmethod
     def error_handling(note_title):
-        msg = f"Error converting note {note_title} for pandoc please check log file and pandoc installation."
+        msg = f"Error converting note {note_title} with pandoc please check log file and pandoc installation."
         logging.error(msg)
         if not config.silent:
             print(msg)

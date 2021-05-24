@@ -10,7 +10,7 @@
 # Second argument is a docker build number this is a positive value or if left blank it will use version `0`
 # NOTE if using `push` it will NOT push a number tag only a latest tag will be pushed to docker hub
 APP_NAME="yanom"
-VERSION="1.1.0"
+VERSION="1.2.0"
 APP_TAR="yanom-$VERSION-debian10-slim-buster.tar.gz"
 DOCKER_REPO="thehistorianandthegeek"
 DEV_IMAGE="yanom-dev-deb10"

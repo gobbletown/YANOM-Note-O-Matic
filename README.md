@@ -1,4 +1,4 @@
-![coverage 29%](https://img.shields.io/badge/coverage-46%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
+![coverage 55%](https://img.shields.io/badge/coverage-55%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
 
 # YANOM - Yet Another Note-O-Matic
 YANOM - stands for Yet Another Note-O-Matic. 
@@ -96,34 +96,37 @@ The wiki also includes more detailed instructions on [installing and using the s
 
 ### Prerequisites
 
+#### Using source code
 YANOM relies on a python environment when run form source code.  
 
 1. You will need to have a working installation of Python 3.6 or higher.  Details of how to instal python and the instalation files can be found on the [python website](https://www.python.org/downloads/)
 2. Once Python is installed, install pipenv using `pip install pipenv`.
 3. If using PyCharm - Edit your yanom.py Run time settings from the menu 'Run' -> 'Edit configuration..' and tick the "Emulate terminal in output console" option in the 'Execution' section.  This is required for the interactive command line to run.
 
-The packaged versions include the required python environment.
+YANOM also requires Pandoc.  [Pandoc](https://pandoc.org/installing.html) v1.16 or higher should be used and ideally 2.11 or higher as that is where most testing has been done.
 
-Both packaged and source code versions require Pandoc.  [Pandoc](https://pandoc.org/installing.html) v1.16 or higher should be used and ideally 2.11 or higher as that is where most testing has been done.
+#### Using packed versions
+The packaged versions include the required python environment and pandoc.
+
 
 ### Using the pre-built packaged versions for Debian linux, windows and Mac OSX
 
-Packaged versions of YANOM are available.  Please see the wiki for how to install ans use them.
+Packaged versions of YANOM are available.  Please see the wiki for how to install and use them.
 
-Also please note the Mac OSX package si slow to start and can take 15 or more seconds to launch, this is said to be caused by OSX security scaning the package every time it is run.  Thh docker image is a much faster option for OSX.
+Also, please note the Mac OSX package is slow to start and can take 15 or more seconds to launch, this is said to be caused by OSX security scanning the package every time it is run.  The docker image is a faster option for OSX.
 
 ### Using the docker image
 A docker image has been created and is available on [docker hub](https://hub.docker.com/r/thehistorianandthegeek/yanom).  This has pandoc pre-installed, and the docker image is the simplest way to quickly use YANOM and cleanly remove it and pandoc after use.
 
 For further information on the duse of the YANOM docker image please check the [wiki page](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/Installing YANOM using Docker.md)
 
-### Installing form source code
+### Installing from source code
 
 Download the source code from [git hub](https://github.com/kevindurston21/YANOM-Note-O-Matic) 
 
 Un-zip the downloaded file.
 
-Use `pipenv install` to configure a virtual environment and install the required dependencies.
+Use `pipenv install` to configure a virtual environment and install the required dependencies.  If you are gogint o develop the code use `pipenv install --dev` to install additional devleopment dependencies.
 
 >NOTE it has been seen in some linux versions that a dependency for the package `toml` was not installed automatically.   The symptoms seen were that when a file was converted using `toml` as the front matter format YANOM would crash.  The workaround was to use `pipenv install toml` and then YANOM would run OK.
 
@@ -145,7 +148,7 @@ You can run all tests and create html coverage report if you use this command in
 
 `pytest --cov-report html:cov_html test/ --cov=src`
 
-Current coverage is only 46%
+Current coverage is currently 55%
 
 ### End-to-end tests
 

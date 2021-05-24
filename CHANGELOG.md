@@ -8,10 +8,27 @@ and this project follows something close to [Semantic Versioning](https://semver
 - Increment the minor version number when adding a new feature or set of features and any current bug fixes not yet released
 - Increment the major version when significantly overhaul the user interface, or rewrite all internals.
 
-## Unreleased
-> These unreleased features are on the develop branch
 
-- Code refactoring
+## [1.2.0] - 2021-05-24
+### Added
+- For Note-Station conversion, add option to select chart elements to reproduce image, csv and data table, or any combination of the three.
+- Removed requirement to install pandoc for packaged versions.
+
+### Fixed
+- Testing identified a potential issue where an HTML `a` anchor tag that does not have a `href` inside of it would cause an error when searching for links between note pages during html to markdown conversion.
+
+### Other
+- Code refactoring and cleaning
+  - sn_note_writer refactored to generic file writer and used by additional converters
+  - Minor simplifications in  nsx_file_converter and sn_notebook
+  - sn_zipfile reader simplified to function
+  - conversion_settings simplified form factory object generator to a single class and methods for quick settings for simpler management of settings that should persist when selecting a quick setting
+  - chart_processing moved Chart class to be an inner class of ChartProcessor and changed signature of init to accept 3 booleans for the three available chart options.
+- Additional documentation added, docstrings and README files
+- Additional tests writen for checklist processing, helper functions, chart processing, conversion settings, file writer
+- Changed pandoc version testing from `distutils` to `packaging`
+
+
 
 ## [1.1.0] - 2021-05-14
 ### Added
