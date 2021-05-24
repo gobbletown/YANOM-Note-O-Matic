@@ -57,8 +57,8 @@ class FileConverter(ABC):
         links_that_can_be_renamed = [Path(file).stem for file in self._files_to_convert]
 
         soup = BeautifulSoup(content, 'html.parser')
-        for a in soup.findAll('a'):
-            link = re.search(fr'^((?!https).*).{source_extension}$', a['href'])  # find  non-internet links
+        for a in soup.findAll(href=True):
+            link = re.search(fr'^((?!https).*).{source_extension}$', a['href'])  # extract the actual link
             if link is not None:
                 if Path(str(link.group(1))).name in links_that_can_be_renamed:  # only names in list being processed
                     a['href'] = str(link.group(1)) + '.' + target_extension
