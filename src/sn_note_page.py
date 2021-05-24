@@ -25,7 +25,7 @@ class NotePage:
         self._note_json = note_json
         self._title = self._note_json['title']
         self._original_title = self._note_json['title']
-        self.__format_ctime_and_mtime_if_required()
+        self._format_ctime_and_mtime_if_required()
         self._raw_content = self._note_json['content']
         self._parent_notebook = self._note_json['parent_id']
         self._attachments_json = self._note_json['attachment']
@@ -40,7 +40,7 @@ class NotePage:
         self._pre_processor = None
         self._post_processor = None
 
-    def __format_ctime_and_mtime_if_required(self):
+    def _format_ctime_and_mtime_if_required(self):
         if self._conversion_settings.front_matter_format != 'none' \
                 or self._conversion_settings.creation_time_in_exported_file_name is True:
             self._note_json['ctime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['ctime']))
@@ -58,17 +58,17 @@ class NotePage:
         self.store_file()
         self.logger.debug(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
 
-    def __create_file_name(self):
-        dirty_filename = self.__append_file_extension()
+    def _create_file_name(self):
+        dirty_filename = self._append_file_extension()
         self._file_name = helper_functions.generate_clean_path(dirty_filename)
 
-    def __append_file_extension(self):
+    def _append_file_extension(self):
         if self._conversion_settings.export_format == 'html':
             return f"{self._title}.html"
 
         return f"{self._title}.md"
 
-    def __generate_absolute_path(self):
+    def _generate_absolute_path(self):
         path_to_file = Path(self._conversion_settings.working_directory, config.DATA_DIR,
                             self._conversion_settings.export_folder_name, self._notebook_folder_name, self._file_name)
 
@@ -77,8 +77,8 @@ class NotePage:
         return absolute_file_path
 
     def generate_filenames_and_paths(self):
-        self.__create_file_name()
-        self._full_path = self.__generate_absolute_path()
+        self._create_file_name()
+        self._full_path = self._generate_absolute_path()
         self._file_name = self._full_path.name
 
     @property

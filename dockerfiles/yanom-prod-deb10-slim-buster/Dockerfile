@@ -13,7 +13,8 @@ FROM base as intermediate
 RUN adduser --disabled-password --gecos '' app
 WORKDIR /app
 COPY --chown=app:app dist/$APP_TAR /app
-RUN tar -xvf $APP_TAR  && rm -f $APP_TAR  && chown -R app /app/yanom
+RUN tar -xvf $APP_TAR  && rm -f $APP_TAR
+RUN mkdir /app/yanom/pandoc && cp /usr/bin/pandoc /app/yanom/pandoc/ && chown -R app /app/yanom
 
 
 FROM base
@@ -21,5 +22,5 @@ RUN adduser --disabled-password --gecos '' app
 WORKDIR /app/yanom
 ENV PATH="/app/yanom:${PATH}"
 COPY --from=intermediate /app/yanom /app/yanom
-USER app
+#USER app
 CMD bash

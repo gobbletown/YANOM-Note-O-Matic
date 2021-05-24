@@ -92,10 +92,10 @@ class ChartProcessor(ABC):
     def _new_chart_elements_html(self, chart):
         elements_to_add = ''
         if self._create_image:
-            elements_to_add = f"<p>{self._note.attachments[f'{id(chart)}.png'].html_link}</p>"
-        if self._create_data_table:
-            elements_to_add = elements_to_add + f"<p>{self._note.attachments[f'{id(chart)}.csv'].html_link}</p>"
+            elements_to_add = elements_to_add + f"<p>{self._note.attachments[f'{id(chart)}.png'].html_link}</p>"
         if self._create_csv:
+            elements_to_add = elements_to_add + f"<p>{self._note.attachments[f'{id(chart)}.csv'].html_link}</p>"
+        if self._create_data_table:
             elements_to_add = elements_to_add + f"<p>{chart.html_chart_data_table}</p>"
 
         return elements_to_add

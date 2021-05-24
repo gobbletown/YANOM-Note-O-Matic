@@ -20,7 +20,6 @@ class NSXFile:
         self.logger.setLevel(config.logger_level)
         self._conversion_settings = conversion_settings
         self._nsx_file_name = file
-        # self._zipfile_reader = NSXZipFileReader(self._nsx_file_name)
         self._nsx_json_data = ''
         self._notebook_ids = None
         self._note_page_ids = None
@@ -149,11 +148,6 @@ class NSXFile:
     @property
     def conversion_settings(self):
         return self._conversion_settings
-
-    # @property
-    # def zipfile_reader(self):
-    #     return self._zipfile_reader
-
 
     @property
     def pandoc_converter(self):

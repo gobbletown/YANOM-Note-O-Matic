@@ -73,41 +73,41 @@ class NoteStationPreProcessing(PreProcessing):
 
     def pre_process_note_page(self):
         self.logger.debug(f"Pre processing of note page {self._note.title}")
-        self.__create_image_tag_processors()
-        self.__update_content_with_new_img_tags()
+        self._create_image_tag_processors()
+        self._update_content_with_new_img_tags()
         if self._note.conversion_settings.export_format != 'pandoc_markdown_strict' \
                 and self._note.conversion_settings.export_format != 'html':
             self._process_iframes()
-        self.__clean_excessive_divs()
-        self.__fix_ordered_list()
-        self.__fix_unordered_list()
-        self.__fix_check_lists()
-        self.__add_boarder_to_tables()
+        self._clean_excessive_divs()
+        self._fix_ordered_list()
+        self._fix_unordered_list()
+        self._fix_check_lists()
+        self._add_boarder_to_tables()
         if self._note.conversion_settings.first_row_as_header:
-            self.__fix_table_headers()
+            self._fix_table_headers()
         if self._note.conversion_settings.first_column_as_header:
-            self.__first_column_in_table_as_header_if_required()
-        self.__extract_and_generate_chart()
+            self._first_column_in_table_as_header_if_required()
+        self._extract_and_generate_chart()
         if self._note.conversion_settings.front_matter_format != 'none':
-            self.__generate_metadata()
-        self.__generate_links_to_other_note_pages()
-        self.__add_attachment_links()
+            self._generate_metadata()
+        self._generate_links_to_other_note_pages()
+        self._add_attachment_links()
 
     def _process_iframes(self):
         self.pre_processed_content, self._iframes_dict = pre_process_iframes_from_html(self.pre_processed_content)
 
-    def __create_image_tag_processors(self):
+    def _create_image_tag_processors(self):
         self.logger.debug(f"Cleaning image tags")
         raw_image_tags = re.findall('<img class=[^>]*syno-notestation-image-object[^>]*src=[^>]*ref=[^>]*>',
                                     self._pre_processed_content)
         self._image_tag_processors = [ImageTag(tag, self._attachments) for tag in raw_image_tags]
 
-    def __update_content_with_new_img_tags(self):
+    def _update_content_with_new_img_tags(self):
         for image_tag_processor in self._image_tag_processors:
             self._pre_processed_content = self._pre_processed_content.replace(image_tag_processor.raw_tag,
                                                                               image_tag_processor.processed_tag)
 
-    def __clean_excessive_divs(self):
+    def _clean_excessive_divs(self):
         """
         Replace all the div's with p's
         """
@@ -116,17 +116,17 @@ class NoteStationPreProcessing(PreProcessing):
         self._pre_processed_content = self._pre_processed_content.replace('<div', '<p')
         self._pre_processed_content = self._pre_processed_content.replace('</div', '</p')
 
-    def __fix_ordered_list(self):
+    def _fix_ordered_list(self):
         self.logger.debug(f"Cleaning number lists")
         self._pre_processed_content = self._pre_processed_content.replace('</li><ol><li>', '<ol><li>')
         self._pre_processed_content = self._pre_processed_content.replace('</li></ol><li>', '</li></ol></li><li>')
 
-    def __fix_unordered_list(self):
+    def _fix_unordered_list(self):
         self.logger.debug(f"Cleaning bullet lists")
         self._pre_processed_content = self._pre_processed_content.replace('</li><ul><li>', '<ul><li>')
         self._pre_processed_content = self._pre_processed_content.replace('</li></ul><li>', '</li></ul></li><li>')
 
-    def __fix_check_lists(self):
+    def _fix_check_lists(self):
         self.logger.debug(f"Cleaning check lists")
 
         if self._note.conversion_settings.export_format == 'html':
@@ -137,14 +137,18 @@ class NoteStationPreProcessing(PreProcessing):
         self._pre_processed_content = self._checklist_processor.processed_html
         pass
 
-    def __extract_and_generate_chart(self):
+    def _extract_and_generate_chart(self):
         self.logger.debug(f"Cleaning charts")
 
-        chart_processor = NSXChartProcessor(self._note, self._pre_processed_content)
+        chart_options = {'create_image': self._note._conversion_settings.chart_image,
+                         'create_csv': self._note._conversion_settings.chart_csv,
+                         'create_data_table': self._note._conversion_settings.chart_data_table,
+                         }
+        chart_processor = NSXChartProcessor(self._note, self._pre_processed_content, **chart_options)
 
         self._pre_processed_content = chart_processor.processed_html
 
-    def __fix_table_headers(self):
+    def _fix_table_headers(self):
         self.logger.debug(f"Cleaning table headers")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
 
@@ -156,7 +160,7 @@ class NoteStationPreProcessing(PreProcessing):
             new_table = new_table.replace('</td></tr>', '</td></tr></thead><tbody>', 1)
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
-    def __first_column_in_table_as_header_if_required(self):
+    def _first_column_in_table_as_header_if_required(self):
         self.logger.debug(f"Make tables first column bold")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
 
@@ -165,7 +169,7 @@ class NoteStationPreProcessing(PreProcessing):
             new_table = change_html_tags('<tr><td>', '</td>', '<tr><th>', '</th>', new_table)
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
-    def __add_boarder_to_tables(self):
+    def _add_boarder_to_tables(self):
         self.logger.debug(f"Adding boarders to tables")
         tables = re.findall('<table.*</table>', self._pre_processed_content)
 
@@ -174,19 +178,19 @@ class NoteStationPreProcessing(PreProcessing):
             new_table = new_table.replace('<table', '<table border="1"')
             self._pre_processed_content = self._pre_processed_content.replace(table, new_table)
 
-    def __generate_metadata(self):
+    def _generate_metadata(self):
         self.logger.debug(f"Generating meta-data")
         self._metadata_processor = MetaDataProcessor(self._note.conversion_settings)
         self._metadata_processor.parse_dict_metadata(self._note.note_json)
         self._pre_processed_content = f'<head><title> </title></head>{self._pre_processed_content}'
         self._pre_processed_content = self._metadata_processor.add_metadata_html_to_content(self._pre_processed_content)
 
-    def __generate_links_to_other_note_pages(self):
+    def _generate_links_to_other_note_pages(self):
         self.logger.debug(f"Creating links between pages")
         link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file)
         self.pre_processed_content = link_generator.content
 
-    def __add_attachment_links(self):
+    def _add_attachment_links(self):
         self.logger.debug(f"Add attachment links to page content")
         attachments = [attachment
                        for attachment in self._note.attachments.values()

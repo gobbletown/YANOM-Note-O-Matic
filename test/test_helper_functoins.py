@@ -22,25 +22,18 @@ def test_find_valid_full_file_path_no_rename_expected(tmp_path):
 
 
 @pytest.mark.parametrize(
-    'length, expected', [
+    'length, expected_length_or_random_string', [
         (0, 0),
         (-1, 0),
         (1, 1),
         (4, 4),
     ]
 )
-def test_get_random_string(length, expected):
-    result = helper_functions.__get_random_string(length)
-
-    assert len(result) == expected
-
-
-def test_add_random_string_to_file_name():
+def test_add_random_string_to_file_name(length, expected_length_or_random_string):
     old_path = 'dir/file.txt'
-    length_of_random_sting = 4
-    new_path = helper_functions.add_random_string_to_file_name(old_path, length_of_random_sting)
+    new_path = helper_functions.add_random_string_to_file_name(old_path, length)
 
-    assert len(new_path.name) == len(Path(old_path).name) + length_of_random_sting + 1
+    assert len(new_path.name) == len(Path(old_path).name) + expected_length_or_random_string + 1
 
 
 def test_add_strong_between_tags():

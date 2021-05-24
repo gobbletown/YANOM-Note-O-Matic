@@ -1,6 +1,7 @@
 from packaging import version
 import logging
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
@@ -28,17 +29,29 @@ class PandocConverter:
                                           'multimarkdown': 'markdown_mmd',
                                           'html': 'html'}
         self.pandoc_options = None
+        if getattr(sys, 'frozen', False):
+            self._pandoc_path = str(Path(self.conversion_settings.working_directory, 'pandoc/pandoc'))
+        else:
+            self._pandoc_path = 'pandoc'
+
         self.check_pandoc_is_installed_if_not_exit_program()
         self.find_pandoc_version()
         self.generate_pandoc_options()
 
     def find_pandoc_version(self):
         try:
-            self.pandoc_version = subprocess.run(['pandoc', '-v'], capture_output=True, text=True, timeout=3)
+            self.pandoc_version = subprocess.run([self._pandoc_path, '-v'], capture_output=True, text=True, timeout=3)
             self.pandoc_version = self.pandoc_version.stdout[7:].split('\n', 1)[0].strip()
             if not config.silent:
-                print('Found pandoc ' + str(self.pandoc_version))
+                print('Found pandoc ' + str(self.pandoc_version) + 'at' + self._pandoc_path)
             self.logger.debug(f"Found pandoc version {str(self.pandoc_version)}")
+
+        except FileNotFoundError as e:
+            self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
+            if not config.silent:
+                print("Unable to locate pandoc please check pandoc installation and see *.log files.")
+                print("Exiting.")
+            sys.exit(0)
 
         except subprocess.CalledProcessError as e:
             self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
@@ -50,25 +63,25 @@ class PandocConverter:
     def generate_pandoc_options(self):
         self.logger.debug(
             f"Pandoc configured for export format - '{self.pandoc_conversion_options[self.output_file_format]}'")
-        input_format = self.calculate_input_format()
-        self.pandoc_options = ['pandoc', '-f', input_format, '-s', '-t',
+        input_format = self._calculate_input_format()
+        self.pandoc_options = [self._pandoc_path, '-f', input_format, '-s', '-t',
                                self.pandoc_conversion_options[self.output_file_format]]
 
-        if self.pandoc_older_than_v_1_16():
+        if self._pandoc_older_than_v_1_16():
             self.pandoc_options = self.pandoc_options + ['--no-wrap']
             return
 
-        if self.pandoc_older_than_v_1_19():
+        if self._pandoc_older_than_v_1_19():
             self.pandoc_options = ['--wrap=none', '-o']
             return
 
-        if self.pandoc_older_than_v_2_11_2():
+        if self._pandoc_older_than_v_2_11_2():
             self.pandoc_options = ['--wrap=none', '--atx-headers']
             return
 
         self.pandoc_options = self.pandoc_options + ['--wrap=none', '--markdown-headings=atx']
 
-    def calculate_input_format(self):
+    def _calculate_input_format(self):
         if self.conversion_settings.conversion_input == 'nsx' or self.conversion_settings.conversion_input == 'html':
             return 'html'
         if self.conversion_settings.conversion_input == 'markdown':
@@ -81,19 +94,27 @@ class PandocConverter:
             if out.returncode > 0:
                 self.logger.error(f"Pandoc Return code={out.returncode}, error={out.stderr}")
             return out.stdout
+
+        except FileNotFoundError as e:
+            self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
+            if not config.silent:
+                print("Unable to locate pandoc please check pandoc installation and see *.log files.")
+                print("Exiting.")
+            sys.exit(0)
+
         except subprocess.CalledProcessError:
             self.logger.error(f"Unable to convert note {name}")
             self.error_handling(name)
 
         return 'Error converting data'
 
-    def pandoc_older_than_v_1_16(self):
+    def _pandoc_older_than_v_1_16(self):
         return version.parse(self.pandoc_version) < version.parse('1.16')
 
-    def pandoc_older_than_v_1_19(self):
+    def _pandoc_older_than_v_1_19(self):
         return version.parse(self.pandoc_version) < version.parse('1.19')
 
-    def pandoc_older_than_v_2_11_2(self):
+    def _pandoc_older_than_v_2_11_2(self):
         return version.parse(self.pandoc_version) < version.parse('2.11.2')
 
     @staticmethod

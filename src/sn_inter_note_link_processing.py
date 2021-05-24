@@ -31,12 +31,12 @@ class SNLinksToOtherNotes:
         self._list_of_raw_links = {}
         self._all_note_pages = {}
         self._replacement_links = {}
-        self.__generate_dict_of_links()
+        self._generate_dict_of_links()
         if self._list_of_raw_links:
-            self.__build_list_of_all_note_pages()
-            self.__match_link_title_to_a_note()
-            self.__find_potential_match_for_renamed_links()
-            self.__update_content()
+            self._build_list_of_all_note_pages()
+            self._match_link_title_to_a_note()
+            self._find_potential_match_for_renamed_links()
+            self._update_content()
 
     class IntraPageLink:
         """
@@ -53,9 +53,9 @@ class SNLinksToOtherNotes:
             self._note_page = note
             self._href_note = href_note
 
-            self.__generate_new_link()
+            self._generate_new_link()
 
-        def __generate_new_link(self):
+        def _generate_new_link(self):
             self.logger.debug("Creating inter note links")
             if self._note_page.parent_notebook == self._href_note.parent_notebook:
                 self._new_link = f'<a href="{self._href_note.file_name}">{self._href_note.title}</a>'
@@ -77,7 +77,7 @@ class SNLinksToOtherNotes:
         def href_note(self):
             return self._href_note
 
-    def __generate_dict_of_links(self):
+    def _generate_dict_of_links(self):
         """
         Generate a dictionary where the keys are text strings displayed on a page and the values are the raw
         and unusable, because they do not link to anything in an nsx export, href links
@@ -94,7 +94,7 @@ class SNLinksToOtherNotes:
 
         self._list_of_raw_links = dict(zip(link_text, self._raw_note_links))
 
-    def __build_list_of_all_note_pages(self):
+    def _build_list_of_all_note_pages(self):
         """
         Build a list of tuples containing original note titles and the note object.
 
@@ -107,7 +107,7 @@ class SNLinksToOtherNotes:
                                 if not note.parent_notebook == 'recycle-bin'  # ignore items in recycle bin
                                 ]
 
-    def __match_link_title_to_a_note(self):
+    def _match_link_title_to_a_note(self):
         """
         For each of the link text values from a note page find all the occurrences of note pages of the same name.
         Creating a list containing IntraPageLink objects for each one.
@@ -121,7 +121,7 @@ class SNLinksToOtherNotes:
             if replacement_links:
                 self._replacement_links[link] = replacement_links
 
-    def __find_potential_match_for_renamed_links(self):
+    def _find_potential_match_for_renamed_links(self):
         """
         Match renamed links to links already identified
 
@@ -143,13 +143,13 @@ class SNLinksToOtherNotes:
             # now merge the renamed link replacement link dict into the main replacement_links dict
             self._replacement_links = {**self._replacement_links, **new_replacement_links}
 
-    def __update_content(self):
+    def _update_content(self):
         self.logger.debug("Adding inter note links to page")
         for raw_link, replacement_links in self._replacement_links.items():
-            self._content = self._content.replace(raw_link, self.__generate_html_code_for_new_links(replacement_links))
+            self._content = self._content.replace(raw_link, self._generate_html_code_for_new_links(replacement_links))
 
     @staticmethod
-    def __generate_html_code_for_new_links(links):
+    def _generate_html_code_for_new_links(links):
         if len(links) == 1:
             return f'{links[0].new_link}'
 

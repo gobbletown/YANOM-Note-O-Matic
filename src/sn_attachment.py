@@ -54,7 +54,7 @@ class NSAttachment(ABC):
 
     def change_file_name_if_already_exists(self):
         while self._full_path.is_file():
-            self._full_path = helper_functions.add_random_value_to_file_name(self._full_path)
+            self._full_path = helper_functions.add_random_string_to_file_name(self._full_path, 4)
 
         self._file_name = self._full_path.name
         self._path_relative_to_notebook = (Path(self._conversion_settings.attachment_folder_name, self._file_name))
