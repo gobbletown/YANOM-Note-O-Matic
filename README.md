@@ -105,7 +105,7 @@ YANOM relies on a python environment when run form source code.
 
 YANOM also requires Pandoc.  [Pandoc](https://pandoc.org/installing.html) v1.16 or higher should be used and ideally 2.11 or higher as that is where most testing has been done.
 
-#### Using packed versions
+#### Using packaged versions
 The packaged versions include the required python environment and pandoc.
 
 
@@ -113,7 +113,7 @@ The packaged versions include the required python environment and pandoc.
 
 Packaged versions of YANOM are available.  Please see the wiki for how to install and use them.
 
-Also, please note the Mac OSX package is slow to start and can take 15 or more seconds to launch, this is said to be caused by OSX security scanning the package every time it is run.  The docker image is a faster option for OSX.
+Also, please note the Mac OSX package is slow to start and can take 15 or more seconds to launch. Running a second time from the same terminal window it is usualy just a few seconds.
 
 ### Using the docker image
 A docker image has been created and is available on [docker hub](https://hub.docker.com/r/thehistorianandthegeek/yanom).  This has pandoc pre-installed, and the docker image is the simplest way to quickly use YANOM and cleanly remove it and pandoc after use.

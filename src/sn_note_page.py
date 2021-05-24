@@ -26,9 +26,13 @@ class NotePage:
         self._title = self._note_json['title']
         self._original_title = self._note_json['title']
         self._format_ctime_and_mtime_if_required()
-        self._raw_content = self._note_json['content']
+        self._raw_content = ''
+        if 'content' in self._note_json:
+            self._raw_content = self._note_json['content']
         self._parent_notebook = self._note_json['parent_id']
-        self._attachments_json = self._note_json['attachment']
+        self._attachments_json = {}
+        if 'attachment' in self._note_json:
+            self._attachments_json = self._note_json['attachment']
         self._attachments = {}
         self._pre_processed_content = ''
         self._converted_content = ''

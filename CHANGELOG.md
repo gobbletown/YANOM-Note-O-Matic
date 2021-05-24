@@ -9,8 +9,9 @@ and this project follows something close to [Semantic Versioning](https://semver
 - Increment the major version when significantly overhaul the user interface, or rewrite all internals.
 
 
-## [1.2.0] - 2021-05-24
+## [1.2.0] - 2021-05-25
 ### Added
+- Add support for export files from the Synology DSM Note-Station web app.  Export files are slightly different format from the desktop app.
 - For Note-Station conversion, add option to select chart elements to reproduce image, csv and data table, or any combination of the three.
 - Removed requirement to install pandoc for packaged versions.
 
