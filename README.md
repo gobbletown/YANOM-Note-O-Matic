@@ -22,9 +22,12 @@ Additionally, YANOM has the capability to add support for modified Markdown form
     + [Current functionality](#current-functionality)
   * [Getting Started](#getting-started)
     + [Prerequisites](#prerequisites)
-    + [Using the pre-built packaged versions for Debian linux, windows and Mac OSX](#using-the-pre-built-packaged-versions-for-debian-linux-windows-and-mac-osx)
+      - [Prerequisites source code](#prerequisites-source-code)
+      - [Prerequisite for the Debian packaged version](#prerequisite-for-the-debian-packaged-version)
+      - [No prerequisites Windows and Mac OSX packaged versions](#no-prerequisites-windows-and-mac-osx-packaged-versions)
+    + [Using the pre-built packaged versions for Debian linux, windows and Mac OSX](#using-the-pre-built-packaged-versions-for-debian-linux--windows-and-mac-osx)
     + [Using the docker image](#using-the-docker-image)
-    + [Installing form source code](#installing-form-source-code)
+    + [Installing from source code](#installing-from-source-code)
   * [Running the tests](#running-the-tests)
     + [Unit Tests with pytest](#unit-tests-with-pytest)
     + [End-to-end tests](#end-to-end-tests)
@@ -96,7 +99,7 @@ The wiki also includes more detailed instructions on [installing and using the s
 
 ### Prerequisites
 
-#### Using source code
+#### Prerequisites source code
 YANOM relies on a python environment when run form source code.  
 
 1. You will need to have a working installation of Python 3.6 or higher.  Details of how to instal python and the instalation files can be found on the [python website](https://www.python.org/downloads/)
@@ -105,7 +108,10 @@ YANOM relies on a python environment when run form source code.
 
 YANOM also requires Pandoc.  [Pandoc](https://pandoc.org/installing.html) v1.16 or higher should be used and ideally 2.11 or higher as that is where most testing has been done.
 
-#### Using packaged versions
+#### Prerequisite for the Debian packaged version
+Pandoc is required to be installed.
+
+#### No prerequisites Windows and Mac OSX packaged versions
 The packaged versions include the required python environment and pandoc.
 
 

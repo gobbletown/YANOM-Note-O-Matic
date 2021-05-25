@@ -29,7 +29,7 @@ class PandocConverter:
                                           'multimarkdown': 'markdown_mmd',
                                           'html': 'html'}
         self.pandoc_options = None
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, 'frozen', False) and not sys.platform.startswith('linux'):
             self._pandoc_path = str(Path(self.conversion_settings.working_directory, 'pandoc/pandoc'))
         else:
             self._pandoc_path = 'pandoc'
