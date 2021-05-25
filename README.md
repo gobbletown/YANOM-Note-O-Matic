@@ -42,7 +42,7 @@ Additionally, YANOM has the capability to add support for modified Markdown form
 ## YANOM Note-O-Matic wiki
 The [YANOM wiki](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki) explains features, functionality, instalation and use in greater detail than this read me.
 
-## Version 1.1.0 capabilities 
+## Version 1.2.0 capabilities 
 - Conversion of Synology Note-Station files to markdown or html.  [Full details of the supported features and examples](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/note-station-conversion-details.md) are in the wiki. 
 - Conversion between Markdown formats
 - HTML to Markdown and Markdown to HTML
@@ -82,7 +82,7 @@ Future versions will support conversion from additional proprietary file formats
   - Tags 
   - File attachments are maintained
   - Note-Station specific features
-    - Charts are recreated.  An image is placed on the page, along with a data table of the chart data, and a link to a csv file of the data.      
+    - Charts are recreated.  Options to place an image, data table of the chart data and a link to a csv file on the exported page.      
     - Links between note pages.
       - For Note-Station most of the time this will be successful.  However, there are some limitations and the [Synology Note-Station Links to Other Note Pages](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/Synology-Note-Station-Links-to-Other-Note-Pages) wiki page has examples of the possible issues and solutions for them.
     - Note-Station audio notes - are attached as an attachment
