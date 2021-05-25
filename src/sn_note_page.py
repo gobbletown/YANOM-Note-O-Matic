@@ -45,7 +45,7 @@ class NotePage:
         self._post_processor = None
 
     def _format_ctime_and_mtime_if_required(self):
-        if self._conversion_settings.front_matter_format != 'none' \
+        if self._conversion_settings.metadata_front_matter_format != 'none' \
                 or self._conversion_settings.creation_time_in_exported_file_name is True:
             self._note_json['ctime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['ctime']))
             self._note_json['mtime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['mtime']))

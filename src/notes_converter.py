@@ -35,15 +35,18 @@ class NotesConvertor:
         self.logger.debug(f"command line ars are - {args}")
         self.logger.info(f'Program startup')
         self.command_line_args = args
-        self.config_data = ConfigData(f"{config.DATA_DIR}/config.ini", 'gfm', args['silent'], allow_no_value=True)
         self.conversion_settings = None
-        self.evaluate_command_line_arguments()
         self._note_page_count = 0
         self._note_book_count = 0
         self._image_count = 0
         self._attachment_count = 0
         self.nsx_backups = None
         self.pandoc_converter = None
+        self.config_data = ConfigData(f"{config.DATA_DIR}/config.ini", 'gfm', allow_no_value=True)
+
+    def convert_notes(self):
+        self.config_data.parse_config_file()
+        self.evaluate_command_line_arguments()
         if self.conversion_settings.conversion_input == 'html':
             self.convert_html()
         elif self.conversion_settings.conversion_input == 'markdown':
@@ -54,6 +57,7 @@ class NotesConvertor:
         self.output_results_if_not_silent_mode()
         self.log_results()
         self.logger.info("Processing Completed - exiting normally")
+
 
     def convert_markdown(self):
         with Timer(name="md_conversion", logger=self.logger.info, silent=bool(config.silent)):

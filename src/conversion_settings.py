@@ -158,7 +158,7 @@ class ConversionSettings:
                f"valid_front_matter_formats]'{self.valid_front_matter_formats}', " \
                f"markdown_conversion_input='{self._markdown_conversion_input}, quick_setting='{self.quick_setting}', " \
                f"export_format='{self.export_format}', " \
-               f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
+               f"yaml_front_matter={self.metadata_front_matter_format}, metadata_schema='{self.metadata_schema}', " \
                f"tag_prefix='{self.tag_prefix}', " \
                f"first_row_as_header={self._first_row_as_header}, " \
                f"first_column_as_header={self._first_column_as_header}" \
@@ -175,7 +175,7 @@ class ConversionSettings:
                f"valid_front_matter_formats]'{self.valid_front_matter_formats}', " \
                f"markdown_conversion_input='{self._markdown_conversion_input}, quick_setting='{self.quick_setting}', " \
                f"export_format='{self.export_format}', " \
-               f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
+               f"yaml_front_matter={self.metadata_front_matter_format}, metadata_schema='{self.metadata_schema}', " \
                f"tag_prefix='{self.tag_prefix}', " \
                f"first_row_as_header={self._first_row_as_header}, " \
                f"first_column_as_header={self._first_column_as_header}" \
@@ -246,7 +246,7 @@ class ConversionSettings:
         """
         self.logger.debug("Manual conversion settings")
         self.quick_setting = 'manual'
-        self.front_matter_format = 'none'
+        self.metadata_front_matter_format = 'none'
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
@@ -265,7 +265,7 @@ class ConversionSettings:
         self.logger.debug("QOwnNotes Setting conversion settings")
         self.quick_setting = 'q_own_notes'
         self.export_format = 'q_own_notes'
-        self.front_matter_format = 'yaml'
+        self.metadata_front_matter_format = 'yaml'
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
@@ -283,7 +283,7 @@ class ConversionSettings:
         """
         self.logger.debug("GFM conversion settings")
         self.quick_setting = 'gfm'
-        self.front_matter_format = 'yaml'
+        self.metadata_front_matter_format = 'yaml'
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
@@ -302,7 +302,7 @@ class ConversionSettings:
         self.logger.debug("Obsidian conversion settings")
         self.quick_setting = 'obsidian'
         self.export_format = 'obsidian'
-        self.front_matter_format = 'yaml'
+        self.metadata_front_matter_format = 'yaml'
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
@@ -321,7 +321,7 @@ class ConversionSettings:
         self.logger.debug("Commonmark conversion settings")
         self.quick_setting = 'commonmark'
         self.export_format = 'commonmark'
-        self.front_matter_format = 'yaml'
+        self.metadata_front_matter_format = 'yaml'
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
@@ -394,7 +394,7 @@ class ConversionSettings:
         self.logger.debug("HTML conversion settings")
         self.export_format = 'html'
         self.quick_setting = 'html'
-        self.front_matter_format = 'yaml'
+        self.metadata_front_matter_format = 'yaml'
         self.metadata_schema = []
         if self.conversion_input == 'nsx':
             self.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
@@ -510,17 +510,17 @@ class ConversionSettings:
         self.logger.warning(f'Invalid metadata schema provided {value} of type {type(value)}')
 
     @property
-    def front_matter_format(self):
+    def metadata_front_matter_format(self):
         return self._front_matter_format
 
-    @front_matter_format.setter
-    def front_matter_format(self, value: str):
+    @metadata_front_matter_format.setter
+    def metadata_front_matter_format(self, value: str):
         if value in self._valid_front_matter_formats:
             self._front_matter_format = value
             return
 
         self.logger.warning(f'Invalid front matter format provided {value} continuing '
-                            f'to use {self.front_matter_format}')
+                            f'to use {self.metadata_front_matter_format}')
 
     @property
     def tag_prefix(self):

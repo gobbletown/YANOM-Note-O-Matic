@@ -118,7 +118,7 @@ class MetaDataProcessor:
 
     def add_metadata_md_to_content(self, content):
         self.logger.debug(f"Add front matter meta-data to markdown page")
-        if self._conversion_settings.front_matter_format == 'none':
+        if self._conversion_settings.metadata_front_matter_format == 'none':
             return content
 
         if len(self._metadata) == 0:  # if there is no meta data do not create an empty header
@@ -127,17 +127,17 @@ class MetaDataProcessor:
         if frontmatter.checks(content):
             self.logger.warning('Meta data front matter already exits, continuing to add a second front matter section')
 
-        if self._conversion_settings.front_matter_format == 'text':
+        if self._conversion_settings.metadata_front_matter_format == 'text':
             content = self.add_text_metadata_to_content(content)
             return content
 
         merged_content = frontmatter.Post(content, **self._metadata)
 
-        if self._conversion_settings.front_matter_format == 'yaml':
+        if self._conversion_settings.metadata_front_matter_format == 'yaml':
             content = frontmatter.dumps(merged_content, handler=YAMLHandler())
-        if self._conversion_settings.front_matter_format == 'toml':
+        if self._conversion_settings.metadata_front_matter_format == 'toml':
             content = frontmatter.dumps(merged_content, handler=TOMLHandler())
-        if self._conversion_settings.front_matter_format == 'json':
+        if self._conversion_settings.metadata_front_matter_format == 'json':
             content = frontmatter.dumps(merged_content, handler=JSONHandler())
 
         return content

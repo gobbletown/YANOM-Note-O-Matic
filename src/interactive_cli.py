@@ -96,7 +96,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
                 self._nothing_to_convert()
             if not self._current_conversion_settings.export_format == 'html':
                 self._ask_and_set_front_matter_format()
-                if self._current_conversion_settings.front_matter_format != 'none':
+                if self._current_conversion_settings.metadata_front_matter_format != 'none':
                     self._ask_and_set_metadata_details()
                     self._ask_and_set_metadata_schema()
                 else:
@@ -108,7 +108,7 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
         if self._current_conversion_settings.quick_setting == 'manual':
             self._ask_and_set_export_format()
             self._ask_and_set_front_matter_format()
-            if self._current_conversion_settings.front_matter_format != 'none':
+            if self._current_conversion_settings.metadata_front_matter_format != 'none':
                 self._ask_and_set_metadata_schema()
 
     def _nothing_to_convert(self):
@@ -130,12 +130,12 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
     def _ask_and_set_front_matter_format(self):
         front_matter_format = {
             'type': 'list',
-            'name': 'front_matter_format',
+            'name': 'metadata_front_matter_format',
             'message': 'What is the format of meta data front matter do you wish to use?',
             'choices': self._default_settings.valid_front_matter_formats
         }
         answer = prompt(front_matter_format, style=self.style)
-        self._current_conversion_settings.front_matter_format = answer['front_matter_format']
+        self._current_conversion_settings.metadata_front_matter_format = answer['metadata_front_matter_format']
 
     def _ask_nsx_conversion_options(self):
         self._ask_and_set_conversion_quick_setting()
@@ -152,9 +152,9 @@ class StartUpCommandLineInterface(InquireCommandLineInterface):
 
     def _ask_markdown_metadata_questions(self):
         self._ask_and_set_front_matter_format()
-        if self._current_conversion_settings.front_matter_format != 'none':
+        if self._current_conversion_settings.metadata_front_matter_format != 'none':
             self._ask_and_set_metadata_details()
-            if self._current_conversion_settings.front_matter_format == 'text':
+            if self._current_conversion_settings.metadata_front_matter_format == 'text':
                 self._ask_and_set_tag_prefix()
             self._ask_and_set_metadata_schema()
 

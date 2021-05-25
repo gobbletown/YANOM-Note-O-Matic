@@ -30,7 +30,7 @@ class ConfigData(ConfigParser):
 
     """
 
-    def __init__(self, config_file, default_quick_setting, silent, **kwargs):
+    def __init__(self, config_file, default_quick_setting, **kwargs):
         super().__init__(**kwargs)
         # Note: allow_no_value=True  allows for #comments in the ini file
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
@@ -40,36 +40,18 @@ class ConfigData(ConfigParser):
         self._conversion_settings = ConversionSettings()
         self._conversion_settings.set_quick_setting('manual')
         self._validation_values = self._conversion_settings.validation_values
-        self._read_config_file()
-        self._validate_config_file()
-        self._generate_conversion_settings_from_parsed_config_file_data()
+
+    def parse_config_file(self):
+        self.read_config_file()
+        valid_config =  self.validate_config_file()
+        if not valid_config:
+            self.ask_user_to_choose_new_default_config_file()
+        self.generate_conversion_settings_from_parsed_config_file_data()
         self.logger.info(f"Settings from config.ini are {self._conversion_settings}")
-
-    @property
-    def conversion_settings(self):
-        return self._conversion_settings
-
-    @conversion_settings.setter
-    def conversion_settings(self, value):
-        """
-        Receive a conversion setting as a quick setting string or a ConversionSettings object,
-        set the _conversion_setting, generate and save config ini file for the setting received.
-
-        Parameters
-        ----------
-        value : str or ConversionSettings
-            If str must be a valid quick_setting string value.
-
-        """
-        if type(value) is str:
-            self._generate_conversion_settings_using_quick_settings_string(value)
-            return
-
-        self._generate_conversion_settings_using_quick_settings_object(value)
 
     def _generate_conversion_settings_using_quick_settings_string(self, value):
         if value in self._conversion_settings.valid_quick_settings:
-            self.load_and_save_config_from_conversion_quick_setting_string(value)
+            self._load_and_save_config_from_conversion_quick_setting_string(value)
             return
 
         self.logger.error(f"Passed invalid value - {value} - not a recognised quick setting string")
@@ -78,34 +60,37 @@ class ConfigData(ConfigParser):
 
     def _generate_conversion_settings_using_quick_settings_object(self, value):
         if isinstance(value, ConversionSettings):
-            self.load_and_save_config_from_conversion_settings_obj(value)
+            self._load_and_save_config_from_conversion_settings_obj(value)
             return
 
         self.logger.error(f"Passed invalid value - {value}")
         raise TypeError(f"Conversion setting parameter must be a valid quick setting "
                         f"{self._conversion_settings.valid_quick_settings} string or a ConversionSettings object")
 
-    def _validate_config_file(self):
+    def validate_config_file(self) -> bool:
         """
         Validate config data read from config.ini.  Errors in the data will trigger a prompt user
         asking to create a new default configuration or exit the program.
 
         """
         self.logger.debug("attempting to validate config file")
+
         try:
             self._validate_config()
             self.logger.debug("config file validated")
+            return True
+
         except ValueError as e:
             self.logger.warning(f"Config file invalid \n{e}")
+            return False
 
-            ask_what_to_do = InvalidConfigFileCommandLineInterface()
-            what_to_do = ask_what_to_do.run_cli()
-            if what_to_do == 'exit':
-                sys.exit(0)
-            self.logger.info("User chose to create a default file")
-
-            # self._conversion_settings = ConversionSettings()
-            self.load_and_save_config_from_conversion_quick_setting_string(self._default_quick_setting)
+    def ask_user_to_choose_new_default_config_file(self):
+        ask_what_to_do = InvalidConfigFileCommandLineInterface()
+        what_to_do = ask_what_to_do.run_cli()
+        if what_to_do == 'exit':
+            sys.exit(0)
+        self.logger.info("User chose to create a default file")
+        self._load_and_save_config_from_conversion_quick_setting_string(self._default_quick_setting)
 
     def _validate_config(self):
         """
@@ -126,7 +111,7 @@ class ConfigData(ConfigParser):
                     if self[section][key] not in values:
                         raise ValueError(f'Invalid value of "{self[section][key]}" for {key} under section {section} in the config file')
 
-    def _generate_conversion_settings_from_parsed_config_file_data(self):
+    def generate_conversion_settings_from_parsed_config_file_data(self):
         """
         Transcribe the values in a ConversionSettings object into the ConfigParser format used by this class
 
@@ -136,7 +121,7 @@ class ConfigData(ConfigParser):
             self['markdown_conversion_inputs']['markdown_conversion_input']
         self._conversion_settings.quick_setting = self['quick_settings']['quick_setting']
         self._conversion_settings.export_format = self['export_formats']['export_format']
-        self._conversion_settings.front_matter_format = self['meta_data_options']['metadata_front_matter_format']
+        self._conversion_settings.metadata_front_matter_format = self['meta_data_options']['metadata_front_matter_format']
         self._conversion_settings.metadata_schema = self['meta_data_options']['metadata_schema']
         self._conversion_settings.tag_prefix = self['meta_data_options']['tag_prefix']
         self._conversion_settings.spaces_in_tags = self.getboolean('meta_data_options', 'spaces_in_tags')
@@ -157,11 +142,11 @@ class ConfigData(ConfigParser):
             self.write(config_file)
             self.logger.info("Saving configuration file")
 
-    def _read_config_file(self):
+    def read_config_file(self):
         """
-        Read config file. If file is missing generate a new one.
+        Read config file. If file is missing generate a new one using default quick setting.
 
-        If config file is missing generate a ConversionSettings child object for the default conversion values
+        If config file is missing set the conversion_settings tp the default quick setting values
         and use that to generate a config data set.
 
         """
@@ -171,12 +156,12 @@ class ConfigData(ConfigParser):
             self.read(self._config_file)
             self.logger.info(f'Data read from INI file is {self.__repr__()}')
         else:
-            self.logger.info('config.ini missing, generating new file and settings set to default.')
+            self.logger.warning('config.ini missing, generating new file and settings set to default.')
             if not config.silent:
                 print("config.ini missing, generating new file.")
             self.conversion_settings = self._default_quick_setting
 
-    def load_and_save_config_from_conversion_quick_setting_string(self, setting):
+    def _load_and_save_config_from_conversion_quick_setting_string(self, setting):
         """
         Generate a config data set and save the updated config file using a 'quick setting' value provided as a string.
 
@@ -189,7 +174,7 @@ class ConfigData(ConfigParser):
         self._conversion_settings.set_quick_setting(setting)
         self._load_and_save_settings()
 
-    def load_and_save_config_from_conversion_settings_obj(self, settings: ConversionSettings):
+    def _load_and_save_config_from_conversion_settings_obj(self, settings: ConversionSettings):
         """
         Generate a config data set and save updated config file
         Parameters
@@ -264,11 +249,11 @@ class ConfigData(ConfigParser):
                 "export_format": self._conversion_settings.export_format
             },
             'meta_data_options': {
-                '    # Note: front_matter_format sets the presence and type of the section with metadata ': None,
+                '    # Note: metadata_front_matter_format sets the presence and type of the section with metadata ': None,
                 '    #retrieved from the source': None,
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_front_matter_formats)}': None,
                 '    # no entry will result in no front matter section': None,
-                'metadata_front_matter_format': self._conversion_settings.front_matter_format,
+                'metadata_front_matter_format': self._conversion_settings.metadata_front_matter_format,
                 '    # metadata schema is a comma separated list of metadata keys that you wish to ': None,
                 '    # restrict the retrieved metadata keys. for example ': None,
                 '    # title, tags    will return those two if they are found': None,
@@ -276,7 +261,7 @@ class ConfigData(ConfigParser):
                 '    # The useful available keys in an nsx file are title, ctime, mtime, tag': None,
                 'metadata_schema': ",".join(self._conversion_settings.metadata_schema),
                 '    # tag prefix is a character you wish to be added to the front of any tag values ': None,
-                '    # retrieved from metadata.  NOTE this is only used if front_matter_format is none': None,
+                '    # retrieved from metadata.  NOTE this is only used if metadata_front_matter_format is none': None,
                 'tag_prefix': self._conversion_settings.tag_prefix,
                 '    # spaces_in_tags if True will maintain spaces in tag words, if False spaces are replaced by a dash -': None,
                 'spaces_in_tags': self._conversion_settings.spaces_in_tags,
@@ -306,6 +291,28 @@ class ConfigData(ConfigParser):
                 '    # If True creation time as `yyyymmddhhmm-` will be added as prefix to file name': None
             }
         }
+
+    @property
+    def conversion_settings(self):
+        return self._conversion_settings
+
+    @conversion_settings.setter
+    def conversion_settings(self, value):
+        """
+        Receive a conversion setting as a quick setting string or a ConversionSettings object,
+        set the _conversion_setting, generate and save config ini file for the setting received.
+
+        Parameters
+        ----------
+        value : str or ConversionSettings
+            If str must be a valid quick_setting string value.
+
+        """
+        if type(value) is str:
+            self._generate_conversion_settings_using_quick_settings_string(value)
+            return
+
+        self._generate_conversion_settings_using_quick_settings_object(value)
 
     def __str__(self):
         display_dict = str({section: dict(self[section]) for section in self.sections()})

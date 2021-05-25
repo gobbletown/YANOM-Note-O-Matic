@@ -84,18 +84,27 @@ def test_setup_logging_loggers_logging(tmp_path, caplog):
     yanom.setup_logging(tmp_path)
     logger = logging.getLogger(f'From pytest')
     logger.info("logging info")
+
+    assert len(caplog.records) > 0
+
     for record in caplog.records:
         assert record.levelname == "INFO"
     assert "From pytest" in caplog.text
 
     caplog.clear()
     logger.debug("logging debug")
+
+    assert len(caplog.records) > 0
+
     for record in caplog.records:
         assert record.levelname == "DEBUG"
     assert "From pytest" in caplog.text
 
     caplog.clear()
     logger.error("logging error")
+
+    assert len(caplog.records) > 0
+
     for record in caplog.records:
         assert record.levelname == "ERROR"
     assert "From pytest" in caplog.text
@@ -105,6 +114,9 @@ def test_configure_environment_debug(caplog):
     command_line_sys_argv = ["pytest", "-l", "debug"]
     yanom.main(command_line_sys_argv)
     assert config.logger_level == logging.DEBUG
+
+    assert len(caplog.records) > 0
+
     for record in caplog.records:
         assert record.levelname == "DEBUG"
 

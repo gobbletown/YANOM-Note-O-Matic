@@ -116,3 +116,4 @@ def main(command_line_sys_argv=sys.argv):
 if __name__ == '__main__':
     command_line_args = main()
     notes_converter = NotesConvertor(command_line_args)
+    notes_converter.convert_notes()
