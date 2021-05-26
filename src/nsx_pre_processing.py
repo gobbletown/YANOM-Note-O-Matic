@@ -78,7 +78,6 @@ class NoteStationPreProcessing(PreProcessing):
         if self._note.conversion_settings.export_format != 'pandoc_markdown_strict' \
                 and self._note.conversion_settings.export_format != 'html':
             self._process_iframes()
-        self._clean_excessive_divs()
         self._fix_ordered_list()
         self._fix_unordered_list()
         self._fix_check_lists()
@@ -91,7 +90,8 @@ class NoteStationPreProcessing(PreProcessing):
         if self._note.conversion_settings.metadata_front_matter_format != 'none':
             self._generate_metadata()
         self._generate_links_to_other_note_pages()
-        self._add_attachment_links()
+        self._add_file_attachment_links()
+        self._clean_excessive_divs()
 
     def _process_iframes(self):
         self.pre_processed_content, self._iframes_dict = pre_process_iframes_from_html(self.pre_processed_content)
@@ -190,7 +190,7 @@ class NoteStationPreProcessing(PreProcessing):
         link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file)
         self.pre_processed_content = link_generator.content
 
-    def _add_attachment_links(self):
+    def _add_file_attachment_links(self):
         self.logger.debug(f"Add attachment links to page content")
         attachments = [attachment
                        for attachment in self._note.attachments.values()

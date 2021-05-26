@@ -12,13 +12,13 @@ class NSAttachment(ABC):
         self._nsx_file = note.nsx_file
         self._json = note.note_json
         self._notebook_folder_name = note.notebook_folder_name
-        self._conversion_settings = self._nsx_file.conversion_settings
+        self._conversion_settings = note.conversion_settings
         self._file_name = ''
         self._path_relative_to_notebook = ''
         self._full_path = ''
         self._filename_inside_nsx = ''
         self._html_link = ''
-        self._attachment_folder_name = self._nsx_file.conversion_settings.attachment_folder_name
+        self._attachment_folder_name = self._conversion_settings.attachment_folder_name
 
     @abstractmethod
     def create_html_link(self):

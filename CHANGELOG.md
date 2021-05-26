@@ -8,6 +8,9 @@ and this project follows something close to [Semantic Versioning](https://semver
 - Increment the minor version number when adding a new feature or set of features and any current bug fixes not yet released
 - Increment the major version when significantly overhaul the user interface, or rewrite all internals.
 
+## Unreleased
+
+- Add tests for chart processing
 
 ## [1.2.0] - 2021-05-25
 ### Added

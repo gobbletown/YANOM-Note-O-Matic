@@ -55,8 +55,9 @@ class ChartProcessor(ABC):
         self._processed_html = self._raw_html
         self._soup = BeautifulSoup(self._raw_html, 'html.parser')
         self._attachments = {}
-        self.process_charts()
+        self._charts = []  # used for regression testing
         self._chart_config = {}
+        self.process_charts()
 
     @property
     def processed_html(self):
@@ -79,6 +80,7 @@ class ChartProcessor(ABC):
         for tag in chart_tags:
             self._fetch_chart_config_from_html(tag)
             chart = self._create_chart_object()
+            self._charts.append(chart)
             self._set_chart_config(chart)
             self._retrieve_chart_data(tag, chart)
             self._create_required_replacement_chart_elements(chart)
@@ -138,10 +140,15 @@ class ChartProcessor(ABC):
 
     def _generate_png_attachment(self, chart):
         self.logger.debug("Generate chart image attachment")
+
         self._note.attachments[f"{id(chart)}.png"] = ChartImageNSAttachment(self._note, f"{id(chart)}.png",
                                                                             chart.png_img_buffer)
         self._note.attachments[f"{id(chart)}.png"].process_attachment()
         self._note.image_count += 1
+
+    @property
+    def charts(self):
+        return self._charts
 
     class Chart(ABC):
         def __init__(self):
@@ -156,6 +163,7 @@ class ChartProcessor(ABC):
             self._y_category_labels = []
             self._csv_chart_data_string = str
             self._html_chart_data_table = str
+            self._chart_fig = None
             self._png_img_buffer = None
 
         @abstractmethod
@@ -299,7 +307,7 @@ class NSXChartProcessor(ChartProcessor):
 
     def _find_all_charts(self):
         self.logger.debug("Searching for charts")
-        return self._soup.select('p.syno-ns-chart-object')
+        return self._soup.select('div.syno-ns-chart-object')
 
     def _fetch_chart_config_from_html(self, tag):
         self.logger.debug("Reading chart configuration")
@@ -324,7 +332,8 @@ class NSXChartProcessor(ChartProcessor):
     def _create_chart_object(self):
         if self._chart_config['chartType'] == 'pie':
             return self.PieChart()
+
         if self._chart_config['chartType'] == 'line':
             return self.LineChart()
-        if self._chart_config['chartType'] == 'bar':
-            return self.BarChart()
+
+        return self.BarChart()
