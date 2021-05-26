@@ -10,7 +10,8 @@ and this project follows something close to [Semantic Versioning](https://semver
 
 ## Unreleased
 
-- Add tests for chart processing
+- Add tests for chart processing, image processing
+- Fix html tag widths were coded incorrectly wehn cleaning nsx html formatting prior to any conversion.
 
 ## [1.2.0] - 2021-05-25
 ### Added

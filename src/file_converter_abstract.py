@@ -101,7 +101,6 @@ class FileConverter(ABC):
     def write_post_processed_content(self):
         self.logger.info(f"Writing new file {self._file.stem + self._out_put_extension}")
         absolute_path = self._file.parent / (self._file.stem + self._out_put_extension)
-        # absolute_path.write_text(self._post_processed_content, encoding="utf-8")
         file_writer.write_text(absolute_path, self._post_processed_content)
 
     def rename_target_file_if_already_exists(self):

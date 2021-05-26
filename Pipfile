@@ -23,5 +23,6 @@ pyinstaller = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-regressions = "*"
+mock = "*"
 
 [requires]

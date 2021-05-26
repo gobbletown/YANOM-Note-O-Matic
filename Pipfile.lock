@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7a20c1589183f20b8bda38380562b42a4132a8fcfe54076f7bb3791e3e23a285"
+            "sha256": "4260b986f562597dd55d4eb266665a71129f99c8604c35fc33b7cdaf053bba13"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -471,6 +471,14 @@
             ],
             "markers": "sys_platform == 'darwin'",
             "version": "==1.14"
+        },
+        "mock": {
+            "hashes": [
+                "sha256:122fcb64ee37cfad5b3f48d7a7d51875d7031aaf3d8be7c42e2bee25044eee62",
+                "sha256:7d3fbbde18228f4ff2f1f119a45cdffa458b4c0dee32eb4d2bb2f82554bac7bc"
+            ],
+            "index": "pypi",
+            "version": "==4.0.3"
         },
         "packaging": {
             "hashes": [
