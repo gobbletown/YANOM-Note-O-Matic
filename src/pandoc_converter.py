@@ -19,7 +19,7 @@ class PandocConverter:
         self.logger.setLevel(config.logger_level)
         self.conversion_settings = conversion_settings
         self.output_file_format = self.conversion_settings.export_format
-        self.pandoc_version = None
+        self._pandoc_version = None
         self.pandoc_conversion_options = {'q_own_notes': 'markdown_strict+pipe_tables-raw_html',
                                           'gfm': 'gfm',
                                           'obsidian': 'gfm',
@@ -34,31 +34,26 @@ class PandocConverter:
         else:
             self._pandoc_path = 'pandoc'
 
-        self.check_pandoc_is_installed_if_not_exit_program()
         self.find_pandoc_version()
         self.generate_pandoc_options()
 
     def find_pandoc_version(self):
+        if not self.is_pandoc_installed():
+            sys.exit(1)
+
         try:
-            self.pandoc_version = subprocess.run([self._pandoc_path, '-v'], capture_output=True, text=True, timeout=3)
-            self.pandoc_version = self.pandoc_version.stdout[7:].split('\n', 1)[0].strip()
+            self._pandoc_version = subprocess.run([self._pandoc_path, '-v'], capture_output=True, text=True, timeout=3)
+            self._pandoc_version = self._pandoc_version.stdout[7:].split('\n', 1)[0].strip()
             if not config.silent:
-                print('Found pandoc ' + str(self.pandoc_version))
-            self.logger.debug(f"Found pandoc version {str(self.pandoc_version)} at {self._pandoc_path}")
+                print('Found pandoc ' + str(self._pandoc_version))
+            self.logger.debug(f"Found pandoc version {str(self._pandoc_version)} at {self._pandoc_path}")
 
-        except FileNotFoundError as e:
-            self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
+        except subprocess.CalledProcessError as exc:
+            self.logger.warning(f"Exiting as unable to get pandoc version\n{exc}")
             if not config.silent:
-                print("Unable to locate pandoc please check pandoc installation and see *.log files.")
+                print("Unable to fetch pandoc version please check log files for additional information.")
                 print("Exiting.")
-            sys.exit(0)
-
-        except subprocess.CalledProcessError as e:
-            self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
-            if not config.silent:
-                print("Unable to locate pandoc please check pandoc installation and see log files.")
-                print("Exiting.")
-            sys.exit(0)
+            sys.exit(1)
 
     def generate_pandoc_options(self):
         self.logger.debug(
@@ -88,6 +83,9 @@ class PandocConverter:
             return self.pandoc_conversion_options[self.conversion_settings.markdown_conversion_input]
 
     def convert_using_strings(self, input_data, name):
+        if not self.is_pandoc_installed():
+            sys.exit(1)
+
         try:
             out = subprocess.run(self.pandoc_options, input=input_data, capture_output=True,
                                  encoding='utf-8', text=True, timeout=20)
@@ -95,41 +93,28 @@ class PandocConverter:
                 self.logger.error(f"Pandoc Return code={out.returncode}, error={out.stderr}")
             return out.stdout
 
-        except FileNotFoundError as e:
-            self.logger.warning(f"Exiting as unable to find pandoc\n{e}")
-            if not config.silent:
-                print("Unable to locate pandoc please check pandoc installation and see *.log files.")
-                print("Exiting.")
-            sys.exit(0)
-
-        except subprocess.CalledProcessError:
-            self.logger.error(f"Unable to convert note {name}")
+        except subprocess.CalledProcessError as exc:
+            self.logger.error(f"Unable to convert note {name}. Pandoc error - {exc}")
             self.error_handling(name)
 
         return 'Error converting data'
 
     def _pandoc_older_than_v_1_16(self):
-        return version.parse(self.pandoc_version) < version.parse('1.16')
+        return version.parse(self._pandoc_version) < version.parse('1.16')
 
     def _pandoc_older_than_v_1_19(self):
-        return version.parse(self.pandoc_version) < version.parse('1.19')
+        return version.parse(self._pandoc_version) < version.parse('1.19')
 
     def _pandoc_older_than_v_2_11_2(self):
-        return version.parse(self.pandoc_version) < version.parse('2.11.2')
+        return version.parse(self._pandoc_version) < version.parse('2.11.2')
 
-    @staticmethod
-    def check_pandoc_is_installed_if_not_exit_program():
-        if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
-            logging.info("Pandoc program not found - exiting")
+    def is_pandoc_installed(self):
+        if not shutil.which(self._pandoc_path) and not os.path.isfile(self._pandoc_path):
+            logging.warning("Pandoc program not found - exiting")
             if not config.silent:
                 print("Could not find pandoc. Please install pandoc, "
                       "or if installed please check it is on your environment path")
-            sys.exit(1)
+            return False
 
-    @staticmethod
-    def error_handling(note_title):
-        msg = f"Error converting note {note_title} with pandoc please check log file and pandoc installation."
-        logging.error(msg)
-        if not config.silent:
-            print(msg)
-            print("Attempting to continue...")
+        return True
+

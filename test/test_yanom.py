@@ -3,8 +3,8 @@ import pytest
 import logging
 
 import config
-from notes_converter import NotesConvertor
 import yanom
+
 
 @pytest.mark.parametrize(
     'args, expected', [
@@ -28,6 +28,7 @@ def test_set_logging_level_invalid_arg():
     with pytest.raises(SystemExit) as exc:
         yanom.set_logging_level('bad-value')
     assert config.logger_level == logging.INFO
+
 
 @pytest.mark.parametrize(
     'command_line_args, expected', [
