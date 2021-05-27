@@ -8,10 +8,18 @@ and this project follows something close to [Semantic Versioning](https://semver
 - Increment the minor version number when adding a new feature or set of features and any current bug fixes not yet released
 - Increment the major version when significantly overhaul the user interface, or rewrite all internals.
 
-## Unreleased
+## Unreleased on the develop branch
 
-- Add tests for chart processing, image processing
-- Fix html tag widths were coded incorrectly wehn cleaning nsx html formatting prior to any conversion.
+### Added
+- Exporting to 'pandoc-markdown' now uses YANOM's metadata parser giving wider choice of metadata keys to be parsed or not parsed.  The export only produces a YAML front matter sectoin.
+- Can now add a tag prefix to tag metadata values in front matter sections.  This is not required by most markdown readers, but is an option if required.
+
+### Fixed
+- Fix html tag widths were coded incorrectly when cleaning nsx html formatting prior to any conversion.
+- Image tag prefix is now correctly implemented.
+
+### Other
+- Add tests for chart processing, image processing, metadata processing
 
 ## [1.2.0] - 2021-05-25
 ### Added

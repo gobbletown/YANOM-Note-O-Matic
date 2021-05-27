@@ -21,9 +21,6 @@ class HTMLToMDConverter(FileConverter):
         self.rename_target_file_if_already_exists()
 
     def parse_metadata_if_required(self):
-        if self._conversion_settings.export_format == 'pandoc_markdown':
-            return
-
         self._metadata_processor = MetaDataProcessor(self._conversion_settings)
         self._metadata_processor.parse_html_metadata(self._pre_processed_content)
 
@@ -44,7 +41,4 @@ class HTMLToMDConverter(FileConverter):
         self._post_processed_content = f'{self._post_processed_content}\n'
 
     def add_meta_data_if_required(self):
-        if self._conversion_settings.export_format == 'pandoc_markdown':
-            return
-
         self._post_processed_content = self._metadata_processor.add_metadata_md_to_content(self._post_processed_content)

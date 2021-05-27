@@ -30,7 +30,7 @@ class NoteStationPostProcessing(PostProcessing):
         self.post_process_note_page()
 
     def post_process_note_page(self):
-        if self._conversion_settings.metadata_front_matter_format != 'none':
+        if self._conversion_settings.front_matter_format != 'none':
             self._add_meta_data()
         self._add_check_lists()
         if self._note.conversion_settings.export_format != 'pandoc_markdown_strict':
@@ -39,7 +39,7 @@ class NoteStationPostProcessing(PostProcessing):
         self._add_one_last_line_break()
 
     def _add_meta_data(self):
-        if self._note.conversion_settings.metadata_front_matter_format != 'none':
+        if self._note.conversion_settings.front_matter_format != 'none':
             self.logger.debug(f"Adding meta-data to page")
             self._post_processed_content = self._pre_processor.metadata_processor.add_metadata_md_to_content(self._post_processed_content)
 

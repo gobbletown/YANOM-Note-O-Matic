@@ -1,4 +1,4 @@
-![coverage 65%](https://img.shields.io/badge/coverage-55%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
+![coverage 67%](https://img.shields.io/badge/coverage-55%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
 
 # YANOM - Yet Another Note-O-Matic
 YANOM - stands for Yet Another Note-O-Matic. 
@@ -64,7 +64,7 @@ Future versions will support conversion from additional proprietary file formats
   - MultiMarkdown (MultiMarkdown Composer) 
   - Pandoc markdown 
   - Pandoc markdown-strict 
-  - QOwnNotes optimised markdown-
+  - QOwnNotes optimised markdown-strict
 - Note content that will be converted successfully
   - Headers
   - Bulleted lists
@@ -74,15 +74,16 @@ Future versions will support conversion from additional proprietary file formats
   - Images 
   - Image width where supported in Markdown 
   - IFrames 
-  - Metadata - support JSON, TOML or YAML front matter, and `meta` tags in HTML
+  - Metadata - support JSON, TOML or YAML front matter, and `meta` tags in HTML.  
+    - It is also possible include the metadata as plain text at the top of the exported file
+    - Option to discard metadata
   - Tags 
     - included in front matter, html header or as plain text with an optional prefix character
     - option to split grouped tags photography/landscape/winter becomes #photography, #landscape, #winter
-    - option to remove spaces from tag names
-  - Tags 
+    - option to remove spaces from tag names, spaces are replaced with hyphen `-`
   - File attachments are maintained
   - Note-Station specific features
-    - Charts are recreated.  Options to place an image, data table of the chart data and a link to a csv file on the exported page.      
+    - Charts are recreated.  Options to place an image, data table of the chart data and, a link to a csv file on the exported page.      
     - Links between note pages.
       - For Note-Station most of the time this will be successful.  However, there are some limitations and the [Synology Note-Station Links to Other Note Pages](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/Synology-Note-Station-Links-to-Other-Note-Pages) wiki page has examples of the possible issues and solutions for them.
     - Note-Station audio notes - are attached as an attachment

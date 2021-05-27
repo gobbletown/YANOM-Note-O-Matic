@@ -87,7 +87,7 @@ class NoteStationPreProcessing(PreProcessing):
         if self._note.conversion_settings.first_column_as_header:
             self._first_column_in_table_as_header_if_required()
         self._extract_and_generate_chart()
-        if self._note.conversion_settings.metadata_front_matter_format != 'none':
+        if self._note.conversion_settings.front_matter_format != 'none':
             self._generate_metadata()
         self._generate_links_to_other_note_pages()
         self._add_file_attachment_links()

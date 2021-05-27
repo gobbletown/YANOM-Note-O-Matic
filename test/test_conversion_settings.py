@@ -131,10 +131,10 @@ def test_source_setting_valid_sub_directory(tmp_path):
 
 def test_front_matter_setter_invalid(caplog):
     cs = conversion_settings.ConversionSettings()
-    cs.metadata_front_matter_format = 'toml'
-    cs.metadata_front_matter_format = 'invalid'
+    cs.front_matter_format = 'toml'
+    cs.front_matter_format = 'invalid'
 
-    assert cs.metadata_front_matter_format == 'toml'
+    assert cs.front_matter_format == 'toml'
 
     assert len(caplog.records) > 0
 

@@ -50,12 +50,12 @@ class TestMDToHTMLConverter(unittest.TestCase):
         test_strings = [
             ('pandoc_markdown',
              '---\nexcerpt: tl;dr\nlayout: post\ntitle: TITLE\n---\n\n# Hello',
-             '---\nexcerpt: tl;dr\nlayout: post\ntitle: TITLE\n---\n\n# Hello',
-             'markdown pre processing for meta data failed'),
+             '# Hello',
+             'pandoc_markdown pre processing for meta data failed'),
             ('gfm',
              '---\nexcerpt: tl;dr\nlayout: post\ntitle: TITLE\n---\n\n# Hello',
              '# Hello',
-             'non-markdown pre processing for meta data failed'),
+             'pre processing for meta data failed'),
         ]
         for test_set in test_strings:
             with self.subTest(msg='testing meta data handling'):
@@ -127,6 +127,6 @@ class TestMDToHTMLConverter(unittest.TestCase):
         self.file_converter._metadata_processor._metadata = {'title': 'My Title'}
         self.file_converter.add_meta_data_if_required()
         self.assertEqual(
-            '<head><title>-</title></head><p><a href="a_folder/test_md_file.md">md file</a></p>',
+            '<head><title>My Title</title><meta title="My Title"/></head><p><a href="a_folder/test_md_file.md">md file</a></p>',
             self.file_converter._post_processed_content,
             'title and meta data inserted incorrectly with markdown conversion input')

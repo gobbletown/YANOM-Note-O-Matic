@@ -34,11 +34,11 @@ quick_setting = obsidian
 export_format = obsidian
 
 [meta_data_options]
-    # note: metadata_front_matter_format sets the presence and type of the section with metadata 
+    # note: front_matter_format sets the presence and type of the section with metadata 
     #retrieved from the source
     # valid entries are yaml, toml, json, text, none
     # no entry will result in no front matter section
-metadata_front_matter_format = yaml
+front_matter_format = yaml
     # metadata schema is a comma separated list of metadata keys that you wish to 
     # restrict the retrieved metadata keys. for example 
     # title, tags    will return those two if they are found
@@ -46,7 +46,7 @@ metadata_front_matter_format = yaml
     # the useful available keys in an nsx file are title, ctime, mtime, tag
 metadata_schema = title,ctime,mtime,tag
     # tag prefix is a character you wish to be added to the front of any tag values 
-    # retrieved from metadata.  note this is only used if metadata_front_matter_format is none
+    # retrieved from metadata.  note this is only used if front_matter_format is none
 tag_prefix = #
     # spaces_in_tags if true will maintain spaces in tag words, if false spaces are replaced by a dash -
 spaces_in_tags = False
@@ -116,7 +116,7 @@ def test_read_config_file_good_file(tmp_path, good_config_ini, caplog):
     assert cd['markdown_conversion_inputs']['markdown_conversion_input'] == 'obsidian'
     assert cd['quick_settings']['quick_setting'] == 'obsidian'
     assert cd['export_formats']['export_format'] == 'obsidian'
-    assert cd['meta_data_options']['metadata_front_matter_format'] == 'yaml'
+    assert cd['meta_data_options']['front_matter_format'] == 'yaml'
     assert cd['meta_data_options']['metadata_schema'] == 'title,ctime,mtime,tag'
     assert cd['meta_data_options']['tag_prefix'] == '#'
     assert cd.getboolean('meta_data_options', 'spaces_in_tags') is False
@@ -148,7 +148,7 @@ def test_validate_config_file_good_file(tmp_path, good_config_ini):
         ('markdown_conversion_inputs', 'markdown_conversion_input', 'bad-value-1234'),
         ('quick_settings', 'quick_setting', 'bad-value-1234'),
         ('export_formats', 'export_format', 'bad-value-1234'),
-        ('meta_data_options', 'metadata_front_matter_format', 'bad-value-1234'),
+        ('meta_data_options', 'front_matter_format', 'bad-value-1234'),
         ('meta_data_options', 'spaces_in_tags', 'bad-value-1234'),
         ('meta_data_options', 'split_tags', 'bad-value-1234'),
         ('table_options', 'first_row_as_header', 'bad-value-1234'),
@@ -178,7 +178,7 @@ def test_validate_config_file_bad_values(tmp_path, good_config_ini, key1, key2, 
         ('markdown_conversion_inputs', 'markdown_conversion_input', 'obsidian', 'gfm', 'gfm'),
         ('quick_settings', 'quick_setting', 'obsidian', 'commonmark', 'commonmark'),
         ('export_formats', 'export_format', 'obsidian', 'multimarkdown', 'multimarkdown'),
-        ('meta_data_options', 'metadata_front_matter_format', 'yaml', 'toml', 'toml'),
+        ('meta_data_options', 'front_matter_format', 'yaml', 'toml', 'toml'),
         ('meta_data_options', 'metadata_schema', 'title,ctime,mtime,tag', 'something_different', ['something_different']),
         ('meta_data_options', 'tag_prefix', '#', '@', '@'),
         ('meta_data_options', 'spaces_in_tags', 'False', 'True', True),
@@ -353,4 +353,4 @@ def test_str(good_config_ini, tmp_path):
     cd.parse_config_file()
 
     result = str(cd)
-    assert result == "ConfigData{'conversion_inputs': {'conversion_input': 'nsx'}, 'markdown_conversion_inputs': {'markdown_conversion_input': 'obsidian'}, 'quick_settings': {'quick_setting': 'obsidian'}, 'export_formats': {'export_format': 'obsidian'}, 'meta_data_options': {'metadata_front_matter_format': 'yaml', 'metadata_schema': 'title,ctime,mtime,tag', 'tag_prefix': '#', 'spaces_in_tags': 'False', 'split_tags': 'False'}, 'table_options': {'first_row_as_header': 'True', 'first_column_as_header': 'True'}, 'chart_options': {'chart_image': 'True', 'chart_csv': 'True', 'chart_data_table': 'True'}, 'file_options': {'source': '', 'export_folder_name': 'notes', 'attachment_folder_name': 'attachments', 'creation_time_in_exported_file_name': 'False'}}"
+    assert result == "ConfigData{'conversion_inputs': {'conversion_input': 'nsx'}, 'markdown_conversion_inputs': {'markdown_conversion_input': 'obsidian'}, 'quick_settings': {'quick_setting': 'obsidian'}, 'export_formats': {'export_format': 'obsidian'}, 'meta_data_options': {'front_matter_format': 'yaml', 'metadata_schema': 'title,ctime,mtime,tag', 'tag_prefix': '#', 'spaces_in_tags': 'False', 'split_tags': 'False'}, 'table_options': {'first_row_as_header': 'True', 'first_column_as_header': 'True'}, 'chart_options': {'chart_image': 'True', 'chart_csv': 'True', 'chart_data_table': 'True'}, 'file_options': {'source': '', 'export_folder_name': 'notes', 'attachment_folder_name': 'attachments', 'creation_time_in_exported_file_name': 'False'}}"

@@ -33,8 +33,8 @@ class TestMDToMDConverter(unittest.TestCase):
              ),
             ('Hello',
              {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
-             'markdown',
-             'Hello',
+             'pandoc_markdown',
+             '---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
              'good meta string and content failed'
              )
         ]
@@ -73,11 +73,11 @@ class TestMDToMDConverter(unittest.TestCase):
              'bad meta data failed'
              ),
             ('---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
-             'markdown',
-             {},
-             'good meta string failed',
-             '---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
-             'good meta string failed'
+             'pandoc_markdown',
+             {'title': 'Hello, world!'},
+             'good meta failed with pandoc_markdown',
+             'Hello',
+             'good meta with pandoc_markdown failed'
              )
         ]
         for test_set in test_data_sets:
@@ -240,16 +240,16 @@ class TestMDToMDConverter(unittest.TestCase):
 
         self.assertEqual('---\ntest: data\n---\n\nHello',
                          self.file_converter._post_processed_content,
-                         'failed to post process content')
+                         'failed to post process content 1')
 
         self.file_converter._pre_processed_content = '---\ntest: data\n---\n\nHello'
-        self.file_converter._metadata_processor._metadata = {'tile': 'My Title'}
-        self.file_converter._conversion_settings.markdown_conversion_input = 'markdown'
+        self.file_converter._metadata_processor._metadata = {'title': 'My Title'}
+        self.file_converter._conversion_settings.markdown_conversion_input = 'pandoc_markdown'
         self.file_converter.post_process_content()
 
-        self.assertEqual('---\ntest: data\n---\n\nHello',
+        self.assertEqual('---\ntitle: My Title\n---\n\n---\ntest: data\n---\n\nHello',
                          self.file_converter._post_processed_content,
-                         'failed to post process content')
+                         'failed to post process content 2')
 
         self.file_converter._pre_processed_content = '---\ntest: data\n---\n\nHello'
         self.file_converter._metadata_processor._metadata = {'title': 'My Title'}
@@ -258,7 +258,7 @@ class TestMDToMDConverter(unittest.TestCase):
 
         self.assertEqual('---\ntitle: My Title\n---\n\n---\ntest: data\n---\n\nHello',
                          self.file_converter._post_processed_content,
-                         'failed to post process content')
+                         'failed to post process content 3')
 
     def test_set_out_put_extension(self):
         extension = self.file_converter.set_out_put_file_extension()

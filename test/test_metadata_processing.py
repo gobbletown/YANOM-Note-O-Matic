@@ -1,4 +1,7 @@
 import unittest
+
+import pytest
+
 from src.conversion_settings import ConversionSettings
 from src.metadata_processing import MetaDataProcessor
 
@@ -304,32 +307,11 @@ class TestMetaDataProcessor(unittest.TestCase):
         new_content = self.metadata_processor.add_metadata_html_to_content(content)
         self.assertEqual('<title>-</title>', new_content, 'meta data inserted incorrectly')
 
-        self.metadata_processor._conversion_settings.markdown_conversion_input = 'markdown'
+        self.metadata_processor._conversion_settings.markdown_conversion_input = 'pandoc_markdown'
         content = '<head><title>-</title></head>'
         self.metadata_processor._metadata = {'test': 'test-meta-content', 'test2': 'this is test2'}
         new_content = self.metadata_processor.add_metadata_html_to_content(content)
-        self.assertEqual('<head><title>-</title></head>', new_content, 'meta data inserted incorrectly')
-
-    def test_add_metadata_md_to_content(self):
-        test_data_sets = [
-            ('Hello',
-             {},
-             'Hello',
-             'no meta data, content was incorrect'
-             ),
-            ('Hello',
-             {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
-             '---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
-             'good meta string and content failed'
-             )
-        ]
-
-        for test_set in test_data_sets:
-            with self.subTest(msg=f'Testing adding meta data to MD {test_set}'):
-                content = test_set[0]
-                self.metadata_processor._metadata = test_set[1]
-                new_content = self.metadata_processor.add_metadata_md_to_content(content)
-                self.assertEqual(test_set[2], new_content, test_set[3])
+        self.assertEqual('<head><title>-</title><meta test="test-meta-content"/><meta test2="this is test2"/></head>', new_content, 'meta data inserted incorrectly')
 
     def test_parse_html_meta_data(self):
         test_data_sets = [
@@ -387,6 +369,13 @@ class TestMetaDataProcessor(unittest.TestCase):
              'with md metadata to parse, incorrect metadata'
              ),
             ('---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
+             [''],
+             'Hello',
+             'with md metadata and empty schema, content was incorrect',
+             {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
+             'with md metadata and empty schema, incorrect metadata'
+             ),
+            ('---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
              ['title', 'layout', 'ctime', 'mtime'],
              'Hello',
              'with md metadata, content was incorrect',
@@ -417,3 +406,174 @@ class TestMetaDataProcessor(unittest.TestCase):
                 new_content = self.metadata_processor.parse_md_metadata(md_string)
                 self.assertEqual(test_set[2], new_content, test_set[3])
                 self.assertTrue(test_set[4] == self.metadata_processor.metadata, test_set[5])
+
+def test_add_metadata_md_to_content(self):
+    test_data_sets = [
+        ('Hello',
+         {},
+         'Hello',
+         'no meta data, content was incorrect'
+         ),
+        ('Hello',
+         {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
+         '---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
+         'good meta string and content failed'
+         )
+    ]
+
+    for test_set in test_data_sets:
+        with self.subTest(msg=f'Testing adding meta data to MD {test_set}'):
+            content = test_set[0]
+            self.metadata_processor._metadata = test_set[1]
+            new_content = self.metadata_processor.add_metadata_md_to_content(content)
+            self.assertEqual(test_set[2], new_content, test_set[3])
+
+
+@pytest.mark.parametrize(
+    'md_string, markdown_conversion_input, expected', [
+        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
+         'obsidian',
+         'ctime: 202102122352\nmtime: 202104242208\ntag: #Tag1, #Tag1/SubTag1, #Tag1/SubTag1/SubSubTag1, #Tag2title: test page\n\nhello'),
+       ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag: \ntitle: test page\n---\n\n# This is H1",
+        'obsidian',
+         'ctime: 202102122352\nmtime: 202104242208\ntitle: test page\n\nhello'),
+        ("# This is H1",
+         'obsidian',
+         "hello"),
+        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
+         'markdown',
+         'ctime: 202102122352\nmtime: 202104242208\ntag: #Tag1, #Tag1/SubTag1, #Tag1/SubTag1/SubSubTag1, #Tag2title: test page\n\nhello'),
+]
+)
+def test_add_text_metadata_to_content(md_string, markdown_conversion_input, expected):
+    conversion_settings = ConversionSettings()
+    conversion_settings.markdown_conversion_input = markdown_conversion_input
+    conversion_settings.metadata_schema = ['title', 'ctime', 'mtime', 'tag']
+    metadata_processor = MetaDataProcessor(conversion_settings)
+    metadata_processor.parse_md_metadata(md_string)
+    content = "hello"
+
+    result = metadata_processor.add_text_metadata_to_content(content)
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    'md_string, expected', [
+        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
+         {'ctime': '202102122352', 'mtime': '202104242208', 'tag': ['#Tag1', '#Tag1/SubTag1', '#Tag1/SubTag1/SubSubTag1', '#Tag2'], 'title': 'test page'}),
+        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntags:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
+         {'ctime': '202102122352', 'mtime': '202104242208', 'tags': ['#Tag1', '#Tag1/SubTag1', '#Tag1/SubTag1/SubSubTag1', '#Tag2'], 'title': 'test page'}),
+        ]
+)
+def test_add_tag_prefix_if_required(md_string, expected):
+    conversion_settings = ConversionSettings()
+    conversion_settings.tag_prefix = '#'
+    conversion_settings.metadata_schema = ['']
+    metadata_processor = MetaDataProcessor(conversion_settings)
+
+    # md_string = "---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1"
+    # expected = {'ctime': '202102122352', 'mtime': '202104242208', 'tag': ['#Tag1', '#Tag1/SubTag1', '#Tag1/SubTag1/SubSubTag1', '#Tag2'], 'title': 'test page'}
+
+    metadata_processor.parse_md_metadata(md_string)
+
+    metadata_processor.add_tag_prefix_if_required()
+
+    assert metadata_processor.metadata == expected
+
+
+@pytest.mark.parametrize(
+    'html_string, expected, schema', [
+        ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tag="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+         {'ctime': '202102122352', 'mtime': '202104242208', 'tag': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
+        ['title', 'ctime', 'mtime', 'tag']
+         ),
+         ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+         {'ctime': '202102122352', 'mtime': '202104242208', 'tags': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
+          ['title', 'ctime', 'mtime', 'tags']),
+                 ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+         {'ctime': '202102122352', 'mtime': '202104242208', 'tags': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
+          [''])
+        ]
+)
+def test_convert_tag_sting_to_tag_list(html_string, expected, schema):
+    conversion_settings = ConversionSettings()
+    conversion_settings.metadata_schema = schema
+    metadata_processor = MetaDataProcessor(conversion_settings)
+
+    metadata_processor.parse_html_metadata(html_string)
+
+    metadata_processor.convert_tag_sting_to_tag_list()
+
+    assert metadata_processor.metadata == expected
+
+
+@pytest.mark.parametrize(
+    'html_string, expected', [
+        ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tag="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+        ['SubSubTag1', 'SubTag1', 'Tag1', 'Tag2']
+         ),
+         ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+          ['SubSubTag1', 'SubTag1', 'Tag1', 'Tag2']
+          ),
+        ]
+)
+def test_split_tags_if_required_with_tags_key(html_string, expected):
+    conversion_settings = ConversionSettings()
+    conversion_settings.split_tags = True
+    conversion_settings.metadata_schema = ['']
+    metadata_processor = MetaDataProcessor(conversion_settings)
+
+    metadata_processor.parse_html_metadata(html_string)
+
+    metadata_processor.convert_tag_sting_to_tag_list()
+
+    if 'tags' in metadata_processor.metadata:
+        assert sorted(metadata_processor.metadata['tags']) == expected
+
+    if 'tag' in metadata_processor.metadata:
+        assert sorted(metadata_processor.metadata['tag']) == expected
+
+
+@pytest.mark.parametrize(
+    'content, metadata, front_matter_format, expected', [
+        ('Hello',
+         {},
+         'yaml',
+         'Hello',
+         ),
+        ('Hello',
+         {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
+         'yaml',
+         '---\nexcerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n---\n\nHello',
+         ),
+        ('Hello',
+         {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
+         'toml',
+         '+++\nexcerpt = "tl;dr"\nlayout = "post"\ntitle = "Hello, world!"\n\n+++\n\nHello',
+         ),
+        ('Hello',
+         {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
+         'json',
+         '{\n    "excerpt": "tl;dr",\n    "layout": "post",\n    "title": "Hello, world!"\n}\n\n\nHello',
+         ),
+        ('Hello',
+         {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
+         'text',
+         'excerpt: tl;dr\nlayout: post\ntitle: Hello, world!\n\nHello',
+         ),
+        ('Hello',
+         {'excerpt': 'tl;dr', 'layout': 'post', 'title': 'Hello, world!'},
+         'none',
+         'Hello',
+         ),
+    ]
+)
+def test_add_metadata_md_to_content(content, metadata, front_matter_format, expected):
+    conversion_settings = ConversionSettings()
+    conversion_settings.front_matter_format = front_matter_format
+    metadata_processor = MetaDataProcessor(conversion_settings)
+    metadata_processor._metadata = metadata
+    result = metadata_processor.add_metadata_md_to_content(content)
+
+    assert result == expected

@@ -121,7 +121,9 @@ class ConfigData(ConfigParser):
             self['markdown_conversion_inputs']['markdown_conversion_input']
         self._conversion_settings.quick_setting = self['quick_settings']['quick_setting']
         self._conversion_settings.export_format = self['export_formats']['export_format']
-        self._conversion_settings.metadata_front_matter_format = self['meta_data_options']['metadata_front_matter_format']
+        self._conversion_settings.front_matter_format = self['meta_data_options']['front_matter_format']
+        if self._conversion_settings.export_format == 'pandoc-markdown':
+            self._conversion_settings.front_matter_format = 'yaml'
         self._conversion_settings.metadata_schema = self['meta_data_options']['metadata_schema']
         self._conversion_settings.tag_prefix = self['meta_data_options']['tag_prefix']
         self._conversion_settings.spaces_in_tags = self.getboolean('meta_data_options', 'spaces_in_tags')
@@ -249,11 +251,11 @@ class ConfigData(ConfigParser):
                 "export_format": self._conversion_settings.export_format
             },
             'meta_data_options': {
-                '    # Note: metadata_front_matter_format sets the presence and type of the section with metadata ': None,
+                '    # Note: front_matter_format sets the presence and type of the section with metadata ': None,
                 '    #retrieved from the source': None,
                 f'    # Valid entries are {", ".join(self._conversion_settings.valid_front_matter_formats)}': None,
                 '    # no entry will result in no front matter section': None,
-                'metadata_front_matter_format': self._conversion_settings.metadata_front_matter_format,
+                'front_matter_format': self._conversion_settings.front_matter_format,
                 '    # metadata schema is a comma separated list of metadata keys that you wish to ': None,
                 '    # restrict the retrieved metadata keys. for example ': None,
                 '    # title, tags    will return those two if they are found': None,
@@ -261,7 +263,8 @@ class ConfigData(ConfigParser):
                 '    # The useful available keys in an nsx file are title, ctime, mtime, tag': None,
                 'metadata_schema': ",".join(self._conversion_settings.metadata_schema),
                 '    # tag prefix is a character you wish to be added to the front of any tag values ': None,
-                '    # retrieved from metadata.  NOTE this is only used if metadata_front_matter_format is none': None,
+                '    # retrieved from metadata.  NOTE Use this if using front matter format "text" ': None,
+                '    # or use is your marksown system uses a prefix in a front matter section (most wil not use a prefix) ': None,
                 'tag_prefix': self._conversion_settings.tag_prefix,
                 '    # spaces_in_tags if True will maintain spaces in tag words, if False spaces are replaced by a dash -': None,
                 'spaces_in_tags': self._conversion_settings.spaces_in_tags,

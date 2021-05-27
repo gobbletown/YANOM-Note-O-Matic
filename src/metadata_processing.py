@@ -55,7 +55,7 @@ class MetaDataProcessor:
         self.logger.debug(f"Parsing markdown front matter meta-data")
         metadata, content = frontmatter.parse(md_string)
         if self._metadata_schema == ['']:
-            self._metadata = {key: value for key, value in metadata.items()}
+            self._metadata = metadata
             return content
 
         self._metadata = {key: value for key, value in metadata.items() if key in self._metadata_schema}
@@ -106,19 +106,16 @@ class MetaDataProcessor:
             set_tags = {tag for tag_split in self._metadata['tag'] for tag in tag_split.split('/')}
             self._metadata['tag'] = [tag for tag in set_tags]
 
-    def add_tag_prefix_of_required(self):
-        if not self._split_tags:
-            return
+    def add_tag_prefix_if_required(self):
         if 'tags' in self._metadata:
-            set_tags = {tag for tag_split in self._metadata['tags'] for tag in tag_split.split('/')}
-            self._metadata['tags'] = [tag for tag in set_tags]
-        if 'tag' in self._metadata:
-            set_tags = {tag for tag_split in self._metadata['tag'] for tag in tag_split.split('/')}
-            self._metadata['tag'] = [tag for tag in set_tags]
+            self._metadata['tags'] = [f'{self._tag_prefix}{tag}' for tag in self._metadata['tags']]
+            return
+
+        self._metadata['tag'] = [f'{self._tag_prefix}{tag}' for tag in self._metadata['tag']]
 
     def add_metadata_md_to_content(self, content):
         self.logger.debug(f"Add front matter meta-data to markdown page")
-        if self._conversion_settings.metadata_front_matter_format == 'none':
+        if self._conversion_settings.front_matter_format == 'none':
             return content
 
         if len(self._metadata) == 0:  # if there is no meta data do not create an empty header
@@ -127,25 +124,29 @@ class MetaDataProcessor:
         if frontmatter.checks(content):
             self.logger.warning('Meta data front matter already exits, continuing to add a second front matter section')
 
-        if self._conversion_settings.metadata_front_matter_format == 'text':
+        if self._conversion_settings.front_matter_format == 'text':
             content = self.add_text_metadata_to_content(content)
             return content
 
         merged_content = frontmatter.Post(content, **self._metadata)
 
-        if self._conversion_settings.metadata_front_matter_format == 'yaml':
+        self._force_pandoc_markdown_to_yaml_front_matter()
+
+        if self._conversion_settings.front_matter_format == 'yaml':
             content = frontmatter.dumps(merged_content, handler=YAMLHandler())
-        if self._conversion_settings.metadata_front_matter_format == 'toml':
+        if self._conversion_settings.front_matter_format == 'toml':
             content = frontmatter.dumps(merged_content, handler=TOMLHandler())
-        if self._conversion_settings.metadata_front_matter_format == 'json':
+        if self._conversion_settings.front_matter_format == 'json':
             content = frontmatter.dumps(merged_content, handler=JSONHandler())
 
         return content
 
+    def _force_pandoc_markdown_to_yaml_front_matter(self):
+        if self._conversion_settings.export_format == 'pandoc_markdown':
+            self._conversion_settings.front_matter_format = 'yaml'
+
     def add_text_metadata_to_content(self, content):
         self.logger.debug(f"Add plain text meta-data to page")
-        if self._conversion_settings.markdown_conversion_input == 'markdown':
-            return content
 
         if len(self._metadata) == 0:
             return content
@@ -153,17 +154,19 @@ class MetaDataProcessor:
         text_meta_data = ''
         for key, value in self._metadata.items():
             if key == 'tag' or key == 'tags':
+                if value is None:  # empty tag metadata
+                    continue
                 value = self.add_tag_prefix(value)
                 text_meta_data = f'{text_meta_data}{key}: '
                 for item in value:
                     text_meta_data = f'{text_meta_data}{item}, '
-                if value:  # if there were actual tags trim off last space and comma
-                    text_meta_data = text_meta_data[:-2]
+                # trim off last space and comma
+                text_meta_data = text_meta_data[:-2]
                 continue
 
             text_meta_data = f'{text_meta_data}{key}: {value}\n'
 
-        return f'{text_meta_data}\n\n{content}'
+        return f'{text_meta_data}\n{content}'
 
     def add_tag_prefix(self, tags):
         self.logger.debug(f"Add tag prefix")
@@ -173,9 +176,6 @@ class MetaDataProcessor:
 
     def add_metadata_html_to_content(self, content):
         self.logger.debug(f"Add meta-data to html header")
-        if self._conversion_settings.markdown_conversion_input == 'markdown':
-            return content
-
         if len(self._metadata) == 0:
             return content
 
