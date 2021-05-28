@@ -22,7 +22,7 @@ class PreProcessing(ABC):
     """Abstract class representing a pre conversion note formatting """
 
     @abstractmethod
-    def pre_process_note_page(self):
+    def pre_process_note_page(self):  # pragma: no cover
         pass
 
 

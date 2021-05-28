@@ -21,11 +21,11 @@ class NSAttachment(ABC):
         self._attachment_folder_name = self._conversion_settings.attachment_folder_name
 
     @abstractmethod
-    def create_html_link(self):
+    def create_html_link(self):  # pragma: no cover
         pass
 
     @abstractmethod
-    def create_file_name(self):
+    def create_file_name(self):  # pragma: no cover
         pass
 
     def process_attachment(self):
@@ -37,7 +37,7 @@ class NSAttachment(ABC):
         self.create_html_link()
 
     @abstractmethod
-    def get_content_to_save(self):
+    def get_content_to_save(self):  # pragma: no cover
         pass
 
     def store_attachment(self):
@@ -138,7 +138,7 @@ class ChartNSAttachment(NSAttachment):
         pass
 
     @abstractmethod
-    def create_html_link(self):
+    def create_html_link(self):  # pragma: no cover
         pass
 
     def create_file_name(self):

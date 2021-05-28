@@ -40,7 +40,7 @@ class InquireCommandLineInterface(ABC):
         })
 
     @abstractmethod
-    def run_cli(self):
+    def run_cli(self):  # pragma: no cover
         pass
 
 

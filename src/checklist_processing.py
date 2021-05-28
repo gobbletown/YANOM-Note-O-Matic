@@ -124,12 +124,12 @@ class ChecklistProcessor(ABC):
         return markdown_text
 
     @abstractmethod
-    def find_all_checklist_items(self):
+    def find_all_checklist_items(self):  # pragma: no cover
         pass
 
     @staticmethod
     @abstractmethod
-    def find_checked_status(tag):
+    def find_checked_status(tag):  # pragma: no cover
         pass
 
     @staticmethod

@@ -14,7 +14,7 @@ class PostProcessing(ABC):
     """Abstract class representing a pre conversion note formatting """
 
     @abstractmethod
-    def post_process_note_page(self):
+    def post_process_note_page(self):  # pragma: no cover
         pass
 
 

@@ -64,7 +64,7 @@ class ChartProcessor(ABC):
         return self._processed_html
 
     @abstractmethod
-    def _find_all_charts(self):
+    def _find_all_charts(self):  # pragma: no cover
         pass
 
     def process_charts(self):
@@ -115,20 +115,20 @@ class ChartProcessor(ABC):
             chart.make_html_chart_data_table()
 
     @abstractmethod
-    def _create_chart_object(self):
+    def _create_chart_object(self):  # pragma: no cover
         pass
 
     @abstractmethod
-    def _fetch_chart_config_from_html(self, tag):
+    def _fetch_chart_config_from_html(self, tag):  # pragma: no cover
         pass
 
     @staticmethod
     @abstractmethod
-    def _retrieve_chart_data(tag, chart):
+    def _retrieve_chart_data(tag, chart):  # pragma: no cover
         pass
 
     @abstractmethod
-    def _set_chart_config(self, chart):
+    def _set_chart_config(self, chart):  # pragma: no cover
         pass
 
     def _generate_csv_attachment(self, chart):
@@ -167,7 +167,7 @@ class ChartProcessor(ABC):
             self._png_img_buffer = None
 
         @abstractmethod
-        def plot_chart(self):
+        def plot_chart(self):  # pragma: no cover
             pass
 
         @staticmethod
