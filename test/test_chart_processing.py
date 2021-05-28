@@ -28,7 +28,7 @@ class Note:
          """<p><img src='attachments/\d{15}\.png'></p><p><a href='attachments/\d{15}\.csv'>Chart data file</a></p><p><table border="1" class="dataframe"><thead><tr style="text-align: right;"><th><strong></strong></th><th><strong>cost</strong></th><th><strong>price</strong></th><th><strong>value</strong></th><th><strong>total value</strong></th><th><strong>sum</strong></th><th><strong>percent</strong></th></tr></thead><tbody><tr><th><strong>something</strong></th><td>500</td><td>520</td><td>540</td><td>520</td><td>2080</td><td>32.10</td></tr><tr><th><strong>something else</strong></th><td>520</td><td>540</td><td>560</td><td>540</td><td>2160</td><td>33.33</td></tr><tr><th><strong>another thing</strong></th><td>540</td><td>560</td><td>580</td><td>560</td><td>2240</td><td>34.57</td></tr></tbody></table></p>""")
     ], ids=['bar-chart', 'line-chart', 'pie-chart']
 )
-def test_nsx_chart_processor_check_produced_html(input_html, output_html_regx, image_regression):
+def test_nsx_chart_processor_check_produced_html(input_html, output_html_regx):
     note = Note()
     chart_processor = chart_processing.NSXChartProcessor(note, input_html)
 
@@ -38,6 +38,16 @@ def test_nsx_chart_processor_check_produced_html(input_html, output_html_regx, i
     # and escapes the full stop before the file extension
 
     assert result == match[0]
+
+
+def test_nsx_chart_processor_check_produced_html_does_not_include_chart_elements():
+    note = Note()
+    input_html = """<div chart-config='{"range":"A1:E4","direction":"row","rowHeaderExisted":true,"columnHeaderExisted":true,"title":"bar chart title","chartType":"bar","xAxisTitle":"x-axis title","yAxisTitle":"y-axis title"}' chart-data='[["","Number 1","Number 2","Number 3","Number 4"],["Category A",500,520,540,520],["Category B",520,540,560,540],["Category C",540,560,580,560]]' class="syno-ns-chart-object" style="width: 520px; height: 350px;"></div><div chart-config='{"range":"A1:E4","direction":"row","rowHeaderExisted":true,"columnHeaderExisted":true,"title":"Line Chart Title","chartType":"line","xAxisTitle":"x-axis title","yAxisTitle":"y-axis title"}' chart-data='[["","Number 1","Number 2","Number 3","Number 4"],["Category A",500,520,540,520],["Category B",520,540,560,540],["Category C",540,560,580,560]]' class="syno-ns-chart-object" style="width: 520px; height: 350px;"></div><div chart-config='{"range":"A1:E4","direction":"row","rowHeaderExisted":true,"columnHeaderExisted":true,"title":"Pie chart title","chartType":"pie","xAxisTitle":"x-axis title","yAxisTitle":"y axis ttile"}' chart-data='[["","cost","price","value","total value"],["something",500,520,540,520],["something else",520,540,560,540],["another thing",540,560,580,560]]' class="syno-ns-chart-object" style="width: 520px; height: 350px;"></div><div>Hello World</div>"""
+    expected = '<div>Hello World</div>'
+    chart_processor = chart_processing.NSXChartProcessor(note, input_html, create_image=False, create_csv=False, create_data_table=False)
+    result = chart_processor.processed_html
+
+    assert result == expected
 
 
 @pytest.mark.parametrize(

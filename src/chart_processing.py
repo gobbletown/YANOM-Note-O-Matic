@@ -201,36 +201,16 @@ class ChartProcessor(ABC):
         def make_csv_chart_data_string(self):
             self._csv_chart_data_string = self._df.to_csv()
 
-        @property
-        def x_axis_title(self):
-            return self._x_axis_title
-
-        @x_axis_title.setter
-        def x_axis_title(self, value):
+        def set_x_axis_title(self, value):
             self._x_axis_title = value
 
-        @property
-        def y_axis_title(self):
-            return self._y_axis_title
-
-        @y_axis_title.setter
-        def y_axis_title(self, value):
+        def set_y_axis_title(self, value):
             self._y_axis_title = value
 
-        @property
-        def title(self):
-            return self._title
-
-        @title.setter
-        def title(self, value):
+        def set_title(self, value):
             self._title = value
 
-        @property
-        def df(self):
-            return self._df
-
-        @df.setter
-        def df(self, value):
+        def set_df(self, value):
             self._df = value
 
         @property
@@ -322,12 +302,12 @@ class NSXChartProcessor(ChartProcessor):
         raw_data = ast.literal_eval(raw_data)
         chart.x_category_labels = raw_data.pop(0)[1:]
         chart.y_category_labels = [item.pop(0) for item in raw_data]
-        chart.df = pd.DataFrame(raw_data, columns=chart.x_category_labels, index=chart.y_category_labels)
+        chart.set_df(pd.DataFrame(raw_data, columns=chart.x_category_labels, index=chart.y_category_labels))
 
     def _set_chart_config(self, chart):
-        chart.title = self._chart_config['title']
-        chart.x_axis_title = self._chart_config['xAxisTitle']
-        chart.y_axis_title = self._chart_config['yAxisTitle']
+        chart.set_title(self._chart_config['title'])
+        chart.set_x_axis_title(self._chart_config['xAxisTitle'])
+        chart.set_y_axis_title(self._chart_config['yAxisTitle'])
 
     def _create_chart_object(self):
         if self._chart_config['chartType'] == 'pie':
