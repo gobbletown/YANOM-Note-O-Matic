@@ -8,7 +8,6 @@ import yanom
 
 @pytest.mark.parametrize(
     'args, expected', [
-        ('', config.logger_level),  # confirm the current default is not changed
         ('critical', logging.CRITICAL),
         ('error', logging.ERROR),
         ('warn', logging.WARNING),

@@ -54,7 +54,6 @@ def set_logging_level(log_level: str):
         'warning': logging.WARNING,
         'info': logging.INFO,
         'debug': logging.DEBUG,
-        '': config.logger_level
     }
     new_level = levels.get(log_level.lower(), None)
 
