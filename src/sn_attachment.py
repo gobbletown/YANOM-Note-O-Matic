@@ -88,29 +88,6 @@ class NSAttachment(ABC):
         self._html_link = value
 
 
-class ImageNSAttachment(NSAttachment):
-
-    def __init__(self, note, attachment_id):
-        super().__init__(note, attachment_id)
-        self._image_ref = self._json['attachment'][attachment_id]['ref']
-        self._name = self._json['attachment'][attachment_id]['name']
-        self._filename_inside_nsx = f"file_{self._json['attachment'][attachment_id]['md5']}"
-
-    @property
-    def image_ref(self):
-        return self._image_ref
-
-    def create_html_link(self):
-        self._html_link = f'<img src="{self._file_name}" '
-
-    def create_file_name(self):
-        self._name = self._name.replace('ns_attach_image_', '')
-        self._file_name = helper_functions.generate_clean_path(self._name)
-
-    def get_content_to_save(self):
-        return self._nsx_file.fetch_attachment_file(self.filename_inside_nsx)
-
-
 class FileNSAttachment(NSAttachment):
     def __init__(self, note, attachment_id):
         super().__init__(note, attachment_id)
@@ -120,11 +97,29 @@ class FileNSAttachment(NSAttachment):
     def create_html_link(self):
         self._html_link = f'<a href="{self._path_relative_to_notebook}">{self.file_name}</a>'
 
-    def create_file_name(self):
+    def create_file_name(self) -> Path:
         self._file_name = helper_functions.generate_clean_path(self._name)
 
     def get_content_to_save(self):
         return self._nsx_file.fetch_attachment_file(self.filename_inside_nsx)
+
+
+class ImageNSAttachment(FileNSAttachment):
+
+    def __init__(self, note, attachment_id):
+        super().__init__(note, attachment_id)
+        self._image_ref = self._json['attachment'][attachment_id]['ref']
+
+    @property
+    def image_ref(self):
+        return self._image_ref
+
+    def create_html_link(self):
+        self._html_link = f'<img src="{self._file_name}" >'
+
+    def create_file_name(self) -> Path:
+        self._name = self._name.replace('ns_attach_image_', '')
+        self._file_name = helper_functions.generate_clean_path(self._name)
 
 
 class ChartNSAttachment(NSAttachment):
@@ -134,7 +129,7 @@ class ChartNSAttachment(NSAttachment):
         self._chart_file_like_object = chart_file_like_object
         self._file_name = attachment_id
 
-    def get_content_to_save(self):
+    def get_content_to_save(self):  # pragma: no cover
         pass
 
     @abstractmethod

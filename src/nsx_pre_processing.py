@@ -194,7 +194,7 @@ class NoteStationPreProcessing(PreProcessing):
         self.logger.debug(f"Add attachment links to page content")
         attachments = [attachment
                        for attachment in self._note.attachments.values()
-                       if isinstance(attachment, FileNSAttachment)
+                       if type(attachment) is FileNSAttachment
                        ]
         if attachments:
             self.pre_processed_content = f'{self.pre_processed_content}<h6>Attachments</h6>'
