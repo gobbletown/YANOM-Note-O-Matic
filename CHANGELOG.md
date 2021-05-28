@@ -19,7 +19,7 @@ and this project follows something close to [Semantic Versioning](https://semver
 - Image tag prefix is now correctly implemented.
 
 ### Other
-- Add tests for chart processing, image processing, metadata processing, pandoc processing
+- Add tests for chart processing, image processing, metadata processing, pandoc processing, synology attachment processing, zip file handling
 
 ## [1.2.0] - 2021-05-25
 ### Added
