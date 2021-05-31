@@ -140,9 +140,9 @@ class NoteStationPreProcessing(PreProcessing):
     def _extract_and_generate_chart(self):
         self.logger.debug(f"Cleaning charts")
 
-        chart_options = {'create_image': self._note._conversion_settings.chart_image,
-                         'create_csv': self._note._conversion_settings.chart_csv,
-                         'create_data_table': self._note._conversion_settings.chart_data_table,
+        chart_options = {'create_image': self._note.conversion_settings.chart_image,
+                         'create_csv': self._note.conversion_settings.chart_csv,
+                         'create_data_table': self._note.conversion_settings.chart_data_table,
                          }
         chart_processor = NSXChartProcessor(self._note, self._pre_processed_content, **chart_options)
 
@@ -187,7 +187,8 @@ class NoteStationPreProcessing(PreProcessing):
 
     def _generate_links_to_other_note_pages(self):
         self.logger.debug(f"Creating links between pages")
-        link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file)
+        link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file.all_note_pages)
+        link_generator.process_inter_note_links()
         self.pre_processed_content = link_generator.content
 
     def _add_file_attachment_links(self):

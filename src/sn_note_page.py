@@ -223,3 +223,7 @@ class NotePage:
     @property
     def pre_processor(self):
         return self._pre_processor
+
+    @property
+    def raw_content(self):
+        return self._raw_content

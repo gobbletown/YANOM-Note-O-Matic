@@ -1,3 +1,4 @@
+from collections import namedtuple
 import logging
 from pathlib import Path
 
@@ -13,6 +14,9 @@ def what_module_is_this():
     return __name__
 
 
+Note = namedtuple("Note", "title, note")
+
+
 class NSXFile:
 
     def __init__(self, file, conversion_settings, pandoc_converter):
@@ -25,6 +29,7 @@ class NSXFile:
         self._note_page_ids = None
         self._notebooks = {}
         self._note_pages = {}
+        self._all_note_pages = {}
         self._note_page_count = 0
         self._note_book_count = 0
         self._image_count = 0
@@ -41,6 +46,7 @@ class NSXFile:
         self.create_export_folder_if_not_exist()
         self.create_folders()
         self.add_note_pages()
+        self.build_list_of_note_pages_by_original_title()
         self.add_note_pages_to_notebooks()
         self.generate_note_page_filename_and_path()
         self.process_notebooks()
@@ -115,16 +121,28 @@ class NSXFile:
 
             self._note_page_count += len(self._note_pages)
 
+    def build_list_of_note_pages_by_original_title(self):
+        """
+        Build a list of tuples containing original note titles and the note object.
+
+        Note files may be renamed as they are processed into notebooks.  Duplicate names have their note title
+        number incremented.  The original titles are the ones the inter note links should have as their displayed text.
+
+        """
+        self._all_note_pages = [Note(note.original_title, note)
+                                for note in self.note_pages.values()
+                                if not note.parent_notebook == 'recycle-bin'  # ignore items in recycle bin
+                                ]
+
     def add_note_pages_to_notebooks(self):
         self.logger.info(f"Add note pages to notebooks")
 
         for note_page_id in self._note_pages:
             current_parent_id = self._note_pages[note_page_id].parent_notebook
             if current_parent_id in self._notebooks:
-                self._notebooks[current_parent_id].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
+                self._notebooks[current_parent_id].pair_up_note_pages_and_notebooks(self._note_pages[note_page_id])
             else:
-                self._notebooks['recycle-bin'].add_note_page_and_set_parent_notebook(self._note_pages[note_page_id])
-
+                self._notebooks['recycle-bin'].pair_up_note_pages_and_notebooks(self._note_pages[note_page_id])
 
     def create_attachments(self):
         self.logger.debug(f"Creating attachment objects")
@@ -172,3 +190,7 @@ class NSXFile:
     @property
     def note_pages(self):
         return self._note_pages
+
+    @property
+    def all_note_pages(self):
+        return self._all_note_pages

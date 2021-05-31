@@ -21,32 +21,26 @@ class SNLinksToOtherNotes:
 
     """
 
-    def __init__(self, note_page, content, nsx_file):
+    def __init__(self, note, content, all_note_pages):
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
-        self._note_page = note_page
+        self._note_page = note
         self._content = content
-        self._nsx_file = nsx_file
         self._raw_note_links = []
-        self._list_of_raw_links = {}
-        self._all_note_pages = {}
+        self._links_on_this_page = {}
+        self._all_note_pages = all_note_pages
         self._replacement_links = {}
-        self._generate_dict_of_links()
-        if self._list_of_raw_links:
-            self._build_list_of_all_note_pages()
-            self._match_link_title_to_a_note()
-            self._find_potential_match_for_renamed_links()
-            self._update_content()
 
     class IntraPageLink:
         """
         Hold details of 'a' tag href link and, generate a replacement 'a' tag href link to a valid file name
         """
 
-        def __init__(self, raw_link, note, href_note):
+        def __init__(self, raw_link, text_from_link, note, href_note):
             self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
             self.logger.setLevel(config.logger_level)
             self._raw_link = raw_link
+            self._text_from_link = text_from_link
             self._href_text = ''
             self._href_link_value = re.findall('<a href=\"(.*)\"', raw_link)[0]
             self._new_link = ''
@@ -57,9 +51,9 @@ class SNLinksToOtherNotes:
 
         def _generate_new_link(self):
             self.logger.debug("Creating inter note links")
-            if self._note_page.parent_notebook == self._href_note.parent_notebook:
-                self._new_link = f'<a href="{self._href_note.file_name}">{self._href_note.title}</a>'
-            self._new_link = f'<a href="../{self._href_note.notebook_folder_name}/{self._href_note.file_name}">{self._href_note.title}</a>'
+            self._new_link = f'<a href="{self._href_note.file_name}">{self._text_from_link}</a>'
+            if self._note_page.parent_notebook != self._href_note.parent_notebook:
+                self._new_link = f'<a href="../{self._href_note.notebook_folder_name}/{self._href_note.file_name}">{self._text_from_link}</a>'
 
         @property
         def new_link(self):
@@ -70,17 +64,13 @@ class SNLinksToOtherNotes:
             return self._href_link_value
 
         @property
-        def note_page(self):
-            return self._note_page
-
-        @property
         def href_note(self):
             return self._href_note
 
     def _generate_dict_of_links(self):
         """
         Generate a dictionary where the keys are text strings displayed on a page and the values are the raw
-        and unusable, because they do not link to anything in an nsx export, href links
+        and unusable href links, because they do not link to anything in an nsx export file
         :return:
         """
         self._raw_note_links = re.findall('<a href="notestation://[^>]*>[^>]*>', self._content)
@@ -92,34 +82,28 @@ class SNLinksToOtherNotes:
             text_from_link = re.findall('<a href="notestation://[^>]*>([^<]*)</a>', raw_link)
             link_text.append(text_from_link[0])
 
-        self._list_of_raw_links = dict(zip(link_text, self._raw_note_links))
+        self._links_on_this_page = dict(zip(self._raw_note_links, link_text))
 
-    def _build_list_of_all_note_pages(self):
-        """
-        Build a list of tuples containing original note titles and the note object.
-
-        Note files may be renamed as they are processed into notebooks.  Duplicate names have their note title
-        number incremented.  The original titles are the ones the inter note links should have as their displayed text.
-
-        """
-        self._all_note_pages = [(note.original_title, note)
-                                for note in self._nsx_file.note_pages.values()
-                                if not note.parent_notebook == 'recycle-bin'  # ignore items in recycle bin
-                                ]
+    def process_inter_note_links(self):
+        self._generate_dict_of_links()
+        if self._links_on_this_page:
+            self._match_link_title_to_a_note()
+            self._find_potential_match_for_renamed_links()
+            self._update_content()
 
     def _match_link_title_to_a_note(self):
         """
-        For each of the link text values from a note page find all the occurrences of note pages of the same name.
+        For each of the link on this note page use the text value find all the occurrences of note pages of the same name.
         Creating a list containing IntraPageLink objects for each one.
         The IntraPage Link object handles the creation of a new valid link.
 
         """
-        for title, link in self._list_of_raw_links.items():
-            replacement_links = [self.IntraPageLink(link, self._note_page, title_and_page[1])
-                                 for title_and_page in self._all_note_pages
-                                 if title == title_and_page[0]]
+        for raw_link, text_from_link in self._links_on_this_page.items():
+            replacement_links = [self.IntraPageLink(raw_link, text_from_link, self._note_page, target_note.note)
+                                 for target_note in self._all_note_pages
+                                 if text_from_link == target_note.title]
             if replacement_links:
-                self._replacement_links[link] = replacement_links
+                self._replacement_links[raw_link] = replacement_links
 
     def _find_potential_match_for_renamed_links(self):
         """
@@ -127,7 +111,7 @@ class SNLinksToOtherNotes:
 
         A renamed link will not have a display text string that matches a note name.  However the unusable href
         will not be changed when the text was edited.  If that href link has already been matched to a note page
-        because that link was not edited then we can use the bad href to math the link to the real note page.
+        because that link was not edited then we can use the bad href to match the link to the real note page.
 
         """
         for raw_link in self._raw_note_links:
@@ -137,7 +121,7 @@ class SNLinksToOtherNotes:
                 # search already found replacement links for this links href value and if found give it a new link
                 for replacement_links in self._replacement_links.values():
                     if re.findall('<a href=\"(.*)\"', raw_link)[0] == replacement_links[0].href_link_value:
-                        new_replacement_links[raw_link] = [self.IntraPageLink(raw_link, self._note_page,
+                        new_replacement_links[raw_link] = [self.IntraPageLink(raw_link, re.findall('<a href="notestation://[^>]*>([^<]*)</a>', raw_link)[0] , self._note_page,
                                                                               replacement_links[0].href_note)]
 
             # now merge the renamed link replacement link dict into the main replacement_links dict

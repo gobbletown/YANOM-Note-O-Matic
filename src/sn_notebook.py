@@ -42,7 +42,7 @@ class Notebook:
                 note_page.process_note()
                 bar()
 
-    def add_note_page_and_set_parent_notebook(self, note_page: NotePage):
+    def pair_up_note_pages_and_notebooks(self, note_page: NotePage):
         self.logger.debug(f"Adding note '{note_page.title}' - {note_page.note_id} "
                           f"to Notebook '{self.title}' - {self.notebook_id}")
 
