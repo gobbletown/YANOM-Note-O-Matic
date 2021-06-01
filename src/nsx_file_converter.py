@@ -5,6 +5,7 @@ from pathlib import Path
 from alive_progress import alive_bar
 
 import config
+from nsx_inter_note_link_processor import NSXInterNoteLinkProcessor
 from sn_notebook import Notebook
 from sn_note_page import NotePage
 import zip_file_reader
@@ -35,6 +36,7 @@ class NSXFile:
         self._image_count = 0
         self._attachment_count = 0
         self._pandoc_converter = pandoc_converter
+        self._inter_note_link_processor = NSXInterNoteLinkProcessor()
 
     def process_nsx_file(self):
         self.logger.info(f"Processing {self._nsx_file_name}")
@@ -46,12 +48,19 @@ class NSXFile:
         self.create_export_folder_if_not_exist()
         self.create_folders()
         self.add_note_pages()
-        self.build_list_of_note_pages_by_original_title()
         self.add_note_pages_to_notebooks()
         self.generate_note_page_filename_and_path()
+        self.build_dictionary_of_inter_note_links()
         self.process_notebooks()
         self.create_attachments()
         self.logger.info(f"Processing of {self._nsx_file_name} complete.")
+
+    def build_dictionary_of_inter_note_links(self):
+        all_note_pages = list(self._note_pages.values())
+        self.inter_note_link_processor.make_list_of_links(all_note_pages)
+        self.inter_note_link_processor.match_link_title_to_notes(all_note_pages)
+        self.inter_note_link_processor.match_renamed_links_using_link_ref_id()
+
 
     def generate_note_page_filename_and_path(self):
         for note_page in self.note_pages.values():
@@ -121,19 +130,6 @@ class NSXFile:
 
             self._note_page_count += len(self._note_pages)
 
-    def build_list_of_note_pages_by_original_title(self):
-        """
-        Build a list of tuples containing original note titles and the note object.
-
-        Note files may be renamed as they are processed into notebooks.  Duplicate names have their note title
-        number incremented.  The original titles are the ones the inter note links should have as their displayed text.
-
-        """
-        self._all_note_pages = [Note(note.original_title, note)
-                                for note in self.note_pages.values()
-                                if not note.parent_notebook == 'recycle-bin'  # ignore items in recycle bin
-                                ]
-
     def add_note_pages_to_notebooks(self):
         self.logger.info(f"Add note pages to notebooks")
 
@@ -194,3 +190,7 @@ class NSXFile:
     @property
     def all_note_pages(self):
         return self._all_note_pages
+
+    @property
+    def inter_note_link_processor(self):
+        return self._inter_note_link_processor

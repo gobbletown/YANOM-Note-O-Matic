@@ -11,7 +11,6 @@ from iframe_processing import pre_process_iframes_from_html
 from image_processing import ImageTag
 from metadata_processing import MetaDataProcessor
 from sn_attachment import FileNSAttachment
-from sn_inter_note_link_processing import SNLinksToOtherNotes
 
 
 def what_module_is_this():
@@ -187,9 +186,7 @@ class NoteStationPreProcessing(PreProcessing):
 
     def _generate_links_to_other_note_pages(self):
         self.logger.debug(f"Creating links between pages")
-        link_generator = SNLinksToOtherNotes(self._note, self._pre_processed_content, self._note.nsx_file.all_note_pages)
-        link_generator.process_inter_note_links()
-        self.pre_processed_content = link_generator.content
+        self.pre_processed_content = self._note.nsx_file.inter_note_link_processor.update_content(self.pre_processed_content)
 
     def _add_file_attachment_links(self):
         self.logger.debug(f"Add attachment links to page content")

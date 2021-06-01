@@ -11,15 +11,16 @@ and this project follows something close to [Semantic Versioning](https://semver
 ## Unreleased on the develop branch
 
 ### Added
-- Exporting to 'pandoc-markdown' now uses YANOM's metadata parser giving wider choice of metadata keys to be parsed or not parsed.  The export only produces a YAML front matter sectoin.
+- Exporting to 'pandoc-markdown' now uses YANOM's metadata parser giving wider choice of metadata keys to be parsed or not parsed.  The export only produces a YAML front matter section.
 - Can now add a tag prefix to tag metadata values in front matter sections.  This is not required by most markdown readers, but is an option if required.
+- Re-write of algorithm to match links between note pages. Now only a single link to a page needs to be valid in any notebook in a nsx export file for renamed links to that page to be corrected
 
 ### Fixed
 - Fix html tag widths were coded incorrectly when cleaning nsx html formatting prior to any conversion.
 - Image tag prefix is now correctly implemented.
 
 ### Other
-- Add tests for chart processing, image processing, metadata processing, pandoc processing, synology attachment processing, zip file handling, timer.
+- Add tests for chart processing, image processing, metadata processing, pandoc processing, synology attachment processing, zip file handling, timer, inter note link processing.
 
 ## [1.2.0] - 2021-05-25
 ### Added

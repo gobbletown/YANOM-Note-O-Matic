@@ -1,4 +1,4 @@
-![coverage 71%](https://img.shields.io/badge/coverage-55%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
+![coverage 76%](https://img.shields.io/badge/coverage-55%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
 
 # YANOM - Yet Another Note-O-Matic
 YANOM - stands for Yet Another Note-O-Matic. 

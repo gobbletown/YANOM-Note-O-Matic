@@ -58,7 +58,6 @@ class NotesConvertor:
         self.log_results()
         self.logger.info("Processing Completed - exiting normally")
 
-
     def convert_markdown(self):
         with Timer(name="md_conversion", logger=self.logger.info, silent=bool(config.silent)):
             file_extension = 'md'
@@ -158,6 +157,16 @@ class NotesConvertor:
             self.print_result_if_any(self._note_page_count, 'Note page')
             self.print_result_if_any(self._image_count, 'Image')
             self.print_result_if_any(self._attachment_count, 'Attachment')
+            num_links_corrected = 0
+            num_links_not_corrected = 0
+            for nsx_file in self.nsx_backups:
+                num_links_corrected = num_links_corrected + len(nsx_file.inter_note_link_processor.replacement_links)
+                num_links_not_corrected = num_links_not_corrected + len(nsx_file.inter_note_link_processor.renamed_links_not_corrected)
+            if (num_links_corrected + num_links_not_corrected) > 0:
+                print(f'{num_links_corrected} out of {num_links_corrected + num_links_not_corrected} links between notes were re-created')
+            for nsx_file in self.nsx_backups:
+                if nsx_file.inter_note_link_processor.unmatched_links_msg:
+                    print(nsx_file.inter_note_link_processor.unmatched_links_msg)
 
     @staticmethod
     def print_result_if_any(conversion_count, message):
