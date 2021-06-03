@@ -249,7 +249,7 @@ class ChartProcessor(ABC):
         def plot_chart(self):
             self.logger.debug("Creating pie chart")
             self.__format_data_for_pie_chart()
-            explode = [0.02 for x in range(len(self._df.index))]
+            explode = [0.02 for _ in range(len(self._df.index))]
             fig, ax = pyplot.subplots()
             pyplot.title(self._title)
             pyplot.gca().axis("equal")

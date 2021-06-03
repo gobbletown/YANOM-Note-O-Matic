@@ -43,7 +43,7 @@ class ConfigData(ConfigParser):
 
     def parse_config_file(self):
         self.read_config_file()
-        valid_config =  self.validate_config_file()
+        valid_config = self.validate_config_file()
         if not valid_config:
             self.ask_user_to_choose_new_default_config_file()
         self.generate_conversion_settings_from_parsed_config_file_data()
@@ -140,7 +140,7 @@ class ConfigData(ConfigParser):
             self.getboolean('file_options', 'creation_time_in_exported_file_name')
 
     def _write_config_file(self):
-        with open(self._config_file, 'w') as config_file:
+        with open(Path(self.conversion_settings.working_directory, self._config_file), 'w') as config_file:
             self.write(config_file)
             self.logger.info("Saving configuration file")
 
@@ -153,9 +153,9 @@ class ConfigData(ConfigParser):
 
         """
         self.logger.debug('reading config file')
-        path = Path(self._config_file)
+        path = Path(self.conversion_settings.working_directory, self._config_file)
         if path.is_file():
-            self.read(self._config_file)
+            self.read(path)
             self.logger.info(f'Data read from INI file is {self.__repr__()}')
         else:
             self.logger.warning('config.ini missing, generating new file and settings set to default.')

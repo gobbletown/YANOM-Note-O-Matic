@@ -18,6 +18,7 @@ and this project follows something close to [Semantic Versioning](https://semver
 ### Fixed
 - Fix html tag widths were coded incorrectly when cleaning nsx html formatting prior to any conversion.
 - Image tag prefix is now correctly implemented.
+- Under a packaged runtime environment replacing a missing config.ini would fail.
 
 ### Other
 - Add tests for chart processing, image processing, metadata processing, pandoc processing, synology attachment processing, zip file handling, timer, inter note link processing.
