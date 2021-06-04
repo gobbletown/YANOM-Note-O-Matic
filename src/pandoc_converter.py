@@ -29,13 +29,29 @@ class PandocConverter:
                                           'multimarkdown': 'markdown_mmd',
                                           'html': 'html'}
         self.pandoc_options = None
-        if getattr(sys, 'frozen', False) and not sys.platform.startswith('linux'):
-            self._pandoc_path = str(Path(self.conversion_settings.working_directory, 'pandoc/pandoc'))
-        else:
-            self._pandoc_path = 'pandoc'
+        self._pandoc_path = None
+        self.set_pandoc_path()
+        self.check_and_set_pandoc_options_if_required()
 
-        self.find_pandoc_version()
-        self.generate_pandoc_options()
+    @staticmethod
+    def is_system_linux():
+        return sys.platform.startswith('linux')
+
+    @staticmethod
+    def is_this_a_frozen_package():
+        return getattr(sys, 'frozen', False)
+
+    def set_pandoc_path(self):
+        if self.is_this_a_frozen_package() and not self.is_system_linux():
+            self._pandoc_path = str(Path(self.conversion_settings.working_directory, 'pandoc/pandoc'))
+            return
+
+        self._pandoc_path = 'pandoc'
+
+    def check_and_set_pandoc_options_if_required(self):
+        if self.conversion_settings.conversion_input == 'nsx' and not self.conversion_settings.export_format == 'html':
+            self.find_pandoc_version()
+            self.generate_pandoc_options()
 
     def find_pandoc_version(self):
         if not self.is_pandoc_installed():
@@ -79,10 +95,10 @@ class PandocConverter:
     def _calculate_input_format(self):
         if self.conversion_settings.conversion_input == 'nsx' or self.conversion_settings.conversion_input == 'html':
             return 'html'
-        if self.conversion_settings.conversion_input == 'markdown':
-            return self.pandoc_conversion_options[self.conversion_settings.markdown_conversion_input]
+        # if not nsx or html must be markdown
+        return self.pandoc_conversion_options[self.conversion_settings.markdown_conversion_input]
 
-    def convert_using_strings(self, input_data, name):
+    def convert_using_strings(self, input_data, note_title):
         if not self.is_pandoc_installed():
             sys.exit(1)
 
@@ -94,8 +110,10 @@ class PandocConverter:
             return out.stdout
 
         except subprocess.CalledProcessError as exc:
-            self.logger.error(f"Unable to convert note {name}. Pandoc error - {exc}")
-            self.error_handling(name)
+            self.logger.error(f"Unable to convert note {note_title}. Pandoc error - {exc}")
+            if not config.silent:
+                print(f"Error converting note {note_title} with pandoc please check log file and pandoc installation.")
+                print("Attempting to continue...")
 
         return 'Error converting data'
 
