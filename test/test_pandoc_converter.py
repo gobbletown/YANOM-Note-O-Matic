@@ -23,10 +23,18 @@ def test_check_and_set_up_pandoc_if_required():
             mock_find_pandoc_version.assert_called_once()
 
 
-def test_check_and_set_up_pandoc_if_required_nsx_and_html():
+@pytest.mark.parametrize(
+    'conversion_input, markdown_conversion_input, export_format', [
+        ('nsx', 'gfm', 'html'),
+        ('html', 'gfm', 'html'),
+        ('markdown', 'gfm', 'gfm'),
+    ], ids=['nsx-html', 'html-html', 'markdown-gfm-gfm']
+)
+def test_check_and_set_up_pandoc_if_required_nsx_and_html(conversion_input, markdown_conversion_input, export_format):
     cs = conversion_settings.ConversionSettings()
-    cs.conversion_input = 'nsx'
-    cs.export_format = 'html'
+    cs.conversion_input = conversion_input
+    cs.export_format = export_format
+    cs.markdown_conversion_input = markdown_conversion_input
     pandoc_processor = pandoc_converter.PandocConverter(cs)
     with patch('pandoc_converter.PandocConverter.generate_pandoc_options', spec=True) as mock_generate_pandoc_options:
         with patch('pandoc_converter.PandocConverter.find_pandoc_version', spec=True) as mock_find_pandoc_version:
@@ -223,6 +231,7 @@ def test_is_pandoc_installed_invalid_path(caplog, capsys, silent_mode, expected_
 
     captured = capsys.readouterr()
     assert expected_capture_out in captured.out
+
 
 def test_convert_using_strings_forcing_non_zero_return_code_from_pandoc(caplog):
     cs = conversion_settings.ConversionSettings()

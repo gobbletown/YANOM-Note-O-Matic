@@ -49,9 +49,17 @@ class PandocConverter:
         self._pandoc_path = 'pandoc'
 
     def check_and_set_pandoc_options_if_required(self):
-        if self.conversion_settings.conversion_input == 'nsx' and not self.conversion_settings.export_format == 'html':
-            self.find_pandoc_version()
-            self.generate_pandoc_options()
+        # Early returns for conversion not needing pandoc
+        if self.conversion_settings.conversion_input == 'nsx' and self.conversion_settings.export_format == 'html':
+            return
+        if self.conversion_settings.conversion_input == 'html' and self.conversion_settings.export_format == 'html':
+            return
+        if self.conversion_settings.conversion_input == 'markdown' \
+                and (self.conversion_settings.markdown_conversion_input == self.conversion_settings.export_format):
+            return
+
+        self.find_pandoc_version()
+        self.generate_pandoc_options()
 
     def find_pandoc_version(self):
         if not self.is_pandoc_installed():
