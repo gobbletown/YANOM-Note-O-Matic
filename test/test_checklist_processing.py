@@ -1,4 +1,6 @@
+from bs4 import BeautifulSoup
 import pytest
+
 import checklist_processing
 
 
@@ -71,3 +73,26 @@ def test_checklist_processing_nsx_to_html_with_nsx_html_html_output_check_post_p
     result = checklist_processor.add_checklist_items_to(checklist_processor.processed_html)
 
     assert result == expected  # confirm no changes made in post processing
+
+
+@pytest.mark.parametrize(
+    'html, expected_indent, expected_text', [
+        ('<div><input type="checkbox"/>Check 1</div><div><input type="checkbox"/>Check 1</div>',
+         0, 'Check 1'),
+        ('<div><input type="checkbox"/>Check 1</div><div style=\"padding-left: 30px;\"><input type="checkbox"/>sub check 1</div>',
+         1, 'sub check 1'),
+        ('<div><input type="checkbox"/>Check 1</div><div style=\"padding-right: 30px;\"><input type="checkbox"/>sub check 1</div>',
+         0, 'sub check 1'),
+        ], ids=['no-indents', 'one-indent', 'invalid-indent-style']
+)
+def test_find_indent(html, expected_indent, expected_text):
+    soup = BeautifulSoup(html)
+    tag = soup.select('input[type="checkbox"]')
+    checklist_processor = checklist_processing.HTMLInputMDOutputChecklistProcessor(html)
+
+    assert checklist_processor.list_of_checklist_items[1].indent == expected_indent
+
+    assert checklist_processor.list_of_checklist_items[1].text == expected_text
+
+
+

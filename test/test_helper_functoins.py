@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -65,3 +66,38 @@ def test_find_working_directory_when_frozen():
 
     assert 'Running in a application bundle' in message
 
+
+@pytest.mark.parametrize(
+    'value, allow_unicode, expected', [
+        ("file", False, Path("file")),
+        ("file.txt", False, Path("file.txt")),
+        ("_file.txt-", False, Path("file.txt")),
+        ("-file.txt_", False, Path("file.txt")),
+        (" file.txt ", False, Path("file.txt")),
+        ("f¥le.txt", False, Path("fle.txt")),
+        ("file", True, Path("file")),
+        ("file.txt", True, Path("file.txt")),
+        ("_file.txt-", True, Path("file.txt")),
+        ("-file.txt_", True, Path("file.txt")),
+        (" file.txt ", True, Path("file.txt")),
+        (" file.txt ", True, Path("file.txt")),
+        (" f¥le.txt ", True, Path("fle.txt")),
+    ]
+)
+def test_generate_clean_path(value, allow_unicode, expected):
+
+    result = helper_functions.generate_clean_path(value, allow_unicode=allow_unicode)
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    'is_frozen, expected', [
+        (True, Path(sys.executable).parent.absolute()),
+        (False, Path(Path(__file__).parent.absolute().parent.absolute(), 'src'))
+        ]
+)
+def test_find_working_directory(is_frozen, expected):
+    result, message = helper_functions.find_working_directory(is_frozen=is_frozen)
+
+    assert result == expected

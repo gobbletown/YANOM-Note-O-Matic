@@ -41,7 +41,7 @@ def generate_clean_path(value, allow_unicode=False):
     underscores, or hyphens. Convert to lowercase. Also strip leading and
     trailing whitespace, dashes, and underscores.
 
-    value: str of path of a path part - a folder name, or a file name
+    value: str of path or a path part - a folder name, or a file name
     returns: Path object
     """
     value = str(value)

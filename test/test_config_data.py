@@ -1,9 +1,14 @@
 from pathlib import Path
+from unittest.mock import patch
 
+import config
 import pytest
 
 import config_data
 from conversion_settings import ConversionSettings
+import helper_functions
+import interactive_cli
+
 
 @pytest.fixture
 def good_config_ini() -> str:
@@ -99,9 +104,16 @@ def test_read_config_file_file_missing(tmp_path, caplog):
             assert 'config.ini missing, generating new file' in record.message
 
 
-def test_read_config_file_good_file(tmp_path, good_config_ini, caplog):
+@pytest.mark.parametrize(
+    'silent, expected', [
+        (True, ''),
+        (False, 'config.ini missing, generating new file.\n')
+    ], ids=['silent-mode', 'not-silent']
+)
+def test_read_config_missing_file(tmp_path, good_config_ini, caplog, capsys, silent, expected):
 
-    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+    config.set_silent(silent)
+    # Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
 
     cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
 
@@ -109,27 +121,10 @@ def test_read_config_file_good_file(tmp_path, good_config_ini, caplog):
 
     assert len(caplog.records) > 0
 
-    for record in caplog.records:
-        assert record.levelname == "INFO"
+    assert caplog.records[0].levelname == "WARNING"
 
-    assert cd['conversion_inputs']['conversion_input'] == 'nsx'
-    assert cd['markdown_conversion_inputs']['markdown_conversion_input'] == 'obsidian'
-    assert cd['quick_settings']['quick_setting'] == 'obsidian'
-    assert cd['export_formats']['export_format'] == 'obsidian'
-    assert cd['meta_data_options']['front_matter_format'] == 'yaml'
-    assert cd['meta_data_options']['metadata_schema'] == 'title,ctime,mtime,tag'
-    assert cd['meta_data_options']['tag_prefix'] == '#'
-    assert cd.getboolean('meta_data_options', 'spaces_in_tags') is False
-    assert cd.getboolean('meta_data_options', 'split_tags') is False
-    assert cd.getboolean('table_options', 'first_row_as_header') is True
-    assert cd.getboolean('table_options', 'first_column_as_header') is True
-    assert cd.getboolean('chart_options', 'chart_image') is True
-    assert cd.getboolean('chart_options', 'chart_csv') is True
-    assert cd.getboolean('chart_options', 'chart_data_table') is True
-    assert cd['file_options']['source'] == 'my_source'
-    assert cd['file_options']['export_folder_name'] == 'notes'
-    assert cd['file_options']['attachment_folder_name'] == 'attachments'
-    assert cd.getboolean('file_options', 'creation_time_in_exported_file_name') is False
+    captured = capsys.readouterr()
+    assert captured.out == expected
 
 
 def test_validate_config_file_good_file(tmp_path, good_config_ini):
@@ -170,6 +165,23 @@ def test_validate_config_file_bad_values(tmp_path, good_config_ini, key1, key2, 
     assert valid_config is False
 
 
+@pytest.mark.parametrize(
+    'replace_this, with_this', [
+        ('[quick_settings]', ''),
+        ('quick_setting = obsidian', '')
+    ], ids=['missing-section', 'missing-key']
+)
+def test_validate_config_file_missing_keys_and_sections(tmp_path, good_config_ini, replace_this, with_this):
+
+    good_config_ini = good_config_ini.replace(replace_this, with_this)
+
+    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+
+    cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
+
+    cd.read_config_file()
+    valid_config = cd.validate_config_file()
+    assert valid_config is False
 
 
 @pytest.mark.parametrize(
@@ -179,7 +191,8 @@ def test_validate_config_file_bad_values(tmp_path, good_config_ini, key1, key2, 
         ('quick_settings', 'quick_setting', 'obsidian', 'commonmark', 'commonmark'),
         ('export_formats', 'export_format', 'obsidian', 'multimarkdown', 'multimarkdown'),
         ('meta_data_options', 'front_matter_format', 'yaml', 'toml', 'toml'),
-        ('meta_data_options', 'metadata_schema', 'title,ctime,mtime,tag', 'something_different', ['something_different']),
+        ('meta_data_options', 'metadata_schema', 'title,ctime,mtime,tag', 'something_different',
+         ['something_different']),
         ('meta_data_options', 'tag_prefix', '#', '@', '@'),
         ('meta_data_options', 'spaces_in_tags', 'False', 'True', True),
         ('meta_data_options', 'split_tags', 'False', 'True', True),
@@ -188,13 +201,13 @@ def test_validate_config_file_bad_values(tmp_path, good_config_ini, key1, key2, 
         ('chart_options', 'chart_image', 'True', 'False', False),
         ('chart_options', 'chart_csv', 'True', 'False', False),
         ('chart_options', 'chart_data_table', 'True', 'False', False),
-        # ('file_options', 'source', 'my_source', 'new_source', 'new_source'),
         ('file_options', 'export_folder_name', 'export_orig', 'export_new', Path('export_new')),
         ('file_options', 'attachment_folder_name', 'attachment_orig', 'attachment_new', Path('attachment_new')),
         ('file_options', 'creation_time_in_exported_file_name', 'True', 'False', False),
     ]
 )
-def test_generate_conversion_settings_from_parsed_config_file_data(good_config_ini, tmp_path, key1, key2, start_value, end_value, expected):
+def test_generate_conversion_settings_from_parsed_config_file_data(good_config_ini, tmp_path, key1, key2, start_value,
+                                                                   end_value, expected):
     Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
 
     cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
@@ -212,6 +225,22 @@ def test_generate_conversion_settings_from_parsed_config_file_data(good_config_i
     cd.generate_conversion_settings_from_parsed_config_file_data()
     # confirm conversion setting has changed
     assert getattr(cd.conversion_settings, key2) == expected
+
+
+def test_generate_conversion_settings_from_parsed_config_file_data_test_markdown_pandoc_front_matter_setting(good_config_ini, tmp_path):
+    good_config_ini = good_config_ini.replace('source = my_source', 'source = ')
+    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+
+    cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
+
+    cd.read_config_file()
+
+    cd['export_formats']['export_format'] = 'pandoc_markdown'
+    cd['meta_data_options']['front_matter_format'] = 'toml'
+
+    cd.generate_conversion_settings_from_parsed_config_file_data()
+
+    assert cd.conversion_settings.front_matter_format == 'yaml'
 
 
 def test_generate_conversion_settings_from_parsed_config_file_data_test_source_setting(good_config_ini, tmp_path):
@@ -294,7 +323,6 @@ def test_conversion_settings_proprty_string_setting_confirm_config_file_written(
 
 
 def test_parse_config_file(good_config_ini, tmp_path):
-
     good_config_ini = good_config_ini.replace('source = my_source', 'source = ')
 
     Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
@@ -306,9 +334,26 @@ def test_parse_config_file(good_config_ini, tmp_path):
     assert cd.conversion_settings.export_format == 'obsidian'
 
 
-def test_ask_user_to_choose_new_default_config_file_user_choose_exit(good_config_ini, tmp_path, monkeypatch):
-    import interactive_cli
+def test_parse_config_file_invalid_config_file(good_config_ini, tmp_path):
+    good_config_ini = good_config_ini.replace('source = my_source', 'source = ')
 
+    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+
+    cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
+
+    with patch('config_data.ConfigData.validate_config_file',
+               spec=True) as mock_validate_config_file:
+        with patch('config_data.ConfigData.ask_user_to_choose_new_default_config_file',
+                   spec=True) as mock_ask_user_to_choose_new_default_config_file:
+            mock_validate_config_file.return_value = False
+            cd.parse_config_file()
+
+    mock_validate_config_file.assert_called_once()
+    mock_ask_user_to_choose_new_default_config_file.assert_called_once()
+
+
+def test_ask_user_to_choose_new_default_config_file_user_choose_exit(good_config_ini, tmp_path, monkeypatch):
+    print('hello')
     def patched_cli(ignored):
         return 'exit'
 
@@ -327,7 +372,7 @@ def test_ask_user_to_choose_new_default_config_file_user_choose_exit(good_config
     assert str(exc.value) == '0'
 
 
-def test_ask_user_to_choose_new_default_config_file_user_choose_exit(good_config_ini, tmp_path, monkeypatch):
+def test_ask_user_to_choose_new_default_config_file_user_choose_new_file(good_config_ini, tmp_path, monkeypatch):
     import interactive_cli
 
     def patched_cli(ignored):
@@ -354,3 +399,53 @@ def test_str(good_config_ini, tmp_path):
 
     result = str(cd)
     assert result == "ConfigData{'conversion_inputs': {'conversion_input': 'nsx'}, 'markdown_conversion_inputs': {'markdown_conversion_input': 'obsidian'}, 'quick_settings': {'quick_setting': 'obsidian'}, 'export_formats': {'export_format': 'obsidian'}, 'meta_data_options': {'front_matter_format': 'yaml', 'metadata_schema': 'title,ctime,mtime,tag', 'tag_prefix': '#', 'spaces_in_tags': 'False', 'split_tags': 'False'}, 'table_options': {'first_row_as_header': 'True', 'first_column_as_header': 'True'}, 'chart_options': {'chart_image': 'True', 'chart_csv': 'True', 'chart_data_table': 'True'}, 'file_options': {'source': '', 'export_folder_name': 'notes', 'attachment_folder_name': 'attachments', 'creation_time_in_exported_file_name': 'False'}}"
+
+
+def test_generate_conversion_settings_using_quick_settings_string(good_config_ini, tmp_path, caplog):
+    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+
+    cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
+
+    cd.generate_conversion_settings_using_quick_settings_string('gfm')
+
+    assert cd['quick_settings']['quick_setting'] == 'gfm'
+
+def test_generate_conversion_settings_using_quick_settings_string_bad_value(good_config_ini, tmp_path, caplog):
+    good_config_ini = good_config_ini.replace('source = my_source', 'source = ')
+
+    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+
+    cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
+
+    with pytest.raises(ValueError):
+        cd.generate_conversion_settings_using_quick_settings_string('invalid')
+
+    assert 'is not a recognised quick setting string' in caplog.records[-1].message
+
+
+def test_generate_conversion_settings_using_quick_settings_object(good_config_ini, tmp_path, caplog):
+    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+
+    cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
+
+    cs = ConversionSettings()
+    cs.quick_set_commonmark_settings()
+    cd.generate_conversion_settings_using_quick_settings_object(cs)
+
+    assert cd['quick_settings']['quick_setting'] == 'commonmark'
+
+
+def test_generate_conversion_settings_using_quick_settings_object_bad_value(good_config_ini, tmp_path, caplog):
+    good_config_ini = good_config_ini.replace('source = my_source', 'source = ')
+
+    Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
+
+    cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
+
+    cs = ''
+
+    with pytest.raises(TypeError):
+        cd.generate_conversion_settings_using_quick_settings_object(cs)
+
+    assert 'Passed invalid value' in caplog.records[-1].message
+

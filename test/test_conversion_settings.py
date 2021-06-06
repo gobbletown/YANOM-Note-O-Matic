@@ -165,3 +165,48 @@ def test_metadata_schema_string(schema, result):
     cs.metadata_schema = schema
 
     assert cs.metadata_schema == result
+
+
+def test_export_format_setter_valid_value():
+    cs = conversion_settings.ConversionSettings()
+    cs.export_format = 'html'
+
+    assert cs.export_format == 'html'
+
+
+def test_export_format_setter_invalid_value():
+    cs = conversion_settings.ConversionSettings()
+    cs.export_format = 'html'
+
+    with pytest.raises(ValueError) as exc:
+        cs.export_format = 'invalid'
+
+    assert 'Invalid value provided for for export format. ' in exc.value.args[0]
+
+    assert cs.export_format == 'html'
+
+
+def test_quick_setting_setter_valid_value():
+    cs = conversion_settings.ConversionSettings()
+    cs.quick_setting = 'obsidian'
+
+    assert cs.quick_setting == 'obsidian'
+
+
+def test_quick_setting_setter_invalid_value():
+    cs = conversion_settings.ConversionSettings()
+    cs.quick_setting = 'obsidian'
+
+    with pytest.raises(ValueError) as exc:
+        cs.quick_setting = 'invalid'
+
+    assert 'Invalid value provided for for quick setting. ' in exc.value.args[0]
+
+    assert cs.quick_setting == 'obsidian'
+
+
+def test_source_absolute_path_property():
+    cs = conversion_settings.ConversionSettings()
+    cs._source_absolute_path = Path('my/path')
+
+    assert cs.source_absolute_path == Path('my/path')

@@ -480,7 +480,7 @@ class ConversionSettings:
             self._quick_setting = value
             return
         else:
-            raise ValueError(f"Invalid provided_source for quick setting. "
+            raise ValueError(f"Invalid value provided for for quick setting. "
                              f"Attempted to use {value}, valid values are {self.valid_quick_settings}")
 
     @property
@@ -492,7 +492,7 @@ class ConversionSettings:
         if value in self.valid_export_formats:
             self._export_format = value
         else:
-            raise ValueError(f"Invalid provided_source for export format. "
+            raise ValueError(f"Invalid value provided for for export format. "
                              f"Attempted to use {value}, valid values are {self.valid_export_formats}")
 
     @property

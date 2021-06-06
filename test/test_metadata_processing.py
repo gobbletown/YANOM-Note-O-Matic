@@ -311,7 +311,8 @@ class TestMetaDataProcessor(unittest.TestCase):
         content = '<head><title>-</title></head>'
         self.metadata_processor._metadata = {'test': 'test-meta-content', 'test2': 'this is test2'}
         new_content = self.metadata_processor.add_metadata_html_to_content(content)
-        self.assertEqual('<head><title>-</title><meta test="test-meta-content"/><meta test2="this is test2"/></head>', new_content, 'meta data inserted incorrectly')
+        self.assertEqual('<head><title>-</title><meta test="test-meta-content"/><meta test2="this is test2"/></head>',
+                         new_content, 'meta data inserted incorrectly')
 
     def test_parse_html_meta_data(self):
         test_data_sets = [
@@ -407,6 +408,7 @@ class TestMetaDataProcessor(unittest.TestCase):
                 self.assertEqual(test_set[2], new_content, test_set[3])
                 self.assertTrue(test_set[4] == self.metadata_processor.metadata, test_set[5])
 
+
 def test_add_metadata_md_to_content(self):
     test_data_sets = [
         ('Hello',
@@ -431,19 +433,21 @@ def test_add_metadata_md_to_content(self):
 
 @pytest.mark.parametrize(
     'md_string, markdown_conversion_input, expected', [
-        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
-         'obsidian',
-         'ctime: 202102122352\nmtime: 202104242208\ntag: #Tag1, #Tag1/SubTag1, #Tag1/SubTag1/SubSubTag1, #Tag2title: test page\n\nhello'),
-       ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag: \ntitle: test page\n---\n\n# This is H1",
+        (
+        "---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
         'obsidian',
+        'ctime: 202102122352\nmtime: 202104242208\ntag: #Tag1, #Tag1/SubTag1, #Tag1/SubTag1/SubSubTag1, #Tag2title: test page\n\nhello'),
+        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag: \ntitle: test page\n---\n\n# This is H1",
+         'obsidian',
          'ctime: 202102122352\nmtime: 202104242208\ntitle: test page\n\nhello'),
         ("# This is H1",
          'obsidian',
          "hello"),
-        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
-         'markdown',
-         'ctime: 202102122352\nmtime: 202104242208\ntag: #Tag1, #Tag1/SubTag1, #Tag1/SubTag1/SubSubTag1, #Tag2title: test page\n\nhello'),
-]
+        (
+        "---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
+        'markdown',
+        'ctime: 202102122352\nmtime: 202104242208\ntag: #Tag1, #Tag1/SubTag1, #Tag1/SubTag1/SubSubTag1, #Tag2title: test page\n\nhello'),
+    ]
 )
 def test_add_text_metadata_to_content(md_string, markdown_conversion_input, expected):
     conversion_settings = ConversionSettings()
@@ -460,11 +464,15 @@ def test_add_text_metadata_to_content(md_string, markdown_conversion_input, expe
 
 @pytest.mark.parametrize(
     'md_string, expected', [
-        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
-         {'ctime': '202102122352', 'mtime': '202104242208', 'tag': ['#Tag1', '#Tag1/SubTag1', '#Tag1/SubTag1/SubSubTag1', '#Tag2'], 'title': 'test page'}),
-        ("---\nctime: '202102122352'\nmtime: '202104242208'\ntags:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
-         {'ctime': '202102122352', 'mtime': '202104242208', 'tags': ['#Tag1', '#Tag1/SubTag1', '#Tag1/SubTag1/SubSubTag1', '#Tag2'], 'title': 'test page'}),
-        ]
+        (
+        "---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
+        {'ctime': '202102122352', 'mtime': '202104242208',
+         'tag': ['#Tag1', '#Tag1/SubTag1', '#Tag1/SubTag1/SubSubTag1', '#Tag2'], 'title': 'test page'}),
+        (
+        "---\nctime: '202102122352'\nmtime: '202104242208'\ntags:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
+        {'ctime': '202102122352', 'mtime': '202104242208',
+         'tags': ['#Tag1', '#Tag1/SubTag1', '#Tag1/SubTag1/SubSubTag1', '#Tag2'], 'title': 'test page'}),
+    ]
 )
 def test_add_tag_prefix_if_required(md_string, expected):
     conversion_settings = ConversionSettings()
@@ -484,17 +492,23 @@ def test_add_tag_prefix_if_required(md_string, expected):
 
 @pytest.mark.parametrize(
     'html_string, expected, schema', [
-        ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tag="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
-         {'ctime': '202102122352', 'mtime': '202104242208', 'tag': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
+        (
+        '<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tag="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+        {'ctime': '202102122352', 'mtime': '202104242208',
+         'tag': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
         ['title', 'ctime', 'mtime', 'tag']
-         ),
-         ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
-         {'ctime': '202102122352', 'mtime': '202104242208', 'tags': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
-          ['title', 'ctime', 'mtime', 'tags']),
-                 ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
-         {'ctime': '202102122352', 'mtime': '202104242208', 'tags': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
-          [''])
-        ]
+        ),
+        (
+        '<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+        {'ctime': '202102122352', 'mtime': '202104242208',
+         'tags': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
+        ['title', 'ctime', 'mtime', 'tags']),
+        (
+        '<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+        {'ctime': '202102122352', 'mtime': '202104242208',
+         'tags': ['Tag1', 'Tag1/SubTag1', 'Tag1/SubTag1/SubSubTag1', 'Tag2'], 'title': 'test page'},
+        [''])
+    ]
 )
 def test_convert_tag_sting_to_tag_list(html_string, expected, schema):
     conversion_settings = ConversionSettings()
@@ -510,13 +524,15 @@ def test_convert_tag_sting_to_tag_list(html_string, expected, schema):
 
 @pytest.mark.parametrize(
     'html_string, expected', [
-        ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tag="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+        (
+        '<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tag="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
         ['SubSubTag1', 'SubTag1', 'Tag1', 'Tag2']
-         ),
-         ('<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
-          ['SubSubTag1', 'SubTag1', 'Tag1', 'Tag2']
-          ),
-        ]
+        ),
+        (
+        '<head><title>test page</title><meta title="test page"/><meta ctime="202102122352"/><meta mtime="202104242208"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head><h1>This is H1</h1',
+        ['SubSubTag1', 'SubTag1', 'Tag1', 'Tag2']
+        ),
+    ]
 )
 def test_split_tags_if_required_with_tags_key(html_string, expected):
     conversion_settings = ConversionSettings()
@@ -575,5 +591,63 @@ def test_add_metadata_md_to_content(content, metadata, front_matter_format, expe
     metadata_processor = MetaDataProcessor(conversion_settings)
     metadata_processor._metadata = metadata
     result = metadata_processor.add_metadata_md_to_content(content)
+
+    assert result == expected
+
+
+def test_add_metadata_html_to_content():
+    conversion_settings = ConversionSettings()
+    conversion_settings.front_matter_format = 'yaml'
+    metadata_processor = MetaDataProcessor(conversion_settings)
+    metadata_processor._metadata = {'title': 'My Title',
+                                    'ctime': '1234',
+                                    'mtime': '5678',
+                                    'tags':
+                                        ["Tag1",
+                                         "Tag1/SubTag1",
+                                         "Tag1/SubTag1/SubSubTag1",
+                                         "Tag2"]
+                                    }
+    content = """<!DOCTYPE html>
+
+    <html lang="" xml:lang="" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+    <meta charset="utf-8"/>
+    <meta content="pandoc" name="generator"/>
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport"/>
+    <title>-</title>
+    <style>
+        html {
+          line-height: 1.5;
+          font-family: Georgia, serif;
+          font-size: 20px;
+          color: #1a1a1a;
+          background-color: #fdfdfd;
+        }
+    </style>
+    </head></html>
+    """
+
+    expected = """<!DOCTYPE html>
+
+<html lang="" xml:lang="" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8"/>
+<meta content="pandoc" name="generator"/>
+<meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport"/>
+<title>My Title</title>
+<style>
+        html {
+          line-height: 1.5;
+          font-family: Georgia, serif;
+          font-size: 20px;
+          color: #1a1a1a;
+          background-color: #fdfdfd;
+        }
+    </style>
+<meta title="My Title"/><meta ctime="1234"/><meta mtime="5678"/><meta tags="Tag1,Tag1/SubTag1,Tag1/SubTag1/SubSubTag1,Tag2"/></head></html>
+"""
+
+    result = metadata_processor.add_metadata_html_to_content(content)
 
     assert result == expected

@@ -49,16 +49,16 @@ class ConfigData(ConfigParser):
         self.generate_conversion_settings_from_parsed_config_file_data()
         self.logger.info(f"Settings from config.ini are {self._conversion_settings}")
 
-    def _generate_conversion_settings_using_quick_settings_string(self, value):
+    def generate_conversion_settings_using_quick_settings_string(self, value):
         if value in self._conversion_settings.valid_quick_settings:
             self._load_and_save_config_from_conversion_quick_setting_string(value)
             return
 
-        self.logger.error(f"Passed invalid value - {value} - not a recognised quick setting string")
+        self.logger.error(f"Passed invalid value - {value} - is not a recognised quick setting string")
         raise ValueError(f"Conversion setting parameter must be a valid quick setting string "
                          f"{self._conversion_settings.valid_quick_settings} received '{value}'")
 
-    def _generate_conversion_settings_using_quick_settings_object(self, value):
+    def generate_conversion_settings_using_quick_settings_object(self, value):
         if isinstance(value, ConversionSettings):
             self._load_and_save_config_from_conversion_settings_obj(value)
             return
@@ -122,7 +122,7 @@ class ConfigData(ConfigParser):
         self._conversion_settings.quick_setting = self['quick_settings']['quick_setting']
         self._conversion_settings.export_format = self['export_formats']['export_format']
         self._conversion_settings.front_matter_format = self['meta_data_options']['front_matter_format']
-        if self._conversion_settings.export_format == 'pandoc-markdown':
+        if self._conversion_settings.export_format == 'pandoc_markdown':
             self._conversion_settings.front_matter_format = 'yaml'
         self._conversion_settings.metadata_schema = self['meta_data_options']['metadata_schema']
         self._conversion_settings.tag_prefix = self['meta_data_options']['tag_prefix']
@@ -312,10 +312,10 @@ class ConfigData(ConfigParser):
 
         """
         if type(value) is str:
-            self._generate_conversion_settings_using_quick_settings_string(value)
+            self.generate_conversion_settings_using_quick_settings_string(value)
             return
 
-        self._generate_conversion_settings_using_quick_settings_object(value)
+        self.generate_conversion_settings_using_quick_settings_object(value)
 
     def __str__(self):
         display_dict = str({section: dict(self[section]) for section in self.sections()})
