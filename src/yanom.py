@@ -8,6 +8,7 @@ import logging
 import sys
 
 import config
+from config_data import ConfigData
 from helper_functions import find_working_directory
 from notes_converter import NotesConvertor
 
@@ -114,5 +115,7 @@ def main(command_line_sys_argv=sys.argv):
 
 if __name__ == '__main__':
     command_line_args = main()
-    notes_converter = NotesConvertor(command_line_args)
+    config_data = ConfigData(f"{config.DATA_DIR}/config.ini", 'gfm', allow_no_value=True)
+    config_data.parse_config_file()
+    notes_converter = NotesConvertor(command_line_args, config_data)
     notes_converter.convert_notes()

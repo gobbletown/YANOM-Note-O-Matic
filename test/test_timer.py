@@ -10,16 +10,19 @@ logger.setLevel('DEBUG')
 
 
 def test_timer_a_non_named_timer(caplog, capfd):
+    timer.Timer.timers = {}
     my_timer = timer.Timer(logger=logger.info, silent=False)
     my_timer.start()
     time.sleep(0.01)
     my_timer.stop()
 
     assert my_timer.name is None
+    assert my_timer.silent == False
     assert len(my_timer.timers) == 0
 
 
 def test_timer_as_instance(caplog, capfd):
+    timer.Timer.timers = {}
     my_timer = timer.Timer(name='test_timer', logger=logger.info, silent=False)
     my_timer.start()
     time.sleep(0.01)
@@ -35,11 +38,13 @@ def test_timer_as_instance(caplog, capfd):
 
     assert out == 'Time taken: 0.01 seconds\n'
 
-    assert len(my_timer.timers) == 1
+    # assert len(my_timer.timers) == 1
+    assert 'test_timer' in my_timer.timers.keys()
     assert my_timer.name == 'test_timer'
 
 
 def test_timer_as_instance_error_when_start_already_running_timer(caplog, capfd):
+    timer.Timer.timers = {}
     my_timer = timer.Timer(name='test_timer', logger=logger.info, silent=False)
     my_timer.start()
     time.sleep(0.01)
@@ -50,6 +55,7 @@ def test_timer_as_instance_error_when_start_already_running_timer(caplog, capfd)
 
 
 def test_timer_as_instance_error_when_stop_a_non_running_timer(caplog, capfd):
+    timer.Timer.timers = {}
     my_timer = timer.Timer(name='test_timer', logger=logger.info, silent=False)
     with pytest.raises(timer.TimerError) as exc:
         my_timer.stop()
@@ -58,6 +64,7 @@ def test_timer_as_instance_error_when_stop_a_non_running_timer(caplog, capfd):
 
 
 def test_timer_context_manager(caplog, capfd):
+    timer.Timer.timers = {}
     with timer.Timer(name='test_timer', logger=logger.info, silent=False):
         time.sleep(.01)
 
@@ -73,6 +80,7 @@ def test_timer_context_manager(caplog, capfd):
 
 
 def test_timer_contect_manager_no_logger(caplog, capfd):
+    timer.Timer.timers = {}
     with timer.Timer(name='test_timer', silent=False):
         time.sleep(.01)
 
@@ -84,6 +92,7 @@ def test_timer_contect_manager_no_logger(caplog, capfd):
 
 
 def test_timer_contect_manager_silent_mode(caplog, capfd):
+    timer.Timer.timers = {}
     with timer.Timer(name='test_timer', logger=logger.info, silent=True):
         time.sleep(.01)
 
@@ -99,6 +108,7 @@ def test_timer_contect_manager_silent_mode(caplog, capfd):
 
 
 def test_timer_as_decorator(caplog, capfd):
+    timer.Timer.timers = {}
 
     @timer.Timer(name='test_timer', logger=logger.info, silent=False)
     def sleep_for_a_time():

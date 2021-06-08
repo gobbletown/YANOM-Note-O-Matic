@@ -4,7 +4,6 @@ from timer import Timer
 
 from alive_progress import alive_bar
 
-from config_data import ConfigData
 import config
 from interactive_cli import StartUpCommandLineInterface
 from nsx_file_converter import NSXFile
@@ -29,7 +28,7 @@ class NotesConvertor:
 
     """
 
-    def __init__(self, args):
+    def __init__(self, args, config_data):
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
         self.logger.debug(f"command line ars are - {args}")
@@ -40,12 +39,11 @@ class NotesConvertor:
         self._note_book_count = 0
         self._image_count = 0
         self._attachment_count = 0
-        self.nsx_backups = None
+        self._nsx_backups = []
         self.pandoc_converter = None
-        self.config_data = ConfigData(f"{config.DATA_DIR}/config.ini", 'gfm', allow_no_value=True)
+        self.config_data = config_data
 
     def convert_notes(self):
-        self.config_data.parse_config_file()
         self.evaluate_command_line_arguments()
         if self.conversion_settings.conversion_input == 'html':
             self.convert_html()
@@ -107,21 +105,16 @@ class NotesConvertor:
             self.process_files(html_files_to_convert, html_file_converter)
 
     def convert_nsx(self):
-        self.fetch_nsx_backups()
-        self.process_nsx_files()
-
-    def fetch_nsx_backups(self):
         file_extension = 'nsx'
         nsx_files_to_convert = self.generate_file_list(file_extension)
-
         self.exit_if_no_files_found(nsx_files_to_convert, file_extension)
-
         self.pandoc_converter = PandocConverter(self.conversion_settings)
-        self.nsx_backups = [NSXFile(file, self.conversion_settings, self.pandoc_converter) for file in nsx_files_to_convert]
+        self._nsx_backups = [NSXFile(file, self.conversion_settings, self.pandoc_converter) for file in nsx_files_to_convert]
+        self.process_nsx_files()
 
     def process_nsx_files(self):
         with Timer(name="nsx_conversion", logger=self.logger.info, silent=bool(config.silent)):
-            for nsx_file in self.nsx_backups:
+            for nsx_file in self._nsx_backups:
                 nsx_file.process_nsx_file()
                 self.update_processing_stats(nsx_file)
 
@@ -159,12 +152,12 @@ class NotesConvertor:
             self.print_result_if_any(self._attachment_count, 'Attachment')
             num_links_corrected = 0
             num_links_not_corrected = 0
-            for nsx_file in self.nsx_backups:
+            for nsx_file in self._nsx_backups:
                 num_links_corrected = num_links_corrected + len(nsx_file.inter_note_link_processor.replacement_links)
                 num_links_not_corrected = num_links_not_corrected + len(nsx_file.inter_note_link_processor.renamed_links_not_corrected)
             if (num_links_corrected + num_links_not_corrected) > 0:
                 print(f'{num_links_corrected} out of {num_links_corrected + num_links_not_corrected} links between notes were re-created')
-            for nsx_file in self.nsx_backups:
+            for nsx_file in self._nsx_backups:
                 if nsx_file.inter_note_link_processor.unmatched_links_msg:
                     print(nsx_file.inter_note_link_processor.unmatched_links_msg)
 
