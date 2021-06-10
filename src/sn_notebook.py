@@ -82,5 +82,5 @@ class Notebook:
         self.full_path_to_notebook = target_path
 
     def create_attachment_folder(self):
-        self.logger.debug(f"Creating attachment")
+        self.logger.debug(f"Creating attachment folder")
         Path(self.full_path_to_notebook, self.conversion_settings.attachment_folder_name).mkdir()
