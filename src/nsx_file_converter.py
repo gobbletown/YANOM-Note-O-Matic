@@ -61,7 +61,6 @@ class NSXFile:
         self.inter_note_link_processor.match_link_title_to_notes(all_note_pages)
         self.inter_note_link_processor.match_renamed_links_using_link_ref_id()
 
-
     def generate_note_page_filename_and_path(self):
         for note_page in self.note_pages.values():
             # this has to happen before processing as the file name and path are needed for pre_processing content
@@ -131,7 +130,7 @@ class NSXFile:
             self._note_page_count += len(self._note_pages)
 
     def add_note_pages_to_notebooks(self):
-        self.logger.info(f"Add note pages to notebooks")
+        self.logger.info("Add note pages to notebooks")
 
         for note_page_id in self._note_pages:
             current_parent_id = self._note_pages[note_page_id].parent_notebook
@@ -154,10 +153,6 @@ class NSXFile:
     @property
     def notebooks(self):
         return self._notebooks
-
-    @property
-    def nsx_file_name(self):
-        return self._nsx_file_name
 
     @property
     def conversion_settings(self):
@@ -186,10 +181,6 @@ class NSXFile:
     @property
     def note_pages(self):
         return self._note_pages
-
-    @property
-    def all_note_pages(self):
-        return self._all_note_pages
 
     @property
     def inter_note_link_processor(self):

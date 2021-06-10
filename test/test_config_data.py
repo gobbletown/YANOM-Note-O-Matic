@@ -410,6 +410,7 @@ def test_generate_conversion_settings_using_quick_settings_string(good_config_in
 
     assert cd['quick_settings']['quick_setting'] == 'gfm'
 
+
 def test_generate_conversion_settings_using_quick_settings_string_bad_value(good_config_ini, tmp_path, caplog):
     good_config_ini = good_config_ini.replace('source = my_source', 'source = ')
 
