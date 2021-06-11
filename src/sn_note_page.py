@@ -49,7 +49,6 @@ class NotePage:
                 or self._conversion_settings.creation_time_in_exported_file_name is True:
             self._note_json['ctime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['ctime']))
             self._note_json['mtime'] = time.strftime('%Y%m%d%H%M', time.localtime(self._note_json['mtime']))
-            pass
 
     def process_note(self):
         self.logger.info(f"Processing note page '{self._title}' - {self._note_id}")
@@ -84,10 +83,6 @@ class NotePage:
         self._create_file_name()
         self._full_path = self._generate_absolute_path()
         self._file_name = self._full_path.name
-
-    @property
-    def parent_notebook(self):
-        return self._parent_notebook
 
     def create_attachments(self):
         for attachment_id in self._attachments_json:
@@ -223,7 +218,3 @@ class NotePage:
     @property
     def pre_processor(self):
         return self._pre_processor
-
-    @property
-    def raw_content(self):
-        return self._raw_content
