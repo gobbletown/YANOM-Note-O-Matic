@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 import logging
 
 import config
@@ -10,15 +9,7 @@ def what_module_is_this():
     return __name__
 
 
-class PostProcessing(ABC):
-    """Abstract class representing a pre conversion note formatting """
-
-    @abstractmethod
-    def post_process_note_page(self):  # pragma: no cover
-        pass
-
-
-class NoteStationPostProcessing(PostProcessing):
+class NoteStationPostProcessing:
     def __init__(self, note):
         self.logger = logging.getLogger(f'{config.APP_NAME}.{what_module_is_this()}.{self.__class__.__name__}')
         self.logger.setLevel(config.logger_level)
@@ -39,13 +30,12 @@ class NoteStationPostProcessing(PostProcessing):
         self._add_one_last_line_break()
 
     def _add_meta_data(self):
-        if self._note.conversion_settings.front_matter_format != 'none':
-            self.logger.debug(f"Adding meta-data to page")
-            self._post_processed_content = self._pre_processor.metadata_processor.add_metadata_md_to_content(self._post_processed_content)
+        self.logger.debug(f"Adding meta-data to page")
+        self._post_processed_content = self._pre_processor.metadata_processor.add_metadata_md_to_content(self._post_processed_content)
 
     def _add_check_lists(self):
         if self._note.pre_processor.checklist_processor.list_of_checklist_items:
-            self.logger.debug(f"Adding chceklists to page")
+            self.logger.debug(f"Adding checklists to page")
             self._post_processed_content = self._note.pre_processor.checklist_processor.add_checklist_items_to(self._post_processed_content)
 
     def _add_iframes(self):

@@ -21,7 +21,7 @@ and this project follows something close to [Semantic Versioning](https://semver
 - Under a packaged runtime environment replacing a missing config.ini would fail.
 
 ### Other
-- Add tests for chart processing, image processing, metadata processing, pandoc processing, synology attachment processing, zip file handling, timer, inter note link processing, notes converter, nsx file converter, notebook processing, note page processing, note page preprocessing.
+- Add tests for chart processing, image processing, metadata processing, pandoc processing, synology attachment processing, zip file handling, timer, inter note link processing, notes converter, nsx file converter, synology notebook processing, synology note page processing,.
 
 ## [1.2.0] - 2021-05-25
 ### Added

@@ -43,7 +43,7 @@ def test_pre_process_note_page(note_1):
 
             result = note_1.pre_processed_content
             match = re.findall(output_html_regx, result)
-            # Note output_html_regx string uses '\d{15}\' to replace the chart id number in the actual html output
+            # Note output_html_regx string uses '\d{15}\' to replace the id numbers in the actual html output
             # and escapes the full stop before the file extension
 
             assert result == match[0]
