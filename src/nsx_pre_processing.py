@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 import logging
 import re
 
@@ -17,15 +16,7 @@ def what_module_is_this():
     return __name__
 
 
-class PreProcessing(ABC):
-    """Abstract class representing a pre conversion note formatting """
-
-    @abstractmethod
-    def pre_process_note_page(self):  # pragma: no cover
-        pass
-
-
-class NoteStationPreProcessing(PreProcessing):
+class NoteStationPreProcessing:
     """
     Main driver for pre-processing of synology html note data.
 
