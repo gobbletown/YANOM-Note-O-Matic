@@ -132,14 +132,12 @@ def test_source_setting_valid_sub_directory(tmp_path):
 def test_front_matter_setter_invalid(caplog):
     cs = conversion_settings.ConversionSettings()
     cs.front_matter_format = 'toml'
-    cs.front_matter_format = 'invalid'
+    with pytest.raises(ValueError) as exc:
+        cs.front_matter_format = 'invalid'
+
+    assert 'Invalid value provided for for front matter format. ' in exc.value.args[0]
 
     assert cs.front_matter_format == 'toml'
-
-    assert len(caplog.records) > 0
-
-    for record in caplog.records:
-        assert record.levelname == "WARNING"
 
 
 def test_metadata_schema_invalid_value(caplog):
@@ -210,3 +208,28 @@ def test_source_absolute_path_property():
     cs._source_absolute_path = Path('my/path')
 
     assert cs.source_absolute_path == Path('my/path')
+
+
+def test_conversion_input_setter_invalid_value():
+    cs = conversion_settings.ConversionSettings()
+    cs.conversion_input = 'nsx'
+
+    with pytest.raises(ValueError) as exc:
+        cs.conversion_input = 'invalid'
+
+    assert 'Invalid value provided for for conversion input. ' in exc.value.args[0]
+
+    assert cs.conversion_input == 'nsx'
+
+
+def test_markdown_conversion_input_setter_invalid_value():
+    cs = conversion_settings.ConversionSettings()
+    cs.markdown_conversion_input = 'gfm'
+
+    with pytest.raises(ValueError) as exc:
+        cs.markdown_conversion_input = 'invalid'
+
+    assert 'Invalid value provided for for markdown conversion input. ' in exc.value.args[0]
+
+    assert cs.markdown_conversion_input == 'gfm'
+

@@ -13,8 +13,8 @@ def what_module_is_this():
 
 class ChecklistItem:
     def __init__(self):
-        self._text = ''
-        self._checked = False
+        self.text = ''
+        self.checked = False
         self._indent = 0
         self._placeholder_text = ''
         self._markdown_item_text = ''
@@ -26,22 +26,14 @@ class ChecklistItem:
     def generate_markdown_item_text(self):
         tabs = '\t' * self._indent
         checked = ' '
-        if self._checked:
+        if self.checked:
             checked = 'x'
 
-        self._markdown_item_text = f"{tabs}- [{checked}] {self._text}"
+        self._markdown_item_text = f"{tabs}- [{checked}] {self.text}"
 
     @property
     def placeholder_text(self):
         return self._placeholder_text
-
-    @property
-    def checked(self):
-        return self._checked
-
-    @checked.setter
-    def checked(self, value):
-        self._checked = value
 
     @property
     def indent(self):
@@ -50,14 +42,6 @@ class ChecklistItem:
     @indent.setter
     def indent(self, value):
         self._indent = int(value)
-
-    @property
-    def text(self):
-        return self._text
-
-    @text.setter
-    def text(self, value):
-        self._text = value
 
     @property
     def markdown_item_text(self):

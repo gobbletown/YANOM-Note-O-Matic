@@ -445,7 +445,7 @@ def test_add_metadata_md_to_content(self):
          "hello"),
         (
         "---\nctime: '202102122352'\nmtime: '202104242208'\ntag:\n- Tag1\n- Tag1/SubTag1\n- Tag1/SubTag1/SubSubTag1\n- Tag2\ntitle: test page\n---\n\n# This is H1",
-        'markdown',
+        'pandoc_markdown_strict',
         'ctime: 202102122352\nmtime: 202104242208\ntag: #Tag1, #Tag1/SubTag1, #Tag1/SubTag1/SubSubTag1, #Tag2title: test page\n\nhello'),
     ]
 )

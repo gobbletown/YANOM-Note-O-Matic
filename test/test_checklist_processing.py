@@ -86,7 +86,7 @@ def test_checklist_processing_nsx_to_html_with_nsx_html_html_output_check_post_p
         ], ids=['no-indents', 'one-indent', 'invalid-indent-style']
 )
 def test_find_indent(html, expected_indent, expected_text):
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, 'html.parser')
     tag = soup.select('input[type="checkbox"]')
     checklist_processor = checklist_processing.HTMLInputMDOutputChecklistProcessor(html)
 

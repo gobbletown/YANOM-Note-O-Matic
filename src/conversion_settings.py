@@ -47,15 +47,15 @@ class ConversionSettings:
         Meta data to be placed in a yaml/json/toml front matter section above the body of the main text
     _tag_prefix: str
         Prefix to place on tags
-    _spaces_in_tags: bool
+    spaces_in_tags: bool
         Allow spaces in tag names
-    _split_tags: bool
+    split_tags: bool
         Split tags into separate tags where the input was a grouped tag format e.g. /coding/python -> coding python
     _export_folder_name: pathlib.Path
         Path object for the sub-directory name to place exported notes into
     _attachment_folder_name: pathlib.Path
         Path object for the sub-directory name within the export folder to place images and attachments
-    _creation_time_in_exported_file_name: bool
+    creation_time_in_exported_file_name: bool
         Include the note creation time on the end of the file name
     _working_directory: Path
         The base working directory for the program execution. This is not stored in ini files it is used for program
@@ -136,16 +136,16 @@ class ConversionSettings:
         self._front_matter_format = 'yaml'
         self._metadata_schema = ['']
         self._tag_prefix = '#'
-        self._spaces_in_tags = False
-        self._split_tags = False
-        self._first_row_as_header = True
-        self._first_column_as_header = True
-        self._chart_image = True
-        self._chart_csv = True
-        self._chart_data_table = True
+        self.spaces_in_tags = False
+        self.split_tags = False
+        self.first_row_as_header = True
+        self.first_column_as_header = True
+        self.chart_image = True
+        self.chart_csv = True
+        self.chart_data_table = True
         self._export_folder_name = 'notes'
         self._attachment_folder_name = 'attachments'
-        self._creation_time_in_exported_file_name = False
+        self.creation_time_in_exported_file_name = False
         self._working_directory, environment_message = find_working_directory()
         self.logger.debug(environment_message)
         self._source_absolute_path = None
@@ -160,8 +160,8 @@ class ConversionSettings:
                f"export_format='{self.export_format}', " \
                f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
                f"tag_prefix='{self.tag_prefix}', " \
-               f"first_row_as_header={self._first_row_as_header}, " \
-               f"first_column_as_header={self._first_column_as_header}" \
+               f"first_row_as_header={self.first_row_as_header}, " \
+               f"first_column_as_header={self.first_column_as_header}" \
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
@@ -177,8 +177,8 @@ class ConversionSettings:
                f"export_format='{self.export_format}', " \
                f"yaml_front_matter={self.front_matter_format}, metadata_schema='{self.metadata_schema}', " \
                f"tag_prefix='{self.tag_prefix}', " \
-               f"first_row_as_header={self._first_row_as_header}, " \
-               f"first_column_as_header={self._first_column_as_header}" \
+               f"first_row_as_header={self.first_row_as_header}, " \
+               f"first_column_as_header={self.first_column_as_header}" \
                f"spaces_in_tags={self.spaces_in_tags}, split_tags={self.split_tags}, " \
                f"export_folder_name='{self.export_folder_name}', " \
                f"attachment_folder_name='{self.attachment_folder_name}', " \
@@ -460,7 +460,12 @@ class ConversionSettings:
 
     @conversion_input.setter
     def conversion_input(self, value):
-        self._conversion_input = value
+        if value in self._valid_conversion_inputs:
+            self._conversion_input = value
+            return
+
+        raise ValueError(f"Invalid value provided for for conversion input. "
+                         f"Attempted to use {value}, valid values are {self._valid_conversion_inputs}")
 
     @property
     def markdown_conversion_input(self):
@@ -468,7 +473,12 @@ class ConversionSettings:
 
     @markdown_conversion_input.setter
     def markdown_conversion_input(self, value):
-        self._markdown_conversion_input = value
+        if value in self._valid_markdown_conversion_inputs:
+            self._markdown_conversion_input = value
+            return
+
+        raise ValueError(f"Invalid value provided for for markdown conversion input. "
+                         f"Attempted to use {value}, valid values are {self._valid_markdown_conversion_inputs}")
 
     @property
     def quick_setting(self):
@@ -479,9 +489,9 @@ class ConversionSettings:
         if value in self.valid_quick_settings:
             self._quick_setting = value
             return
-        else:
-            raise ValueError(f"Invalid value provided for for quick setting. "
-                             f"Attempted to use {value}, valid values are {self.valid_quick_settings}")
+
+        raise ValueError(f"Invalid value provided for for quick setting. "
+                         f"Attempted to use {value}, valid values are {self.valid_quick_settings}")
 
     @property
     def export_format(self):
@@ -491,9 +501,10 @@ class ConversionSettings:
     def export_format(self, value):
         if value in self.valid_export_formats:
             self._export_format = value
-        else:
-            raise ValueError(f"Invalid value provided for for export format. "
-                             f"Attempted to use {value}, valid values are {self.valid_export_formats}")
+            return
+
+        raise ValueError(f"Invalid value provided for for export format. "
+                         f"Attempted to use {value}, valid values are {self.valid_export_formats}")
 
     @property
     def metadata_schema(self):
@@ -526,8 +537,8 @@ class ConversionSettings:
             self._front_matter_format = value
             return
 
-        self.logger.warning(f'Invalid front matter format provided {value} continuing '
-                            f'to use {self.front_matter_format}')
+        raise ValueError(f"Invalid value provided for for front matter format. "
+                         f"Attempted to use {value}, valid values are {self._valid_front_matter_formats}")
 
     @property
     def tag_prefix(self):
@@ -536,38 +547,6 @@ class ConversionSettings:
     @tag_prefix.setter
     def tag_prefix(self, value: str):
         self._tag_prefix = value
-
-    @property
-    def spaces_in_tags(self):
-        return self._spaces_in_tags
-
-    @spaces_in_tags.setter
-    def spaces_in_tags(self, value: bool):
-        self._spaces_in_tags = value
-
-    @property
-    def split_tags(self):
-        return self._split_tags
-
-    @split_tags.setter
-    def split_tags(self, value: bool):
-        self._split_tags = value
-
-    @property
-    def first_row_as_header(self):
-        return self._first_row_as_header
-
-    @first_row_as_header.setter
-    def first_row_as_header(self, value: bool):
-        self._first_row_as_header = value
-
-    @property
-    def first_column_as_header(self):
-        return self._first_column_as_header
-
-    @first_column_as_header.setter
-    def first_column_as_header(self, value: bool):
-        self._first_column_as_header = value
 
     @property
     def export_folder_name(self):
@@ -586,14 +565,6 @@ class ConversionSettings:
         self._attachment_folder_name = generate_clean_path(value)
 
     @property
-    def creation_time_in_exported_file_name(self):
-        return self._creation_time_in_exported_file_name
-
-    @creation_time_in_exported_file_name.setter
-    def creation_time_in_exported_file_name(self, value: bool):
-        self._creation_time_in_exported_file_name = value
-
-    @property
     def working_directory(self):
         return self._working_directory
 
@@ -605,26 +576,3 @@ class ConversionSettings:
     def source_absolute_path(self):
         return self._source_absolute_path
 
-    @property
-    def chart_image(self):
-        return self._chart_image
-
-    @chart_image.setter
-    def chart_image(self, value: bool):
-        self._chart_image = value
-
-    @property
-    def chart_csv(self):
-        return self._chart_csv
-
-    @chart_csv.setter
-    def chart_csv(self, value: bool):
-        self._chart_csv = value
-
-    @property
-    def chart_data_table(self):
-        return self._chart_data_table
-
-    @chart_data_table.setter
-    def chart_data_table(self, value: bool):
-        self._chart_data_table = value

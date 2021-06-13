@@ -159,8 +159,8 @@ class ChartProcessor(ABC):
             self._df = None
             self._x_axis_title = str
             self._y_axis_title = str
-            self._x_category_labels = []
-            self._y_category_labels = []
+            self.x_category_labels = []
+            self.y_category_labels = []
             self._csv_chart_data_string = str
             self._html_chart_data_table = str
             self._chart_fig = None
@@ -214,22 +214,6 @@ class ChartProcessor(ABC):
             self._df = value
 
         @property
-        def x_category_labels(self):
-            return self._x_category_labels
-
-        @x_category_labels.setter
-        def x_category_labels(self, value):
-            self._x_category_labels = value
-
-        @property
-        def y_category_labels(self):
-            return self._y_category_labels
-
-        @y_category_labels.setter
-        def y_category_labels(self, value):
-            self._y_category_labels = value
-
-        @property
         def csv_chart_data_string(self):
             return self._csv_chart_data_string
 
@@ -254,7 +238,7 @@ class ChartProcessor(ABC):
             pyplot.title(self._title)
             pyplot.gca().axis("equal")
             pie = pyplot.pie(self._df['sum'], autopct='%1.2f%%', pctdistance=1.2, explode=explode)
-            labels = self._y_category_labels
+            labels = self.y_category_labels
             pyplot.legend(pie[0], labels, bbox_to_anchor=(1, 1), loc="upper right",
                           bbox_transform=pyplot.gcf().transFigure)
             self._png_img_buffer = self.fig_to_img_buf(fig)

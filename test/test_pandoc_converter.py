@@ -145,8 +145,8 @@ def test_generate_pandoc_options_check_pandoc_conversion_option_lookup(caplog, v
 
 @pytest.mark.parametrize(
     'version, conversion_input, markdown_conversion_input, output_file_format, expected', [
-        ('1.15', 'nsx', 'html', 'gfm', 'html'),
-        ('1.15', 'html', 'html', 'obsidian', 'html'),
+        ('1.15', 'nsx', 'obsidian', 'gfm', 'html'),
+        ('1.15', 'html', 'gfm', 'obsidian', 'html'),
         ('1.15', 'markdown', 'pandoc_markdown', 'gfm', 'markdown'),
     ]
 )
