@@ -1,4 +1,4 @@
-![coverage 94%](https://img.shields.io/badge/coverage-94%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
+![coverage 93%](https://img.shields.io/badge/coverage-93%25-orange)  ![open issues](https://img.shields.io/github/issues/kevindurston21/YANOM-Note-O-Matic)  ![License](https://img.shields.io/github/license/kevindurston21/YANOM-Note-O-Matic)  ![version tag](https://img.shields.io/github/v/tag/kevindurston21/YANOM-Note-O-Matic)
 
 # YANOM - Yet Another Note-O-Matic
 YANOM - stands for Yet Another Note-O-Matic. 
@@ -42,7 +42,7 @@ Additionally, YANOM has the capability to add support for modified Markdown form
 ## YANOM Note-O-Matic wiki
 The [YANOM wiki](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki) explains features, functionality, instalation and use in greater detail than this read me.
 
-## Version 1.2.0 capabilities 
+## Version 1.3.0 capabilities 
 - Conversion of Synology Note-Station files to markdown or html.  [Full details of the supported features and examples](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/note-station-conversion-details.md) are in the wiki. 
 - Conversion between Markdown formats
 - HTML to Markdown and Markdown to HTML
@@ -112,7 +112,7 @@ YANOM also requires Pandoc.  [Pandoc](https://pandoc.org/installing.html) v1.16 
 #### Prerequisite for the Debian packaged version
 Pandoc is required to be installed.
 
-#### No prerequisites Windows and Mac OSX packaged versions
+#### No prerequisites for the Windows and Mac OSX packaged versions, or the docker image
 The packaged versions include the required python environment and pandoc.
 
 
@@ -123,7 +123,7 @@ Packaged versions of YANOM are available.  Please see the wiki for how to instal
 Also, please note the Mac OSX package is slow to start and can take 15 or more seconds to launch. Running a second time from the same terminal window it is usualy just a few seconds.
 
 ### Using the docker image
-A docker image has been created and is available on [docker hub](https://hub.docker.com/r/thehistorianandthegeek/yanom).  This has pandoc pre-installed, and the docker image is the simplest way to quickly use YANOM and cleanly remove it and pandoc after use.
+A docker image has been created and is available on [docker hub](https://hub.docker.com/r/thehistorianandthegeek/yanom).
 
 For further information on the duse of the YANOM docker image please check the [wiki page](https://github.com/kevindurston21/YANOM-Note-O-Matic/wiki/Installing YANOM using Docker.md)
 
@@ -145,7 +145,7 @@ For details of the command line options and how to use YANOM please refer to the
 ## Running the tests
 
 ### Unit Tests with pytest
-There are some unit tests written for YANOM however they also run with pytest.  Some tests were created to run with unittest, but these also run with pytest.  
+Some tests were created to run with unittest, but these also run with pytest.  
 
 Please refer to the [test folder](test) for the test files.
 
@@ -155,7 +155,7 @@ You can run all tests and create html coverage report if you use this command in
 
 `pytest --cov-report html:cov_html test/ --cov=src`
 
-Current coverage is currently 55%
+Current coverage is currently 93%
 
 ### End-to-end tests
 

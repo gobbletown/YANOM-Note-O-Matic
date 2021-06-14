@@ -1,6 +1,6 @@
 APP_NAME = 'YANOM'
 APP_SUB_NAME = 'Note-O-Matic'
-VERSION = '1.2.0'
+VERSION = '1.3.0'
 DATA_DIR = 'data'
 global logger_level
 logger_level = 20  # INFO

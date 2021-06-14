@@ -8,7 +8,7 @@ and this project follows something close to [Semantic Versioning](https://semver
 - Increment the minor version number when adding a new feature or set of features and any current bug fixes not yet released
 - Increment the major version when significantly overhaul the user interface, or rewrite all internals.
 
-## Unreleased on the develop branch
+## [1.3.0] - 2021-06-16
 
 ### Added
 - Exporting to 'pandoc-markdown' now uses YANOM's metadata parser giving wider choice of metadata keys to be parsed or not parsed.  The export only produces a YAML front matter section.
@@ -22,6 +22,7 @@ and this project follows something close to [Semantic Versioning](https://semver
 
 ### Other
 - Add tests for chart processing, image processing, metadata processing, pandoc processing, synology attachment processing, zip file handling, timer, inter note link processing, notes converter, nsx file converter, synology notebook processing, synology note page processing,.
+
 
 ## [1.2.0] - 2021-05-25
 ### Added

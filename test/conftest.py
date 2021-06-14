@@ -2,6 +2,7 @@ import pytest
 
 import conversion_settings
 import nsx_file_converter
+import pandoc_converter
 import sn_note_page
 
 
@@ -112,5 +113,5 @@ def conv_setting(tmp_path):
 
 @pytest.fixture
 def nsx(conv_setting):
-    nsx = nsx_file_converter.NSXFile('fake_file', conv_setting, 'fake_pandoc_converter')
+    nsx = nsx_file_converter.NSXFile('fake_file', conv_setting, pandoc_converter.PandocConverter(conv_setting))
     return nsx

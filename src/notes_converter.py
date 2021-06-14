@@ -86,13 +86,14 @@ class NotesConvertor:
 
     def process_files(self, files_to_convert, file_converter):
         file_count = 0
-
-        print(f"Processing note pages")
+        if not config.silent:
+            print(f"Processing note pages")
         with alive_bar(len(files_to_convert), bar='blocks') as bar:
             for file in files_to_convert:
                 file_converter.convert(file)
                 file_count += 1
-                bar()
+                if not config.silent:
+                    bar()
 
         self._note_page_count = file_count
 

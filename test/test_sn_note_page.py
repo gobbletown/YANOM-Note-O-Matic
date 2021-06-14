@@ -150,13 +150,6 @@ def test_increment_duplicated_title(note_page, title_list, expected_new_title):
     assert note_page.title == expected_new_title
 
 
-def test_store_file(note_page):
-    with patch('file_writer.store_file', spec=True) as mock_store_file:
-        note_page.store_file()
-
-        mock_store_file.assert_called_once()
-
-
 @pytest.mark.parametrize(
     'export_format, expected', [
         ('gfm',
@@ -165,15 +158,10 @@ def test_store_file(note_page):
          """<head><title> </title></head><p>Below is a hyperlink to the internet</p><p><a href="https://github.com/kevindurston21/YANOM-Note-O-Matic">https://github.com/kevindurston21/YANOM-Note-O-Matic</a></p><h6>Attachments</h6><p><a href="attachments/record-2021-02-15-160013.webm">record-2021-02-15-160013.webm</a></p><p><a href="attachments/example-attachment.pdf">example-attachment.pdf</a></p><p><a href="attachments/test-page.pdf">test-page.pdf</a></p>"""),
     ]
 )
-def test_process_note2(nsx, note_page_1, export_format, expected):
+def test_process_note(nsx, note_page_1, export_format, expected):
     note_page_1.conversion_settings.export_format = export_format
     note_page_1._pandoc_converter = pandoc_converter.PandocConverter(note_page_1.conversion_settings)
 
-    with patch('sn_attachment.ImageNSAttachment.store_attachment', spec=True):
-        with patch('sn_attachment.FileNSAttachment.store_attachment', spec=True):
-            with patch('file_writer.store_file', spec=True) as mock_store_file:
-                note_page_1.process_note()
+    note_page_1.process_note()
 
-                mock_store_file.assert_called_once()
-
-                assert note_page_1.converted_content == expected
+    assert note_page_1.converted_content == expected

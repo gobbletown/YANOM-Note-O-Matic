@@ -6,7 +6,6 @@ import pytest
 
 import config_data
 from conversion_settings import ConversionSettings
-import helper_functions
 import interactive_cli
 
 
@@ -113,7 +112,6 @@ def test_read_config_file_file_missing(tmp_path, caplog):
 def test_read_config_missing_file(tmp_path, good_config_ini, caplog, capsys, silent, expected):
 
     config.set_silent(silent)
-    # Path(f'{str(tmp_path)}/config.ini').write_text(good_config_ini, encoding="utf-8")
 
     cd = config_data.ConfigData(f"{str(tmp_path)}/config.ini", 'gfm', allow_no_value=True)
 

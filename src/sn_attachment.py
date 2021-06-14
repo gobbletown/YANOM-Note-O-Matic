@@ -33,15 +33,11 @@ class NSAttachment(ABC):
         self.generate_relative_path_to_notebook()
         self.generate_absolute_path()
         self.change_file_name_if_already_exists()
-        self.store_attachment()
         self.create_html_link()
 
     @abstractmethod
     def get_content_to_save(self):  # pragma: no cover
         pass
-
-    def store_attachment(self):
-        store_file(self._full_path, self.get_content_to_save())
 
     def generate_relative_path_to_notebook(self):
         self._path_relative_to_notebook = Path(self._conversion_settings.attachment_folder_name, self._file_name)

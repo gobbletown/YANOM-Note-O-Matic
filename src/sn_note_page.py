@@ -3,7 +3,6 @@ import time
 from pathlib import Path
 
 import config
-import file_writer
 import helper_functions
 from nsx_post_processing import NoteStationPostProcessing
 from nsx_pre_processing import NoteStationPreProcessing
@@ -54,7 +53,6 @@ class NotePage:
         self.convert_data()
         if not self.conversion_settings.export_format == 'html':
             self.post_process_content()
-        self.store_file()
         self.logger.debug(f"Processing of note page '{self._title}' - {self._note_id}  completed.")
 
     def _create_file_name(self):
@@ -127,9 +125,6 @@ class NotePage:
             this_title = f'{self._title}-{n}'
 
         self._title = this_title
-
-    def store_file(self):
-        file_writer.store_file(self._full_path, self._converted_content)
 
     @property
     def title(self):

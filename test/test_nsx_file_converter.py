@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 import config
-import conversion_settings
 import nsx_file_converter
+import pandoc_converter
 import sn_note_page
 import sn_notebook
 
@@ -130,16 +130,13 @@ def test_create_folders(conv_setting, caplog, tmp_path, nsx):
 
 
 @pytest.mark.parametrize(
-    'silent_mode, expected', [
-        (True, ''),
-        (False, 'Finding note pages')
-    ]
+    'silent_mode', [True, False]
 )
-def test_add_note_pages(conv_setting, caplog, silent_mode, expected):
+def test_add_note_pages(conv_setting, caplog, silent_mode):
     config.set_logger_level("DEBUG")
     config.set_silent(silent_mode)
 
-    nsx_fc = nsx_file_converter.NSXFile('fake_file', conv_setting, 'fake_pandoc_converter')
+    nsx_fc = nsx_file_converter.NSXFile(Path('fake_file'), conv_setting, 'fake_pandoc_converter')
 
     nsx_fc._note_page_ids = ['1234']
 
@@ -166,7 +163,7 @@ def notebooks(nsx):
     return {'note_book1': test_notebook1, 'recycle-bin': test_notebook2}
 
 
-def test_add_note_pages_to_notebooks(conv_setting, caplog, nsx, note_pages, notebooks):
+def test_add_note_pages_to_notebooks(conv_setting, caplog, note_pages, notebooks):
     config.set_logger_level("INFO")
 
     nsx_fc = nsx_file_converter.NSXFile('fake_file', conv_setting, 'fake_pandoc_converter')
@@ -182,21 +179,6 @@ def test_add_note_pages_to_notebooks(conv_setting, caplog, nsx, note_pages, note
     assert "Add note pages to notebooks" in caplog.records[0].message
 
 
-def test_create_attachments(conv_setting, caplog, note_pages):
-    config.set_logger_level("DEBUG")
-
-    nsx_fc = nsx_file_converter.NSXFile('fake_file', conv_setting, 'fake_pandoc_converter')
-    nsx_fc._note_pages = note_pages
-    caplog.clear()
-    nsx_fc.create_attachments()
-
-    assert nsx_fc.image_count == 1
-    assert nsx_fc.attachment_count == 3
-
-    assert len(caplog.records) == 1
-    assert "Creating attachment objects" in caplog.records[0].message
-
-
 def test_process_notebooks(conv_setting, caplog, notebooks):
     config.set_logger_level("DEBUG")
 
@@ -207,3 +189,38 @@ def test_process_notebooks(conv_setting, caplog, notebooks):
         nsx_fc.process_notebooks()
 
         mock_process_notebook_pages.assert_called()
+
+
+@pytest.mark.parametrize(
+    'silent_mode', [True, False]
+)
+def test_save_note_pages(notebooks, all_notes_dict, conv_setting, silent_mode):
+    config.set_silent(silent_mode)
+    nsx_fc = nsx_file_converter.NSXFile('fake_file', conv_setting, 'fake_pandoc_converter')
+    nsx_fc._notebooks = notebooks
+    nsx_fc._note_pages = all_notes_dict
+    nsx_fc.add_note_pages_to_notebooks()
+
+    with patch('file_writer.store_file', spec=True) as mock_store_file:
+        nsx_fc.save_note_pages()
+
+        assert mock_store_file.call_count == 11
+
+
+@pytest.mark.parametrize(
+    'silent_mode', [True, False]
+)
+def test_store_attachments(notebooks, all_notes_dict, conv_setting, silent_mode):
+    config.set_silent(silent_mode)
+    pc = pandoc_converter.PandocConverter(conv_setting)
+    nsx_fc = nsx_file_converter.NSXFile('fake_file', conv_setting, pc)
+    nsx_fc._notebooks = notebooks
+    nsx_fc._note_pages = all_notes_dict
+    nsx_fc.add_note_pages_to_notebooks()
+    nsx_fc.process_notebooks()
+
+    with patch('nsx_file_converter.NSXFile.fetch_attachment_file', autospec=True):
+        with patch('file_writer.store_file', spec=True) as mock_store_file:
+            nsx_fc.store_attachments()
+
+        assert mock_store_file.call_count == 4

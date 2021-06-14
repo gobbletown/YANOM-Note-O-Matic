@@ -30,17 +30,13 @@ class Notebook:
     def process_notebook_pages(self):
         self.logger.info(f"Processing note book {self.title} - {self.notebook_id}")
 
-        if config.silent:
-            for note_page in self.note_pages:
-                note_page.process_note()
-
-            return
-
-        print(f"Processing '{self.title}' Notebook")
+        if not config.silent:
+            print(f"Processing '{self.title}' Notebook")
         with alive_bar(len(self.note_pages), bar='blocks') as bar:
             for note_page in self.note_pages:
                 note_page.process_note()
-                bar()
+                if not config.silent:
+                    bar()
 
     def pair_up_note_pages_and_notebooks(self, note_page: NotePage):
         self.logger.debug(f"Adding note '{note_page.title}' - {note_page.note_id} "

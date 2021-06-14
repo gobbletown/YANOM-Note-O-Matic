@@ -39,13 +39,12 @@ def test_post_process_note_page(note_1):
     note_1.conversion_settings.quick_set_obsidian_settings()
     note_1._pandoc_converter = pandoc_converter.PandocConverter(note_1.conversion_settings)
 
-    with patch('sn_attachment.ImageNSAttachment.store_attachment', spec=True):
-        with patch('sn_attachment.FileNSAttachment.store_attachment', spec=True):
-            note_1.pre_process_content()
-            note_1.convert_data()
-            note_1.post_process_content()
 
-            expected = """---
+    note_1.pre_process_content()
+    note_1.convert_data()
+    note_1.post_process_content()
+
+    expected = """---
 ctime: '202104242208'
 mtime: '202104242209'
 tag:
@@ -87,13 +86,13 @@ Below is an image of the design of the line chart as seen in note-station
 
 ![|600]()
 """
-            # replace the generated 15 digit id-numbers with placeholder text to allow comparison
-            regex = r"\d{15}"
-            test_string = note_1.converted_content
-            substitute_text = 'replaced_id_number'
-            result = re.sub(regex, substitute_text, test_string, 0, re.MULTILINE)
+    # replace the generated 15 digit id-numbers with placeholder text to allow comparison
+    regex = r"\d{15}"
+    test_string = note_1.converted_content
+    substitute_text = 'replaced_id_number'
+    result = re.sub(regex, substitute_text, test_string, 0, re.MULTILINE)
 
-            assert result == expected
+    assert result == expected
 
 
 def test_post_process_note_page_no_front_matter_and_no_iframe_included_in_result(note_1):
@@ -105,13 +104,12 @@ def test_post_process_note_page_no_front_matter_and_no_iframe_included_in_result
 
     note_1._pandoc_converter = pandoc_converter.PandocConverter(note_1.conversion_settings)
 
-    with patch('sn_attachment.ImageNSAttachment.store_attachment', spec=True):
-        with patch('sn_attachment.FileNSAttachment.store_attachment', spec=True):
-            note_1.pre_process_content()
-            note_1.convert_data()
-            note_1.post_process_content()
 
-            expected = """- [x] Check 1
+    note_1.pre_process_content()
+    note_1.convert_data()
+    note_1.post_process_content()
+
+    expected = """- [x] Check 1
 
 
 Pie Chart
@@ -137,10 +135,10 @@ Below is an image of the design of the line chart as seen in note-station
 <img src="" width="600" />
 
 """
-            # replace the generated 15 digit id-numbers with placeholder text to allow comparison
-            regex = r"\d{15}"
-            test_string = note_1.converted_content
-            substitute_text = 'replaced_id_number'
-            result = re.sub(regex, substitute_text, test_string, 0, re.MULTILINE)
+    # replace the generated 15 digit id-numbers with placeholder text to allow comparison
+    regex = r"\d{15}"
+    test_string = note_1.converted_content
+    substitute_text = 'replaced_id_number'
+    result = re.sub(regex, substitute_text, test_string, 0, re.MULTILINE)
 
-            assert result == expected
+    assert result == expected
