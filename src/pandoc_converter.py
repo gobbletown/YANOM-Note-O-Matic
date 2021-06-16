@@ -1,8 +1,6 @@
 from packaging import version
 import logging
-import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 
@@ -62,9 +60,6 @@ class PandocConverter:
         self.generate_pandoc_options()
 
     def find_pandoc_version(self):
-        if not self.is_pandoc_installed():
-            sys.exit(1)
-
         try:
             self._pandoc_version = subprocess.run([self._pandoc_path, '-v'], capture_output=True, text=True, timeout=3)
             self._pandoc_version = self._pandoc_version.stdout[7:].split('\n', 1)[0].strip()
@@ -107,9 +102,6 @@ class PandocConverter:
         return self.pandoc_conversion_options[self.conversion_settings.markdown_conversion_input]
 
     def convert_using_strings(self, input_data, note_title):
-        if not self.is_pandoc_installed():
-            sys.exit(1)
-
         try:
             out = subprocess.run(self.pandoc_options, input=input_data, capture_output=True,
                                  encoding='utf-8', text=True, timeout=20)
@@ -134,13 +126,4 @@ class PandocConverter:
     def _pandoc_older_than_v_2_11_2(self):
         return version.parse(self._pandoc_version) < version.parse('2.11.2')
 
-    def is_pandoc_installed(self):
-        if not shutil.which(self._pandoc_path) and not os.path.isfile(self._pandoc_path):
-            logging.warning("Pandoc program not found - exiting")
-            if not config.silent:
-                print("Could not find pandoc. Please install pandoc, "
-                      "or if installed please check it is on your environment path")
-            return False
-
-        return True
 

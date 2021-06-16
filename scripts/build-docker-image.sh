@@ -8,9 +8,11 @@
 # if `push` is used the `dev` image and container are removed
 #
 # Second argument is a docker build number this is a positive value or if left blank it will use version `0`
-# NOTE if using `push` it will NOT push a number tag only a latest tag will be pushed to docker hub
+# NOTE if using `push` it will add an the number to the end of the version number image - so '2' would add `-2`
+# to the version image tag e.g. `1.2.0-2`.  If the second argument is zero or missing push will push latest and
+# an image tag image e.g. `1.2.0`
 APP_NAME="yanom"
-VERSION="1.2.0"
+VERSION="1.3.0"
 APP_TAR="yanom-$VERSION-debian10-slim-buster.tar.gz"
 DOCKER_REPO="thehistorianandthegeek"
 DEV_IMAGE="yanom-dev-deb10"
@@ -50,6 +52,10 @@ then
   if [ "$BUILD_NUMBER" -gt 0 ]
   then
     docker push $DOCKER_REPO/$APP_NAME:"$VERSION-$BUILD_NUMBER"
+  fi
+  if [ "$BUILD_NUMBER" == 0 ]
+  then
+    docker push $DOCKER_REPO/$APP_NAME:"$VERSION"
   fi
 fi
 if [ "$1" ] && [ "$1" == "test" ]
